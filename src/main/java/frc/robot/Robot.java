@@ -7,6 +7,11 @@
 
 package frc.robot;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.StringJoiner;
+
 import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.wpilibj.SPI;
@@ -15,6 +20,10 @@ import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.commands.DriveWithJoystick.JoystickMode;
+import frc.robot.commands.GenerateMotionProfiles;
+import frc.robot.subsystems.CameraSystem;
+import frc.robot.subsystems.DriveTrain;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -26,13 +35,17 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Robot extends TimedRobot {
   public static final RobotMap robotMap = new RobotMap();
 
-	// public static final DriveTrain driveSubsystem = new DriveTrain();
+	public static final DriveTrain driveSubsystem = new DriveTrain();
 
   public static OI oi;
   public static final AHRS ahrs = new AHRS(SPI.Port.kMXP);
 
+  public static final CameraSystem cameraSubsystem = new CameraSystem();
+
   Command autonomousCommand;
-  SendableChooser<Command> chooser = new SendableChooser<>();
+  SendableChooser<Command> tuningModeChooser = new SendableChooser<>();
+  SendableChooser<Command> autoChooser = new SendableChooser<>();
+  public static SendableChooser<JoystickMode> joystickModeChooser;
 
   /**
    * This function is run when the robot is first started up and should be
@@ -41,9 +54,34 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     oi = new OI();
+    joystickModeChooser = new SendableChooser<JoystickMode>();
     // chooser.setDefaultOption("Default Auto", new ExampleCommand());
     // chooser.addOption("My Auto", new MyAutoCommand());
-    SmartDashboard.putData("Auto mode", chooser);
+    joystickModeChooser.setDefaultOption("Tank", JoystickMode.Tank);
+    joystickModeChooser.addOption("Split Arcade", JoystickMode.SplitArcade);
+
+    if (RobotMap.tuningMode) {
+      SmartDashboard.putData("Tuning Auto Mode", tuningModeChooser);
+    }
+
+    SmartDashboard.putData("Auto mode", autoChooser);
+    SmartDashboard.putData("Control Mode", joystickModeChooser);
+
+    // if the current waypoint version is old, re-generate profiles
+    BufferedReader waypointVersionReader;
+    int lastWaypointVersion = 0;
+    try {
+      waypointVersionReader = new BufferedReader(new FileReader("/home/lvuser/lastWaypointVersion"));
+      lastWaypointVersion = Integer.parseInt(waypointVersionReader.readLine());
+      waypointVersionReader.close();
+    } catch (NumberFormatException | IOException e) {
+      // do nothing
+    }
+    if (frc.robot.commands.GenerateMotionProfiles.waypointVersion > lastWaypointVersion) {
+      GenerateMotionProfiles generateCommand = new GenerateMotionProfiles();
+      generateCommand.setRunWhenDisabled(true);
+      generateCommand.start();
+    }
   }
 
   /**
@@ -70,6 +108,9 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledPeriodic() {
     Scheduler.getInstance().run();
+    if (driveSubsystem.getVelocityLeft() <= 2 && driveSubsystem.getVelocityRight() <= 2) {
+			Robot.driveSubsystem.enableBrakeMode(false);
+		}
   }
 
   /**
@@ -85,7 +126,8 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    autonomousCommand = chooser.getSelected();
+    Robot.driveSubsystem.enableBrakeMode(true);
+    autonomousCommand = autoChooser.getSelected();
 
     /*
      * String autoSelected = SmartDashboard.getString("Auto Selector",
@@ -110,6 +152,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
+    Robot.driveSubsystem.enableBrakeMode(true);
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove
@@ -133,4 +176,18 @@ public class Robot extends TimedRobot {
   @Override
   public void testPeriodic() {
   }
+
+  // Utility functions
+	public static String genGraphStr(double...data) {
+		StringJoiner sj = new StringJoiner(":");
+		for (double item : data) {
+			sj.add(String.valueOf(item));
+		}
+		return sj.toString();
+	}
+	
+	public static double map(double x, double in_min, double in_max, double out_min, double out_max)
+	{
+	  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+	}
 }
