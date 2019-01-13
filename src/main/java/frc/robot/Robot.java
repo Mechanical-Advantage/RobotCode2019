@@ -14,6 +14,8 @@ import java.util.StringJoiner;
 
 import com.kauailabs.navx.frc.AHRS;
 
+import org.zeromq.ZMQ;
+
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.command.Command;
@@ -46,6 +48,8 @@ public class Robot extends TimedRobot {
   SendableChooser<Command> tuningModeChooser = new SendableChooser<>();
   SendableChooser<Command> autoChooser = new SendableChooser<>();
   public static SendableChooser<JoystickMode> joystickModeChooser;
+
+  public static ZMQ.Context ZMQContext = ZMQ.context(1);
 
   /**
    * This function is run when the robot is first started up and should be
