@@ -13,6 +13,8 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.buttons.Button;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
+import edu.wpi.first.wpilibj.command.Command;
+import frc.robot.commands.CancelCommand;
 import frc.robot.commands.SetCamera;
 import frc.robot.commands.SwitchGear;
 import frc.robot.commands.ToggleGear;
@@ -95,7 +97,9 @@ public class OI {
 		lowGear.whenPressed(new SwitchGear(DriveGear.LOW));
 		toggleGear.whenPressed(new ToggleGear());
 
-		hatchPickup.whileHeld(new VisionHatchPickup());
+		Command hatchPickupCommand = new VisionHatchPickup();
+		hatchPickup.whenPressed(hatchPickupCommand);
+		hatchPickup.whenReleased(new CancelCommand(hatchPickupCommand));
 		visionTest.whileHeld(new VisionRecieverTest());
   	}
 

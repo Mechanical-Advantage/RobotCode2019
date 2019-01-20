@@ -21,9 +21,15 @@ public class VisionHatchPickup extends Command {
   private static final int dataPoints = 100;
   private static final double kUpdatePeriodDistance = 0.02;
   private static final double kUpdatePeriodAngle = 0.05;
+  // % velocity reserved for turn correction
   private static final double kTurnCorrectionAmount = 0.2;
   // PID output will be limited to negative to positive this
   private static final double kMaxOutput = 0.9;
+  // Limit change in one iteration to this - % of max output
+  private static final double kMaxChange = 0.06;
+  private static final double targetDistance = 12; // Distance from camera to try to get to
+  private static final double distanceTolerance = 0.5;
+  private static final double angleTolerance = 1;
 
   private double kPDistance;
   private double kIDistance;
@@ -35,6 +41,7 @@ public class VisionHatchPickup extends Command {
   private double kFAngle;
   private DriveGear gear;
 
+  private static double maxOutputVelocityChange = kMaxOutput * kMaxChange;
   private LatencyData distanceData = new LatencyData(dataPoints);
   private LatencyData angleData = new LatencyData(dataPoints);
   private float previousYaw;
@@ -50,11 +57,11 @@ public class VisionHatchPickup extends Command {
 
     switch (RobotMap.robot) {
       case ROBOT_2017:
-        kPDistance = 0.0032;
+        kPDistance = 0.04; // 0.0032 slow but good
         kIDistance = 0.000000;
         kDDistance = 0;
         kFDistance = 0;
-        kPAngle = 0.015;
+        kPAngle = 0.03; // 0.015 works well with 0.0032, slow but good
         kIAngle = 0;
         kDAngle = 0;
         kFAngle = 0;
@@ -100,8 +107,10 @@ public class VisionHatchPickup extends Command {
 		turnController.setOutputRange(-1, 1);
 		turnController.setInputRange(-180, 180); // should this be field of view?
 		turnController.setContinuous();
-		distanceController.setSetpoint(0);
-		turnController.setSetpoint(0);
+    distanceController.setSetpoint(targetDistance);
+    distanceController.setAbsoluteTolerance(distanceTolerance);
+    turnController.setSetpoint(0);
+    turnController.setAbsoluteTolerance(angleTolerance);
   }
 
   // Called just before this Command runs the first time
@@ -155,14 +164,16 @@ public class VisionHatchPickup extends Command {
   // Make this return true when this Command no longer needs to run execute()
   @Override
   protected boolean isFinished() {
-    return false;
+    return visionDataRecieved && distanceController.onTarget() && turnController.onTarget();
   }
 
   // Called once after isFinished returns true
   @Override
   protected void end() {
     turnController.disable();
+    turnController.reset();
     distanceController.disable();
+    distanceController.reset();
     Robot.driveSubsystem.stop();
     Robot.visionData.stopPipeline();
   }
@@ -178,14 +189,29 @@ public class VisionHatchPickup extends Command {
 
     private double angleOutput;
     private AngleReciever angleReciever = new AngleReciever();
+    private double lastOutput;
 
     @Override
     public void pidWrite(double output) {
       // Inverted velocity because PID is trying to push input lower
-		  double outputVelocity = output*(kMaxOutput-kTurnCorrectionAmount)*-1;
+      double outputVelocity = output*(kMaxOutput-kTurnCorrectionAmount)*-1;
+      outputVelocity = calcNewVelocity(outputVelocity, lastOutput);
+      lastOutput = outputVelocity;
 		  double outputTurnVelocity = angleOutput*kTurnCorrectionAmount;
 		  Robot.driveSubsystem.drive(outputVelocity-outputTurnVelocity, outputVelocity+outputTurnVelocity);
     }
+
+    private double calcNewVelocity(double currentOutput, double lastOutput) {
+    	double targetOutput = currentOutput*(kMaxOutput-kTurnCorrectionAmount);
+    	if (Math.abs(lastOutput - targetOutput) > maxOutputVelocityChange){
+    		if (lastOutput < targetOutput) {
+        		targetOutput = lastOutput + maxOutputVelocityChange;
+    		} else {
+    			targetOutput = lastOutput - maxOutputVelocityChange;
+    		}
+    	}
+    	return targetOutput;
+	  }
 
     private AngleReciever getAngleReciever() {
       return angleReciever;

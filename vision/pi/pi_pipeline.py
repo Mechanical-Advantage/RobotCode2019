@@ -478,8 +478,8 @@ def extra_processing_hatch(pipeline, zmq_pub):
     # Camera constants
     horiz_FOV = 25.18 * 2
     vert_FOV = 52.696
-    height = 33.5
-    vert_angle = 23 # How far down the camera is pointed
+    height = 31
+    vert_angle = 52 # How far down the camera is pointed
     horiz_angle = 0 # How far to the right the camera is pointed
     horiz_offset = 0 # How far to the right the camera is shifted
     width_pixels = 160
@@ -546,9 +546,13 @@ class ZmqRecvIF:
     def __init__(self, port):
         self.socket = context.socket(zmq.PULL)
         self.socket.bind("tcp://*:%s" % port)
+        self.flags = 0
 
     def recv_command(self):
-        return self.socket.recv_multipart(zmq.NOBLOCK)
+        return self.socket.recv_multipart(self.flags)
+
+    def set_blocking(self, block):
+        self.flags = 0 if block else zmq.NOBLOCK
 
 
 context = zmq.Context()
@@ -566,6 +570,7 @@ def main():
 
     print('Creating pipelines')
     cap = cv2.VideoCapture(0)
+    cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
     pipelines = {b"none" : None, \
     b"delivery" : Pipeline(GripPipelineRetro(), \
     extra_processing_delivery, cap),
@@ -581,6 +586,11 @@ def main():
             if zmq_command[0] == b"set_pipeline":
                 print("Set pipeline to {}".format(zmq_command[1].decode()))
                 pipeline = pipelines[zmq_command[1]]
+                if pipeline is not None:
+                    zmq_recv.set_blocking(False)
+                    pipeline.camera.grab() # Flush the 1 frame that could be in the buffer
+                else:
+                    zmq_recv.set_blocking(True) # Block while waiting for commands when not running a pipeline
         except zmq.ZMQError:
             # No command
             pass

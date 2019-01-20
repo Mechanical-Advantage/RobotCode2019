@@ -47,14 +47,14 @@ public class VisionData extends Subsystem {
   }
 
   public void periodic() {
-    if (currentPipeline != null) {
-      byte[] firstFrame = recieverSocket.recv(ZMQ.NOBLOCK);
-      if (firstFrame != null) {
-        List<byte[]> frames = new ArrayList<byte[]>();
-        frames.add(firstFrame);
-        while (recieverSocket.hasReceiveMore()) {
-          frames.add(recieverSocket.recv());
-        }
+    byte[] firstFrame = recieverSocket.recv(ZMQ.NOBLOCK);
+    if (firstFrame != null) {
+      List<byte[]> frames = new ArrayList<byte[]>();
+      frames.add(firstFrame);
+      while (recieverSocket.hasReceiveMore()) {
+        frames.add(recieverSocket.recv());
+      }
+      if (currentPipeline != null) {
         currentPipeline.processData(frames);
       }
     }
@@ -85,7 +85,9 @@ public class VisionData extends Subsystem {
    */
   public abstract class Pipeline {
     protected double lastTimestamp;
-    protected boolean currentDataHandled;
+    // This means that the 0s from before the first data point are "handled" 
+    // so the user of the pipeline does not try to process the invalid data
+    protected boolean currentDataHandled = true;
 
     public abstract String getName();
     public abstract byte[][] getSubscriptions();
