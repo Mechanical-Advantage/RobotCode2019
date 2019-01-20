@@ -26,6 +26,7 @@ import frc.robot.commands.DriveWithJoystick.JoystickMode;
 import frc.robot.commands.GenerateMotionProfiles;
 import frc.robot.subsystems.CameraSystem;
 import frc.robot.subsystems.DriveTrain;
+import frc.robot.subsystems.VisionData;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -37,7 +38,10 @@ import frc.robot.subsystems.DriveTrain;
 public class Robot extends TimedRobot {
   public static final RobotMap robotMap = new RobotMap();
 
-	public static final DriveTrain driveSubsystem = new DriveTrain();
+  public static ZMQ.Context ZMQContext = ZMQ.context(1);
+
+  public static final DriveTrain driveSubsystem = new DriveTrain();
+  public static final VisionData visionData = new VisionData();
 
   public static OI oi;
   public static final AHRS ahrs = new AHRS(SPI.Port.kMXP);
@@ -48,8 +52,6 @@ public class Robot extends TimedRobot {
   SendableChooser<Command> tuningModeChooser = new SendableChooser<>();
   SendableChooser<Command> autoChooser = new SendableChooser<>();
   public static SendableChooser<JoystickMode> joystickModeChooser;
-
-  public static ZMQ.Context ZMQContext = ZMQ.context(1);
 
   /**
    * This function is run when the robot is first started up and should be

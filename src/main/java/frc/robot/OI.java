@@ -16,6 +16,8 @@ import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import frc.robot.commands.SetCamera;
 import frc.robot.commands.SwitchGear;
 import frc.robot.commands.ToggleGear;
+import frc.robot.commands.VisionHatchPickup;
+import frc.robot.commands.VisionRecieverTest;
 import frc.robot.subsystems.DriveTrain.DriveGear;
 
 /**
@@ -73,6 +75,9 @@ public class OI {
 	private Button highGear = new JoystickButton(leftController, 5);
 	private Button lowGear = new JoystickButton(leftController, 4);
 
+	private Button hatchPickup = new JoystickButton(oiController1, 11);
+	private Button visionTest = new JoystickButton(oiController1, 1);
+
  	NetworkTable ledTable;
 	NetworkTableEntry ledEntry;
 
@@ -89,6 +94,9 @@ public class OI {
 		highGear.whenPressed(new SwitchGear(DriveGear.HIGH));
 		lowGear.whenPressed(new SwitchGear(DriveGear.LOW));
 		toggleGear.whenPressed(new ToggleGear());
+
+		hatchPickup.whileHeld(new VisionHatchPickup());
+		visionTest.whileHeld(new VisionRecieverTest());
   	}
 
  	 public double getLeftAxis() {
