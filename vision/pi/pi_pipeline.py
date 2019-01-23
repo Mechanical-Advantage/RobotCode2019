@@ -32,7 +32,7 @@ class GripPipelineRetro:
         self.resize_image_output = None
 
         self.__hsv_threshold_input = self.resize_image_output
-        self.__hsv_threshold_hue = [71.22302312645124, 79.86347419816887]
+        self.__hsv_threshold_hue = [71.22302312645124, 86]
         self.__hsv_threshold_saturation = [147.67983501120435, 255.0]
         self.__hsv_threshold_value = [192.62590584137456, 255.0]
 
@@ -50,7 +50,7 @@ class GripPipelineRetro:
         self.__filter_contours_max_width = 1000.0
         self.__filter_contours_min_height = 0.0
         self.__filter_contours_max_height = 1000.0
-        self.__filter_contours_solidity = [0, 100]
+        self.__filter_contours_solidity = [82, 100]
         self.__filter_contours_max_vertices = 1000000.0
         self.__filter_contours_min_vertices = 0.0
         self.__filter_contours_min_ratio = 0.0
@@ -407,14 +407,17 @@ def extra_processing_delivery(pipeline, zmq_pub):
     :return: None
     """
     # Camera constants
-    horiz_FOV = 0
-    vert_FOV = 0
+    horiz_FOV = 25.18 * 2
+    vert_FOV = 52.696
     height = 33.5
     vert_angle = 0 # How far down the camera is pointed
     horiz_angle = 0 # How far to the right the camera is pointed
     horiz_offset = 0 # How far to the right the camera is shifted
     width_pixels = 160
     height_pixels = 120
+
+    # Target constants
+    target_bottom_height = 26.17519
 
     # Calculated constants
     half_height_pixels = height_pixels / 2
@@ -423,21 +426,22 @@ def extra_processing_delivery(pipeline, zmq_pub):
     vert_tan = math.tan(math.radians(vert_FOV/2))
 
     def tilted_left(box):
-        return box[0][1] > box[3][1] # 1st point y > 4th point y
+        return box[0][1] < box[3][1] # 1st point y above 4th point y
     def tilted_right(box):
-        return box[3][1] > box[0][1] # 4th point y > 1st point y
+        return box[3][1] < box[0][1] # 4th point y above 1st point y
     def find_center(box1, box2):
         """
         Take a (corner coords, arearect) and return (x, y)
         """
-        return ((box1[1][0][0]+box2[1][0][0])/2, (box1[1][0][1]+box2[1][0][1])/2)
+        return (((box2[1][0][0]+box2[1][1][0]/2)+(box1[1][0][0]+box1[1][1][0]/2))/2, \
+        ((box2[1][0][1]+box2[1][1][1]/2)+(box1[1][0][1]+box1[1][1][1]/2)/2))
 
     VisionTarget = namedtuple("VisionTarget", ["left_box", "right_box", "center"])
 
-    boxes = [cv2.minAreaRect(contour) for contour in pipeline.filter_contours_output]
+    boxes = [cv2.minAreaRect(contour) for contour in pipeline.convex_hulls_output]
     # minAreaRect returns ((x, y), (width, height), angle), angle is -90 to 0
     # see https://stackoverflow.com/questions/15956124/minarearect-angles-unsure-about-the-angle-returned
-    boxes = [(cv2.boxPoints(box), box) for box in boxes] # Create (corner coords, arearect) tuples
+    boxes = [[cv2.boxPoints(box), box] for box in boxes] # Create (corner coords, arearect) tuples
 
     boxes.sort(key=lambda box: box[1][0][0]) # Sort by x position
     targets = []
@@ -452,27 +456,34 @@ def extra_processing_delivery(pipeline, zmq_pub):
         find_center(first, second)))
     # Sort coordinates within each box by their x position
     for target in targets:
-        target.left_box = sorted(target.left_box, lambda point: point[0])
-        target.right_box = sorted(target.right_box, lambda point: point[0])
+        target.left_box[0] = sorted(target.left_box[0], key=lambda point: point[0])
+        target.right_box[0] = sorted(target.right_box[0], key=lambda point: point[0])
     # Filter out target possibilities without correct tilts
-    targets = list(filter(lambda target: tilted_left(target.left_box) and \
-    tilted_right(target.right_box), targets))
+    targets = list(filter(lambda target: tilted_right(target.left_box[0]) and \
+    tilted_left(target.right_box[0]), targets))
     # Find target with lowest y value (closest to camera)
     targets.sort(key=lambda target: target.center[1], reverse=True)
     target = targets[0]
+
+    # Average the y of the lowest in frame (max y) corner coords
+    lower_center_y = (max(target.left_box[0], key=lambda point: point[1]) + \
+    max(target.right_box[0], key=lambda point: point[1]))/2
 
     angle_h_robot = (math.degrees(
                 math.atan(((target.center[0]-half_width_pixels)*horiz_tan
                 /half_width_pixels)))) - horiz_angle
     angle_v = (math.degrees(
-                math.atan(((target.center[1]-half_height_pixels)*-1*vert_tan
+                math.atan(((lower_center_y-half_height_pixels)*-1*vert_tan
                 /half_height_pixels)))) - vert_angle
-    distance = math.tan(math.radians(90-abs(angle_v))) * height
+    distance = abs(target_bottom_height-height) / math.tan(math.radians(abs(angle_v)))
     if horiz_offset != 0:
         horiz_distance = math.tan(math.radians(angle_h_robot)) * distance
         horiz_distance += horiz_offset
         angle_h_robot = math.degrees(math.atan(horiz_distance/distance))
     zmq_pub.zmqPubDoubles("distangle", 0.0, distance, angle_h_robot)
+    print("Distance:", distance)
+    print("Angle:", angle_h_robot)
+
 
 def extra_processing_hatch(pipeline, zmq_pub):
     # Camera constants

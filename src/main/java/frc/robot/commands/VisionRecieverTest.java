@@ -19,17 +19,17 @@ public class VisionRecieverTest extends Command {
   // Called just before this Command runs the first time
   @Override
   protected void initialize() {
-    Robot.visionData.setPipeline(Robot.visionData.hatch);
+    Robot.visionData.setPipeline(Robot.visionData.delivery);
   }
 
   // Called repeatedly when this Command is scheduled to run
   @Override
   protected void execute() {
-    if (!Robot.visionData.hatch.isDataHandled()) {
+    /*if (!Robot.visionData.hatch.isDataHandled()) {
       System.out.println("Dist: " + Robot.visionData.hatch.getDistance());
       System.out.println("Angle: " + Robot.visionData.hatch.getAngle());
       Robot.visionData.hatch.dataHandled();
-    }
+    }*/
   }
 
   // Make this return true when this Command no longer needs to run execute()
