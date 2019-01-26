@@ -33,24 +33,24 @@ class GripPipelineRetro:
 
         self.__hsv_threshold_input = self.resize_image_output
         self.__hsv_threshold_hue = [71.22302312645124, 86]
-        self.__hsv_threshold_saturation = [147.67983501120435, 255.0]
-        self.__hsv_threshold_value = [192.62590584137456, 255.0]
+        self.__hsv_threshold_saturation = [166, 255.0]
+        self.__hsv_threshold_value = [105, 197]
 
         self.hsv_threshold_output = None
 
         self.__find_contours_input = self.hsv_threshold_output
-        self.__find_contours_external_only = False
+        self.__find_contours_external_only = True
 
         self.find_contours_output = None
 
         self.__filter_contours_contours = self.find_contours_output
-        self.__filter_contours_min_area = 10.0
+        self.__filter_contours_min_area = 20.0
         self.__filter_contours_min_perimeter = 30.0
         self.__filter_contours_min_width = 0.0
         self.__filter_contours_max_width = 1000.0
         self.__filter_contours_min_height = 0.0
         self.__filter_contours_max_height = 1000.0
-        self.__filter_contours_solidity = [82, 100]
+        self.__filter_contours_solidity = [79, 100]
         self.__filter_contours_max_vertices = 1000000.0
         self.__filter_contours_min_vertices = 0.0
         self.__filter_contours_min_ratio = 0.0
@@ -410,11 +410,11 @@ def extra_processing_delivery(pipeline, zmq_pub):
     horiz_FOV = 25.18 * 2
     vert_FOV = 52.696
     height = 33.5
-    vert_angle = 0 # How far down the camera is pointed
+    vert_angle = 7 # How far down the camera is pointed
     horiz_angle = 0 # How far to the right the camera is pointed
     horiz_offset = 0 # How far to the right the camera is shifted
-    width_pixels = 160
-    height_pixels = 120
+    width_pixels = 320
+    height_pixels = 240
 
     # Target constants
     target_bottom_height = 26.17519
@@ -424,6 +424,7 @@ def extra_processing_delivery(pipeline, zmq_pub):
     half_width_pixels = width_pixels / 2
     horiz_tan = math.tan(math.radians(horiz_FOV/2))
     vert_tan = math.tan(math.radians(vert_FOV/2))
+    height_difference = abs(target_bottom_height-height)
 
     def tilted_left(box):
         return box[0][1] < box[3][1] # 1st point y above 4th point y
@@ -434,7 +435,7 @@ def extra_processing_delivery(pipeline, zmq_pub):
         Take a (corner coords, arearect) and return (x, y)
         """
         return (((box2[1][0][0]+box2[1][1][0]/2)+(box1[1][0][0]+box1[1][1][0]/2))/2, \
-        ((box2[1][0][1]+box2[1][1][1]/2)+(box1[1][0][1]+box1[1][1][1]/2)/2))
+        ((box2[1][0][1]+box2[1][1][1]/2)+(box1[1][0][1]+box1[1][1][1]/2))/2)
 
     VisionTarget = namedtuple("VisionTarget", ["left_box", "right_box", "center"])
 
@@ -462,12 +463,20 @@ def extra_processing_delivery(pipeline, zmq_pub):
     targets = list(filter(lambda target: tilted_right(target.left_box[0]) and \
     tilted_left(target.right_box[0]), targets))
     # Find target with lowest y value (closest to camera)
-    targets.sort(key=lambda target: target.center[1], reverse=True)
-    target = targets[0]
+    # targets.sort(key=lambda target: target.center[1], reverse=True)
+    # Pick target closest to center of frame (x)
+    targets.sort(key = lambda target: abs(target.center[0]-half_width_pixels))
+    print([abs(target.center[0]-half_width_pixels) for target in targets])
+    try:
+        target = targets[0]
+    except IndexError:
+        print("No valid targets found")
+        return
 
     # Average the y of the lowest in frame (max y) corner coords
-    lower_center_y = (max(target.left_box[0], key=lambda point: point[1]) + \
-    max(target.right_box[0], key=lambda point: point[1]))/2
+    # max returns (x,y) so get [1]
+    lower_center_y = (max(target.left_box[0], key=lambda point: point[1])[1] + \
+    max(target.right_box[0], key=lambda point: point[1])[1])/2
 
     angle_h_robot = (math.degrees(
                 math.atan(((target.center[0]-half_width_pixels)*horiz_tan
@@ -475,12 +484,13 @@ def extra_processing_delivery(pipeline, zmq_pub):
     angle_v = (math.degrees(
                 math.atan(((lower_center_y-half_height_pixels)*-1*vert_tan
                 /half_height_pixels)))) - vert_angle
-    distance = abs(target_bottom_height-height) / math.tan(math.radians(abs(angle_v)))
+    distance = height_difference / math.tan(math.radians(abs(angle_v)))
     if horiz_offset != 0:
         horiz_distance = math.tan(math.radians(angle_h_robot)) * distance
         horiz_distance += horiz_offset
         angle_h_robot = math.degrees(math.atan(horiz_distance/distance))
     zmq_pub.zmqPubDoubles("distangle", 0.0, distance, angle_h_robot)
+    print("Angle V:", angle_v)
     print("Distance:", distance)
     print("Angle:", angle_h_robot)
 
@@ -582,6 +592,12 @@ def main():
     print('Creating pipelines')
     cap = cv2.VideoCapture(0)
     cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+    # cap.set(cv2.CAP_PROP_BRIGHTNESS, 0)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
+    cap.set(cv2.CAP_PROP_FPS, 30)
+    cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25) # Disable auto exposure
+    cap.set(cv2.CAP_PROP_EXPOSURE, 0) # Minimum exposure
     pipelines = {b"none" : None, \
     b"delivery" : Pipeline(GripPipelineRetro(), \
     extra_processing_delivery, cap),

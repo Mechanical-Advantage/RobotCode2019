@@ -23,8 +23,8 @@ import frc.robot.Robot;
  */
 public class VisionData extends Subsystem {
 
-  private static final String commandAddress = "tcp://frcvision.local:5555";
-  private static final String senderAddress = "tcp://frcvision.local:5556";
+  private static final String commandAddress = "tcp://10.63.28.90:5555";
+  private static final String senderAddress = "tcp://10.63.28.90:5556";
 
   public HatchPipeline hatch = new HatchPipeline();
   public DeliveryTargetPipeline delivery = new DeliveryTargetPipeline();
