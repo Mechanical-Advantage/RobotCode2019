@@ -16,6 +16,11 @@ import com.kauailabs.navx.frc.AHRS;
 
 import org.zeromq.ZMQ;
 
+import badlog.lib.BadLog;
+import badlog.lib.DataInferMode;
+import frc.robot.util.LogUtil;
+
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.command.Command;
@@ -26,7 +31,6 @@ import frc.robot.commands.DriveWithJoystick.JoystickMode;
 import frc.robot.commands.GenerateMotionProfiles;
 import frc.robot.subsystems.CameraSystem;
 import frc.robot.subsystems.DriveTrain;
-
 /**
  * The VM is configured to automatically run this class, and to call the
  * functions corresponding to each mode, as described in the TimedRobot
@@ -51,6 +55,7 @@ public class Robot extends TimedRobot {
 
   public static ZMQ.Context ZMQContext = ZMQ.context(1);
 
+  BadLog log;
   /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
@@ -86,6 +91,20 @@ public class Robot extends TimedRobot {
       generateCommand.setRunWhenDisabled(true);
       generateCommand.start();
     }
+    //initiates BadLog, the tracking code that provides data from matches based on driver input.
+    String date = LogUtil.genSessionName(); //gets the current date for naming the .bag file
+    log = BadLog.init("/home/lvuser/"  + date + ".bag");
+
+      BadLog.createValue("Match_Number", "" + DriverStation.getInstance().getMatchNumber()); //example Value: key value-string pair known at init.
+      //Field
+      BadLog.createTopic("Match_Time", "s", () -> DriverStation.getInstance().getMatchTime()); //example Topic: constant stream of numeric data; what we're tracking
+      //Joysticks/Buttons
+      BadLog.createTopicSubscriber("Left_Joystick", BadLog.UNITLESS, DataInferMode.DEFAULT, "xaxis"); //example Subscriber: takes info from Topics
+      BadLog.createTopicSubscriber("Right_Joystick", BadLog.UNITLESS, DataInferMode.DEFAULT, "xaxis");
+      BadLog.createTopicSubscriber("Button_1", BadLog.UNITLESS, DataInferMode.DEFAULT, "");
+      BadLog.createTopicSubscriber("Button_2", BadLog.UNITLESS, DataInferMode.DEFAULT, "");
+      //Robot Stuff
+    log.finishInitialization();
   }
 
   /**
@@ -98,6 +117,17 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+    String lJoyInput = "" + Robot.oi.getLeftAxis();  //Badlog needs to recieve/send data constantly
+    String rJoyInput = "" + Robot.oi.getRightAxis();
+    String sniper = "" + Robot.oi.getSniperMode();
+    String canDrive = "" + Robot.oi.getDriveEnabled();
+    BadLog.publish("Left_Joystick", lJoyInput);
+    BadLog.publish("Right_Joystick", rJoyInput);
+    BadLog.publish("Button_1", sniper);
+    BadLog.publish("Button_2", canDrive);
+    log.updateTopics();
+    log.log();
+
   }
 
   /**

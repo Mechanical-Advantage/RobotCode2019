@@ -54,6 +54,8 @@ dependencies {
     nativeDesktopZip wpi.deps.vendor.jni(wpi.platforms.desktop)
     testCompile 'junit:junit:4.12'
     compile ':zmq'
+    compile ':badlog'
+    compile ':json-simple-1.1.1'
     nativeLib fileTree(dir: "lib", include: '/*.so')
 }
 
