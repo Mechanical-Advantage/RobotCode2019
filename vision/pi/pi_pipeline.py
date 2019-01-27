@@ -14,6 +14,7 @@ import time
 import zmq
 import struct
 from collections import namedtuple
+from code import interact
 
 # Retro reflective tape pipeline
 class GripPipelineRetro:
@@ -32,7 +33,7 @@ class GripPipelineRetro:
         self.resize_image_output = None
 
         self.__hsv_threshold_input = self.resize_image_output
-        self.__hsv_threshold_hue = [71.22302312645124, 86]
+        self.__hsv_threshold_hue = [71, 86]
         self.__hsv_threshold_saturation = [166, 255.0]
         self.__hsv_threshold_value = [105, 197]
 
@@ -407,10 +408,10 @@ def extra_processing_delivery(pipeline, zmq_pub):
     :return: None
     """
     # Camera constants
-    horiz_FOV = 25.18 * 2
-    vert_FOV = 52.696
+    horiz_FOV = 25.18 * 2 # ELP 57.64, LifeCam 25.18 * 2, XBox 41.97
+    vert_FOV = 52.696 # ELP 42.36, LifeCam 52.696, XBox 32.67
     height = 33.5
-    vert_angle = 7 # How far down the camera is pointed
+    vert_angle = 12 # How far down the camera is pointed
     horiz_angle = 0 # How far to the right the camera is pointed
     horiz_offset = 0 # How far to the right the camera is shifted
     width_pixels = 320
@@ -418,13 +419,17 @@ def extra_processing_delivery(pipeline, zmq_pub):
 
     # Target constants
     target_bottom_height = 26.17519
+    target_farthest_corner_height = 26.67595 # Height from ground to farthest left/right corners
+    target_half_width = 7.355315 # Distance from center of pair to edge of target
 
     # Calculated constants
     half_height_pixels = height_pixels / 2
     half_width_pixels = width_pixels / 2
     horiz_tan = math.tan(math.radians(horiz_FOV/2))
     vert_tan = math.tan(math.radians(vert_FOV/2))
-    height_difference = abs(target_bottom_height-height)
+    target_half_width_squared = target_half_width**2
+    target_width = target_half_width*2
+    target_width_squared = target_width**2
 
     def tilted_left(box):
         return box[0][1] < box[3][1] # 1st point y above 4th point y
@@ -436,6 +441,27 @@ def extra_processing_delivery(pipeline, zmq_pub):
         """
         return (((box2[1][0][0]+box2[1][1][0]/2)+(box1[1][0][0]+box1[1][1][0]/2))/2, \
         ((box2[1][0][1]+box2[1][1][1]/2)+(box1[1][0][1]+box1[1][1][1]/2))/2)
+    def calc_angle_h(pixel_x, distance):
+        """
+        Calculate angle to pixel x coordinate. Distance to point required in case horiz_offset != 0.
+        """
+        angle_h =  (math.degrees(
+                math.atan(((pixel_x-half_width_pixels)*horiz_tan
+                /half_width_pixels)))) - horiz_angle
+        if horiz_offset != 0:
+            horiz_distance = math.tan(math.radians(angle_h_robot)) * distance
+            horiz_distance += horiz_offset
+            angle_h = math.degrees(math.atan(horiz_distance/distance))
+        return angle_h
+    def calc_distance(pixel_y, point_height=target_bottom_height):
+        """
+        Calculate distance and angle v. Returns (distance, angle_v)
+        """
+        angle_v = (math.degrees(
+                math.atan(((pixel_y-half_height_pixels)*-1*vert_tan
+                /half_height_pixels)))) - vert_angle
+        distance = abs(point_height-height) / math.tan(math.radians(abs(angle_v)))
+        return (distance, angle_v)
 
     VisionTarget = namedtuple("VisionTarget", ["left_box", "right_box", "center"])
 
@@ -464,7 +490,7 @@ def extra_processing_delivery(pipeline, zmq_pub):
     tilted_left(target.right_box[0]), targets))
     # Find target with lowest y value (closest to camera)
     # targets.sort(key=lambda target: target.center[1], reverse=True)
-    # Pick target closest to center of frame (x)
+    # Pick target closest to center of frame (x), may need to use angle_h if off center camera
     targets.sort(key = lambda target: abs(target.center[0]-half_width_pixels))
     print([abs(target.center[0]-half_width_pixels) for target in targets])
     try:
@@ -478,21 +504,39 @@ def extra_processing_delivery(pipeline, zmq_pub):
     lower_center_y = (max(target.left_box[0], key=lambda point: point[1])[1] + \
     max(target.right_box[0], key=lambda point: point[1])[1])/2
 
-    angle_h_robot = (math.degrees(
-                math.atan(((target.center[0]-half_width_pixels)*horiz_tan
-                /half_width_pixels)))) - horiz_angle
-    angle_v = (math.degrees(
-                math.atan(((lower_center_y-half_height_pixels)*-1*vert_tan
-                /half_height_pixels)))) - vert_angle
-    distance = height_difference / math.tan(math.radians(abs(angle_v)))
-    if horiz_offset != 0:
-        horiz_distance = math.tan(math.radians(angle_h_robot)) * distance
-        horiz_distance += horiz_offset
-        angle_h_robot = math.degrees(math.atan(horiz_distance/distance))
-    zmq_pub.zmqPubDoubles("distangle", 0.0, distance, angle_h_robot)
+    distance, angle_v = calc_distance(lower_center_y)
+    angle_h_robot = calc_angle_h(target.center[0], distance)
     print("Angle V:", angle_v)
     print("Distance:", distance)
     print("Angle:", angle_h_robot)
+    # Find target angle from robot perspective to each edge of the pair
+    distance_right_edge = calc_distance(target.right_box[0][3][1], \
+    target_farthest_corner_height)[0]
+    distance_left_edge = calc_distance(target.left_box[0][0][1], \
+    target_farthest_corner_height)[0]
+    print("Y L:", target.left_box[0][0][1])
+    print("Y R:", target.right_box[0][3][1])
+    print("Distance L:", distance_left_edge)
+    print("Distance R:", distance_right_edge)
+    # Law of cosines: https://www.mathsisfun.com/algebra/trig-cosine-law.html
+    # Trying to find B here using cos(B) = (c^2+a^2-b^2)/2ca
+    # Where b is distance_right_edge, a is target_center_to_edge, c is distance_left_edge
+    target_angle_left_cos = (distance_left_edge**2 + target_width_squared - distance_right_edge**2) / \
+    (2*distance_left_edge*target_width)
+    # Swap which is b and c to find angle to right corner
+    target_angle_right_cos = (distance_right_edge**2 + target_width_squared - distance_left_edge**2) / \
+    (2*distance_right_edge*target_width)
+    # Angle directly to center from left edge
+    target_angle_cos = (distance**2 + target_half_width_squared - distance_left_edge**2) / \
+    (2*distance*target_half_width)
+    # interact(local=locals())
+    target_angle = math.acos(target_angle_cos)
+    target_angle_left = math.acos(target_angle_left_cos)
+    target_angle_right = math.acos(target_angle_right_cos)
+    print("Target Angle:", math.degrees(target_angle))
+    print("Target Angle L:", math.degrees(target_angle_left))
+    print("Target Angle R:", math.degrees(target_angle_right))
+    zmq_pub.zmqPubDoubles("distangle", 0.0, distance, angle_h_robot, target_angle)
 
 
 def extra_processing_hatch(pipeline, zmq_pub):
@@ -597,7 +641,8 @@ def main():
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
     cap.set(cv2.CAP_PROP_FPS, 30)
     cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25) # Disable auto exposure
-    cap.set(cv2.CAP_PROP_EXPOSURE, 0) # Minimum exposure
+    cap.set(cv2.CAP_PROP_EXPOSURE, 0) # Minimum exposure, should be 0 on LifeCam/XBox and 0.003 on new ELP
+    # cap.set(cv2.CAP_PROP_SHARPNESS, 0) # Removes haloing on ELP, not needed on LifeCam or XBox
     pipelines = {b"none" : None, \
     b"delivery" : Pipeline(GripPipelineRetro(), \
     extra_processing_delivery, cap),
