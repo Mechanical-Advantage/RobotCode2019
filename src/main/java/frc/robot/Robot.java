@@ -123,16 +123,16 @@ public class Robot extends TimedRobot {
     
     double sniper;
     if(Robot.oi.getSniperMode()){
-      sniper = 1;
+      sniper = 1.0;
     } else {
-      sniper = 0;
+      sniper = 0.0;
     }
 
     double canDrive;
     if(Robot.oi.getDriveEnabled()){
-      canDrive = 1;
+      canDrive = 1.0;
     } else {
-      canDrive = 0;
+      canDrive = 0.0;
     }
 
     BadLog.publish("Left_Joystick", lJoyInput);
