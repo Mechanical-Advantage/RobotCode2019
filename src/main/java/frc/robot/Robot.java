@@ -94,12 +94,13 @@ public class Robot extends TimedRobot {
     //initiates BadLog, the tracking code that provides data from matches based on driver input.
     String date = LogUtil.genSessionName(); //gets the current date for naming the .bag file
     log = BadLog.init("/home/lvuser/"  + date + ".bag");
+    //log = BadLog.init("/home/lvuser/"  + "test" + ".bag"); //temperary to avoid file spam with above
 
-      BadLog.createValue("Match_Number", "" + DriverStation.getInstance().getMatchNumber()); //example Value: key value-string pair known at init.
+      BadLog.createValue("Match_Number", "" + DriverStation.getInstance().getMatchNumber()); //example Value: key value-string pair known at init. Aka one time check.
       //Field
       BadLog.createTopic("Match_Time", "s", () -> DriverStation.getInstance().getMatchTime()); //example Topic: constant stream of numeric data; what we're tracking
       //Joysticks/Buttons
-      BadLog.createTopicSubscriber("Left_Joystick", BadLog.UNITLESS, DataInferMode.DEFAULT, "xaxis"); //example Subscriber: takes info from Topics
+      BadLog.createTopicSubscriber("Left_Joystick", BadLog.UNITLESS, DataInferMode.DEFAULT, "xaxis"); //example Subscriber: like a topic, but easier for tracking station input.
       BadLog.createTopicSubscriber("Right_Joystick", BadLog.UNITLESS, DataInferMode.DEFAULT, "xaxis");
       BadLog.createTopicSubscriber("Button_1", BadLog.UNITLESS, DataInferMode.DEFAULT, "");
       BadLog.createTopicSubscriber("Button_2", BadLog.UNITLESS, DataInferMode.DEFAULT, "");
@@ -119,13 +120,27 @@ public class Robot extends TimedRobot {
   public void robotPeriodic() {
     String lJoyInput = "" + Robot.oi.getLeftAxis();  //Badlog needs to recieve/send data constantly
     String rJoyInput = "" + Robot.oi.getRightAxis();
-    String sniper = "" + Robot.oi.getSniperMode();
-    String canDrive = "" + Robot.oi.getDriveEnabled();
+    
+    double sniper;
+    if(Robot.oi.getSniperMode()){
+      sniper = 1;
+    } else {
+      sniper = 0;
+    }
+
+    double canDrive;
+    if(Robot.oi.getDriveEnabled()){
+      canDrive = 1;
+    } else {
+      canDrive = 0;
+    }
+
     BadLog.publish("Left_Joystick", lJoyInput);
     BadLog.publish("Right_Joystick", rJoyInput);
     BadLog.publish("Button_1", sniper);
     BadLog.publish("Button_2", canDrive);
     log.updateTopics();
+    //set a delay here
     log.log();
 
   }
