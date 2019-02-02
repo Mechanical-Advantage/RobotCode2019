@@ -33,9 +33,9 @@ class GripPipelineRetro:
         self.resize_image_output = None
 
         self.__hsv_threshold_input = self.resize_image_output
-        self.__hsv_threshold_hue = [71, 86]
-        self.__hsv_threshold_saturation = [166, 255.0]
-        self.__hsv_threshold_value = [105, 197]
+        self.__hsv_threshold_hue = [57, 78]
+        self.__hsv_threshold_saturation = [164, 255.0]
+        self.__hsv_threshold_value = [112, 255]
 
         self.hsv_threshold_output = None
 
@@ -401,6 +401,32 @@ class GripPipelineHatch:
 BlurType = Enum('BlurType', 'Box_Blur Gaussian_Blur Median_Filter Bilateral_Filter')
 
 
+class DeliveryUndistorter:
+    camera_matrix = numpy.array([[3.1788942578748737e+02, 0, 160],
+    [0, 3.1788942578748737e+02, 120], [0, 0, 1]])
+    dist_coeffs = numpy.array([-4.1836983489089313e-01, 
+    3.4929300225135756e-01, 0, 0, 4.5534003180269961e-01])
+    image_size = (320, 240)
+    map_type = cv2.CV_32FC1 # CV_32FC1 or CV_16SC2
+    alpha = 1
+    interpolation = cv2.INTER_LINEAR
+
+    def __init__(self):
+        new_camera_matrix, validROI = \
+        cv2.getOptimalNewCameraMatrix(self.camera_matrix, 
+                                      self.dist_coeffs, 
+                                      self.image_size, 
+                                      self.alpha)
+        print("Delivery All-Good ROI:", validROI)
+        self.map1, self.map2 = \
+            cv2.initUndistortRectifyMap(self.camera_matrix, 
+                                        self.dist_coeffs, numpy.array([]), 
+                                        new_camera_matrix,
+                                        self.image_size, self.map_type)
+
+    def undistort(self, frame):
+        return cv2.remap(frame, self.map1, self.map2, self.interpolation)
+
 def extra_processing_delivery(pipeline, zmq_pub):
     """
     Performs extra processing on the pipeline's outputs and publishes data
@@ -408,10 +434,10 @@ def extra_processing_delivery(pipeline, zmq_pub):
     :return: None
     """
     # Camera constants
-    horiz_FOV = 25.18 * 2 # ELP 57.64, LifeCam 25.18 * 2, XBox 41.97
-    vert_FOV = 52.696 # ELP 42.36, LifeCam 52.696, XBox 32.67
-    height = 33.5
-    vert_angle = 12 # How far down the camera is pointed
+    horiz_FOV = 57.64 # ELP 57.64, LifeCam 25.18 * 2, XBox 41.97
+    vert_FOV = 42.36 # ELP 42.36, LifeCam 52.696, XBox 32.67
+    height = 36
+    vert_angle = 21 # How far down the camera is pointed
     horiz_angle = 0 # How far to the right the camera is pointed
     horiz_offset = 0 # How far to the right the camera is shifted
     width_pixels = 320
@@ -625,7 +651,7 @@ def main():
     zmq_publish_port = "5556"
     zmq_recv_port = "5555"
     Pipeline = namedtuple("Pipeline", ["GRIP_pipeline", "processing_func", \
-    "camera"])
+    "camera", "undistorter"])
 
     print('Initializing ZMQ Publisher')
     zmq_pub = ZmqPubIF(zmq_publish_port)
@@ -641,13 +667,13 @@ def main():
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
     cap.set(cv2.CAP_PROP_FPS, 30)
     cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25) # Disable auto exposure
-    cap.set(cv2.CAP_PROP_EXPOSURE, 0) # Minimum exposure, should be 0 on LifeCam/XBox and 0.003 on new ELP
-    # cap.set(cv2.CAP_PROP_SHARPNESS, 0) # Removes haloing on ELP, not needed on LifeCam or XBox
+    cap.set(cv2.CAP_PROP_EXPOSURE, 0.003) # Minimum exposure, should be 0 on LifeCam/XBox and 0.003 on new ELP
+    cap.set(cv2.CAP_PROP_SHARPNESS, 0) # Removes haloing on ELP, not needed on LifeCam or XBox
     pipelines = {b"none" : None, \
     b"delivery" : Pipeline(GripPipelineRetro(), \
-    extra_processing_delivery, cap),
+    extra_processing_delivery, cap, DeliveryUndistorter()),
     b"hatch" : Pipeline(GripPipelineHatch(), \
-    extra_processing_hatch, cap)}
+    extra_processing_hatch, cap, None)}
     pipeline = None
 
     print('Running pipeline')
@@ -668,6 +694,11 @@ def main():
             pass
         if pipeline is not None:
             have_frame, frame = pipeline.camera.read()
+            try:
+                frame = pipeline.undistorter.undistort(frame)
+            except AttributeError:
+                # There is no undistorter
+                pass
             if have_frame:
                 pipeline.GRIP_pipeline.process(frame)
                 pipeline.processing_func(pipeline.GRIP_pipeline, zmq_pub)

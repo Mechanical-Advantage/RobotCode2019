@@ -160,6 +160,10 @@ bin/
 # End of https://www.gitignore.io/api/c++,java,linux,macos,gradle,windows,visualstudiocode
 
 
+# Python bytecode
+*.pyc
+*/__pycache__
+
 # /lib is supposed to have these files
 !/lib/*.so
 !/lib/*.jar
