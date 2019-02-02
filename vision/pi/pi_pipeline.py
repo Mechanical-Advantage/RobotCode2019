@@ -34,7 +34,7 @@ class GripPipelineRetro:
 
         self.__hsv_threshold_input = self.resize_image_output
         self.__hsv_threshold_hue = [57, 78]
-        self.__hsv_threshold_saturation = [164, 255.0]
+        self.__hsv_threshold_saturation = [15, 255.0]
         self.__hsv_threshold_value = [112, 255]
 
         self.hsv_threshold_output = None
@@ -427,7 +427,7 @@ class DeliveryUndistorter:
     def undistort(self, frame):
         return cv2.remap(frame, self.map1, self.map2, self.interpolation)
 
-def extra_processing_delivery(pipeline, zmq_pub):
+class ExtraProcessingDelivery:
     """
     Performs extra processing on the pipeline's outputs and publishes data
     :param pipeline: the pipeline that just processed an image
@@ -457,115 +457,172 @@ def extra_processing_delivery(pipeline, zmq_pub):
     target_width = target_half_width*2
     target_width_squared = target_width**2
 
-    def tilted_left(box):
-        return box[0][1] < box[3][1] # 1st point y above 4th point y
-    def tilted_right(box):
-        return box[3][1] < box[0][1] # 4th point y above 1st point y
-    def find_center(box1, box2):
+    VisionTarget = namedtuple("VisionTarget", ["left_box", "right_box", "center"])
+    TapeBox = namedtuple("TapeBox", ["left", "bottom", "top", "right"])
+
+    tape_height = 5.82557 # Vertical, farthest bottom to farthest top
+    top_bottom_height = 4.82405 # Vertical, left to right height
+    tape_width = 3.31339 # Horizontal, farthest left to farthest right
+    target_width = 14.7106299 # Horizontal, farthest left on left tape to farthest right on right target
+    top_target_width = 11.8637795 # Horizontal, left top to right top distance
+    bottom_target_width = 10.8468504 # Horizontal, left bottom to right bottom distance
+    model_points = numpy.array([(0, -target_width/2, -top_bottom_height/2), # Left Left
+                                (0, -bottom_target_width/2, -tape_height/2), # Left Bottom
+                                (0, -top_target_width/2, tape_height/2), # Left Top
+                                (0, -4, top_bottom_height/2), # Left Right
+                                (0, 4, top_bottom_height/2), # Right Left
+                                (0, bottom_target_width/2, -tape_height/2), # Right Bottom
+                                (0, top_target_width/2, tape_height/2), # Right Top
+                                (0, target_width/2, -top_bottom_height/2)]) # Right Right
+
+
+    def __init__(self, zmq_pub, undistorter):
+        self._zmq_pub = zmq_pub
+        self._undistorter = undistorter
+
+    def _tilted_left(self, box):
+        return box.left[1] < box.right[1] # 1st point y above 4th point y
+    def _tilted_right(self, box):
+        return box.right[1] < box.left[1] # 4th point y above 1st point y
+    def _find_center(self, box1, box2):
         """
         Take a (corner coords, arearect) and return (x, y)
         """
         return (((box2[1][0][0]+box2[1][1][0]/2)+(box1[1][0][0]+box1[1][1][0]/2))/2, \
         ((box2[1][0][1]+box2[1][1][1]/2)+(box1[1][0][1]+box1[1][1][1]/2))/2)
-    def calc_angle_h(pixel_x, distance):
+    def _calc_angle_h(self, pixel_x, distance):
         """
-        Calculate angle to pixel x coordinate. Distance to point required in case horiz_offset != 0.
+        Calculate angle to half_height_pixelspixel x coordinate. Distance to point required in case horiz_offset != 0.
         """
         angle_h =  (math.degrees(
-                math.atan(((pixel_x-half_width_pixels)*horiz_tan
-                /half_width_pixels)))) - horiz_angle
-        if horiz_offset != 0:
-            horiz_distance = math.tan(math.radians(angle_h_robot)) * distance
-            horiz_distance += horiz_offset
+                math.atan(((pixel_x-self.half_width_pixels)*self.horiz_tan
+                /self.half_width_pixels)))) - self.horiz_angle
+        if self.horiz_offset != 0:
+            horiz_distance = math.tan(math.radians(angle_h)) * distance
+            horiz_distance += self.horiz_offset
             angle_h = math.degrees(math.atan(horiz_distance/distance))
         return angle_h
-    def calc_distance(pixel_y, point_height=target_bottom_height):
+    def _calc_distance(self, pixel_y, point_height=target_bottom_height):
         """
         Calculate distance and angle v. Returns (distance, angle_v)
         """
         angle_v = (math.degrees(
-                math.atan(((pixel_y-half_height_pixels)*-1*vert_tan
-                /half_height_pixels)))) - vert_angle
-        distance = abs(point_height-height) / math.tan(math.radians(abs(angle_v)))
+                math.atan(((pixel_y-self.half_height_pixels)*-1*self.vert_tan
+                /self.half_height_pixels)))) - self.vert_angle
+        distance = abs(point_height-self.height) / math.tan(math.radians(abs(angle_v)))
         return (distance, angle_v)
 
-    VisionTarget = namedtuple("VisionTarget", ["left_box", "right_box", "center"])
+    def _target_calc(self, target):
+        # Average the y of the lowest in frame (max y) corner coords
+        # max returns (x,y) so get [1]
+        lower_center_y = (max(target.left_box[0], key=lambda point: point[1])[1] + \
+        max(target.right_box[0], key=lambda point: point[1])[1])/2
 
-    boxes = [cv2.minAreaRect(contour) for contour in pipeline.convex_hulls_output]
-    # minAreaRect returns ((x, y), (width, height), angle), angle is -90 to 0
-    # see https://stackoverflow.com/questions/15956124/minarearect-angles-unsure-about-the-angle-returned
-    boxes = [[cv2.boxPoints(box), box] for box in boxes] # Create (corner coords, arearect) tuples
+        distance, angle_v = self._calc_distance(lower_center_y)
+        angle_h_robot = self._calc_angle_h(target.center[0], distance)
+        print("Angle V:", angle_v)
+        print("Distance:", distance)
+        print("Angle:", angle_h_robot)
+        # Find target angle from robot perspective to each edge of the pair
+        distance_right_edge = self._calc_distance(target.right_box[0][3][1], \
+        self.target_farthest_corner_height)[0]
+        distance_left_edge = self._calc_distance(target.left_box[0][0][1], \
+        self.target_farthest_corner_height)[0]
+        print("Y L:", target.left_box[0][0][1])
+        print("Y R:", target.right_box[0][3][1])
+        print("Distance L:", distance_left_edge)
+        print("Distance R:", distance_right_edge)
+        # Law of cosines: https://www.mathsisfun.com/algebra/trig-cosine-law.html
+        # Trying to find B here using cos(B) = (c^2+a^2-b^2)/2ca
+        # Where b is distance_right_edge, a is target_center_to_edge, c is distance_left_edge
+        target_angle_left_cos = (distance_left_edge**2 + self.target_width_squared - distance_right_edge**2) / \
+        (2*distance_left_edge*self.target_width)
+        # Swap which is b and c to find angle to right corner
+        target_angle_right_cos = (distance_right_edge**2 + self.target_width_squared - distance_left_edge**2) / \
+        (2*distance_right_edge*self.target_width)
+        # Angle directly to center from left edge
+        target_angle_cos = (distance**2 + self.target_half_width_squared - distance_left_edge**2) / \
+        (2*distance*self.target_half_width)
+        # interact(local=locals())
+        target_angle = math.acos(target_angle_cos)
+        target_angle_left = math.acos(target_angle_left_cos)
+        target_angle_right = math.acos(target_angle_right_cos)
+        print("Target Angle:", math.degrees(target_angle))
+        print("Target Angle L:", math.degrees(target_angle_left))
+        print("Target Angle R:", math.degrees(target_angle_right))
+        self._zmq_pub.zmqPubDoubles("distangle", 0.0, distance, angle_h_robot, target_angle)
 
-    boxes.sort(key=lambda box: box[1][0][0]) # Sort by x position
-    targets = []
-    # Iterate over pairs of boxes (saving to VisionTargets) and find centers
-    for first, second in zip(boxes[::2], boxes[1::2]):
-        targets.append(VisionTarget(first, second, center = \
-        find_center(first, second)))
-    # Other set of combinations
-    # Not all combinations will be valid, that is expected
-    for first, second in zip(boxes[1::2], boxes[2::2]):
-        targets.append(VisionTarget(first, second, center = \
-        find_center(first, second)))
-    # Sort coordinates within each box by their x position
-    for target in targets:
-        target.left_box[0] = sorted(target.left_box[0], key=lambda point: point[0])
-        target.right_box[0] = sorted(target.right_box[0], key=lambda point: point[0])
-    # Filter out target possibilities without correct tilts
-    targets = list(filter(lambda target: tilted_right(target.left_box[0]) and \
-    tilted_left(target.right_box[0]), targets))
-    # Find target with lowest y value (closest to camera)
-    # targets.sort(key=lambda target: target.center[1], reverse=True)
-    # Pick target closest to center of frame (x), may need to use angle_h if off center camera
-    targets.sort(key = lambda target: abs(target.center[0]-half_width_pixels))
-    print([abs(target.center[0]-half_width_pixels) for target in targets])
-    try:
-        target = targets[0]
-    except IndexError:
-        print("No valid targets found")
-        return
+    def _target_calc_solvepnp(self, target):
+        image_points = numpy.array([target.left_box[0].left,
+                                    target.left_box[0].bottom,
+                                    target.left_box[0].top,
+                                    target.left_box[0].right,
+                                    target.right_box[0].left,
+                                    target.right_box[0].bottom,
+                                    target.right_box[0].top,
+                                    target.right_box[0].right])
+        success, rotation_vector, translation_vector = \
+            cv2.solvePnP(self.model_points, image_points, 
+                        self._undistorter.camera_matrix, 
+                        self._undistorter.dist_coeffs, 
+                        flags=cv2.SOLVEPNP_ITERATIVE)
+        if success:
+            print(translation_vector)
+        else:
+            print("SolvePnP failed")
 
-    # Average the y of the lowest in frame (max y) corner coords
-    # max returns (x,y) so get [1]
-    lower_center_y = (max(target.left_box[0], key=lambda point: point[1])[1] + \
-    max(target.right_box[0], key=lambda point: point[1])[1])/2
+    def process(self, pipeline):
+        boxes = [cv2.minAreaRect(contour) for contour in pipeline.convex_hulls_output]
+        # minAreaRect returns ((x, y), (width, height), angle), angle is -90 to 0
+        # see https://stackoverflow.com/questions/15956124/minarearect-angles-unsure-about-the-angle-returned
+        boxes = [[cv2.boxPoints(box), box] for box in boxes] # Create (corner coords, arearect) tuples
 
-    distance, angle_v = calc_distance(lower_center_y)
-    angle_h_robot = calc_angle_h(target.center[0], distance)
-    print("Angle V:", angle_v)
-    print("Distance:", distance)
-    print("Angle:", angle_h_robot)
-    # Find target angle from robot perspective to each edge of the pair
-    distance_right_edge = calc_distance(target.right_box[0][3][1], \
-    target_farthest_corner_height)[0]
-    distance_left_edge = calc_distance(target.left_box[0][0][1], \
-    target_farthest_corner_height)[0]
-    print("Y L:", target.left_box[0][0][1])
-    print("Y R:", target.right_box[0][3][1])
-    print("Distance L:", distance_left_edge)
-    print("Distance R:", distance_right_edge)
-    # Law of cosines: https://www.mathsisfun.com/algebra/trig-cosine-law.html
-    # Trying to find B here using cos(B) = (c^2+a^2-b^2)/2ca
-    # Where b is distance_right_edge, a is target_center_to_edge, c is distance_left_edge
-    target_angle_left_cos = (distance_left_edge**2 + target_width_squared - distance_right_edge**2) / \
-    (2*distance_left_edge*target_width)
-    # Swap which is b and c to find angle to right corner
-    target_angle_right_cos = (distance_right_edge**2 + target_width_squared - distance_left_edge**2) / \
-    (2*distance_right_edge*target_width)
-    # Angle directly to center from left edge
-    target_angle_cos = (distance**2 + target_half_width_squared - distance_left_edge**2) / \
-    (2*distance*target_half_width)
-    # interact(local=locals())
-    target_angle = math.acos(target_angle_cos)
-    target_angle_left = math.acos(target_angle_left_cos)
-    target_angle_right = math.acos(target_angle_right_cos)
-    print("Target Angle:", math.degrees(target_angle))
-    print("Target Angle L:", math.degrees(target_angle_left))
-    print("Target Angle R:", math.degrees(target_angle_right))
-    zmq_pub.zmqPubDoubles("distangle", 0.0, distance, angle_h_robot, target_angle)
+        boxes.sort(key=lambda box: box[1][0][0]) # Sort by x position
+        targets = []
+        # Iterate over pairs of boxes (saving to VisionTargets) and find centers
+        for first, second in zip(boxes[::2], boxes[1::2]):
+            targets.append(self.VisionTarget(first, second, center = \
+            self._find_center(first, second)))
+        # Other set of combinations
+        # Not all combinations will be valid, that is expected
+        for first, second in zip(boxes[1::2], boxes[2::2]):
+            targets.append(self.VisionTarget(first, second, center = \
+            self._find_center(first, second)))
+        # Sort coordinates within each box to [left, bottom, top, right] in a TapeBox
+        for target in targets:
+            new_box = [-1, -1, -1, -1]
+            sorted_box = sorted(target.left_box[0], key=lambda point: point[0]) # X pos sort
+            new_box[0] = sorted_box[0] # Left
+            new_box[3] = sorted_box[3] # Right
+            sorted_box = sorted(target.left_box[0], key=lambda point: point[1]) # Y pos sort
+            new_box[1] = sorted_box[3] # Bottom
+            new_box[2] = sorted_box[0] # Top
+            target.left_box[0] = self.TapeBox(*new_box)
+            new_box = [-1, -1, -1, -1]
+            sorted_box = sorted(target.right_box[0], key=lambda point: point[0]) # X pos sort
+            new_box[0] = sorted_box[0] # Left
+            new_box[3] = sorted_box[3] # Right
+            sorted_box = sorted(target.right_box[0], key=lambda point: point[1]) # Y pos sort
+            new_box[1] = sorted_box[3] # Bottom
+            new_box[2] = sorted_box[0] # Top
+            target.right_box[0] = self.TapeBox(*new_box)
+        # Filter out target possibilities without correct tilts
+        targets = list(filter(lambda target: self._tilted_right(target.left_box[0]) and \
+        self._tilted_left(target.right_box[0]), targets))
+        # Find target with lowest y value (closest to camera)
+        # targets.sort(key=lambda target: target.center[1], reverse=True)
+        # Pick target closest to center of frame (x), may need to use angle_h if off center camera
+        targets.sort(key = lambda target: abs(target.center[0]-self.half_width_pixels))
+        print([abs(target.center[0]-self.half_width_pixels) for target in targets])
+        try:
+            target = targets[0]
+        except IndexError:
+            print("No valid targets found")
+            return
+        self._target_calc_solvepnp(target)
 
 
-def extra_processing_hatch(pipeline, zmq_pub):
+class ExtraProcessingHatch:
     # Camera constants
     horiz_FOV = 25.18 * 2
     vert_FOV = 52.696
@@ -582,29 +639,33 @@ def extra_processing_hatch(pipeline, zmq_pub):
     horiz_tan = math.tan(math.radians(horiz_FOV/2))
     vert_tan = math.tan(math.radians(vert_FOV/2))
 
-    contours = pipeline.filter_contours_output
-    contours.sort(key=cv2.contourArea) # Find largest area contour
-    try:
-        x, y, w, h = cv2.boundingRect(contours[0])
-        center = ((x+(w/2)), (y+(h/2)));
+    def __init__(self, zmq_pub):
+        self._zmq_pub = zmq_pub
 
-        angle_h = (math.degrees(
-                    math.atan(((center[0]-half_width_pixels)*horiz_tan
-                    /half_width_pixels)))) - horiz_angle
-        angle_v = (math.degrees(
-                    math.atan(((center[1]-half_height_pixels)*-1*vert_tan
-                    /half_height_pixels)))) - vert_angle
-        distance = math.tan(math.radians(90-abs(angle_v))) * height
-        if horiz_offset != 0:
-            horiz_distance = math.tan(math.radians(angle_h)) * distance
-            horiz_distance += horiz_offset
-            angle_h = math.degrees(math.atan(horiz_distance/distance))
-        zmq_pub.zmqPubDoubles("distangle", 0.0, distance, angle_h)
-        print("Distance:", distance)
-        print("Angle:", angle_h)
-    except IndexError:
-        # No contours found
-        print("Ran pipeline but no contours")
+    def process(self, pipeline):
+        contours = pipeline.filter_contours_output
+        contours.sort(key=cv2.contourArea) # Find largest area contour
+        try:
+            x, y, w, h = cv2.boundingRect(contours[0])
+            center = ((x+(w/2)), (y+(h/2)));
+
+            angle_h = (math.degrees(
+                        math.atan(((center[0]-self.half_width_pixels)*self.horiz_tan
+                        /self.half_width_pixels)))) - self.horiz_angle
+            angle_v = (math.degrees(
+                        math.atan(((center[1]-self.half_height_pixels)*-1*self.vert_tan
+                        /self.half_height_pixels)))) - self.vert_angle
+            distance = math.tan(math.radians(90-abs(angle_v))) * self.height
+            if self.horiz_offset != 0:
+                horiz_distance = math.tan(math.radians(angle_h)) * distance
+                horiz_distance += self.horiz_offset
+                angle_h = math.degrees(math.atan(horiz_distance/distance))
+            self._zmq_pub.zmqPubDoubles("distangle", 0.0, distance, angle_h)
+            print("Distance:", distance)
+            print("Angle:", angle_h)
+        except IndexError:
+            # No contours found
+            print("Ran pipeline but no contours")
 
 
 def getTimeMS():
@@ -650,7 +711,7 @@ context = zmq.Context()
 def main():
     zmq_publish_port = "5556"
     zmq_recv_port = "5555"
-    Pipeline = namedtuple("Pipeline", ["GRIP_pipeline", "processing_func", \
+    Pipeline = namedtuple("Pipeline", ["GRIP_pipeline", "processing_class", \
     "camera", "undistorter"])
 
     print('Initializing ZMQ Publisher')
@@ -667,13 +728,14 @@ def main():
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
     cap.set(cv2.CAP_PROP_FPS, 30)
     cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25) # Disable auto exposure
-    cap.set(cv2.CAP_PROP_EXPOSURE, 0.003) # Minimum exposure, should be 0 on LifeCam/XBox and 0.003 on new ELP
+    cap.set(cv2.CAP_PROP_EXPOSURE, 0.002) # Minimum exposure, should be 0 on LifeCam/XBox and 0.003 on new ELP
     cap.set(cv2.CAP_PROP_SHARPNESS, 0) # Removes haloing on ELP, not needed on LifeCam or XBox
+    delivery_undistorter = DeliveryUndistorter()
     pipelines = {b"none" : None, \
     b"delivery" : Pipeline(GripPipelineRetro(), \
-    extra_processing_delivery, cap, DeliveryUndistorter()),
+    ExtraProcessingDelivery(zmq_pub, delivery_undistorter), cap, delivery_undistorter),
     b"hatch" : Pipeline(GripPipelineHatch(), \
-    extra_processing_hatch, cap, None)}
+    ExtraProcessingHatch(zmq_pub), cap, None)}
     pipeline = None
 
     print('Running pipeline')
@@ -689,19 +751,27 @@ def main():
                     pipeline.camera.grab() # Flush the 1 frame that could be in the buffer
                 else:
                     zmq_recv.set_blocking(True) # Block while waiting for commands when not running a pipeline
+            elif zmq_command[0] == b"write_frame":
+                if pipeline is not None:
+                    cv2.imwrite("capture.jpg", pipeline.camera.read()[1])
+                    print("Saved frame to capture.jpg")
+                else:
+                    cv2.imwrite("capture.jpg", cap.read()[1])
+                    print("Saved frame to capture.jpg using default camera")
         except zmq.ZMQError:
             # No command
             pass
         if pipeline is not None:
             have_frame, frame = pipeline.camera.read()
             try:
-                frame = pipeline.undistorter.undistort(frame)
+                # frame = pipeline.undistorter.undistort(frame)
+                pass
             except AttributeError:
                 # There is no undistorter
                 pass
             if have_frame:
                 pipeline.GRIP_pipeline.process(frame)
-                pipeline.processing_func(pipeline.GRIP_pipeline, zmq_pub)
+                pipeline.processing_class.process(pipeline.GRIP_pipeline)
 
     print('Capture closed')
 

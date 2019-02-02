@@ -13,9 +13,12 @@
     <grip:Camera>
       <property name="deviceNumber" value="1"/>
     </grip:Camera>
-    <grip:ImageFile>
-      <property name="path" value="C:\Users\elliot\Desktop\frame.jpg"/>
-    </grip:ImageFile>
+    <grip:MultiImageFile>
+      <property name="numImages" value="2"/>
+      <property name="path[0]" value="C:\Users\elliot\git\RobotCode2019\vision\images\ELP\distorted1-dist42.5.jpg"/>
+      <property name="path[1]" value="C:\Users\elliot\git\RobotCode2019\vision\images\ELP\twopair.jpg"/>
+      <property name="index" value="1"/>
+    </grip:MultiImageFile>
   </sources>
   <steps>
     <grip:Step name="Resize Image">
@@ -36,18 +39,18 @@
       <grip:Input step="1" socket="1">
         <value>
           <double>56.654677802710225</double>
-          <double>78.34832268301736</double>
+          <double>75.31801965271434</double>
         </value>
       </grip:Input>
       <grip:Input step="1" socket="2">
         <value>
-          <double>163.73199328458566</double>
+          <double>14.676237888902213</double>
           <double>255.0</double>
         </value>
       </grip:Input>
       <grip:Input step="1" socket="3">
         <value>
-          <double>112.3651144744681</double>
+          <double>107.77878353921629</double>
           <double>255.0</double>
         </value>
       </grip:Input>
@@ -107,20 +110,20 @@
   </steps>
   <connections>
     <grip:Connection>
-      <grip:Output step="2" socket="0" previewed="true"/>
-      <grip:Input step="3" socket="0"/>
+      <grip:Output source="3" socket="0" previewed="true"/>
+      <grip:Input step="1" socket="0"/>
     </grip:Connection>
     <grip:Connection>
-      <grip:Output step="1" socket="0" previewed="true"/>
-      <grip:Input step="2" socket="0"/>
+      <grip:Output step="2" socket="0" previewed="true"/>
+      <grip:Input step="3" socket="0"/>
     </grip:Connection>
     <grip:Connection>
       <grip:Output source="2" socket="0" previewed="false"/>
       <grip:Input step="0" socket="0"/>
     </grip:Connection>
     <grip:Connection>
-      <grip:Output source="3" socket="0" previewed="true"/>
-      <grip:Input step="1" socket="0"/>
+      <grip:Output step="1" socket="0" previewed="true"/>
+      <grip:Input step="2" socket="0"/>
     </grip:Connection>
     <grip:Connection>
       <grip:Output step="3" socket="0" previewed="false"/>
