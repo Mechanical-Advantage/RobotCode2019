@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.commands.DriveWithJoystick.JoystickMode;
 import frc.robot.commands.GenerateMotionProfiles;
+import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.CameraSystem;
 import frc.robot.subsystems.DriveTrain;
 import frc.robot.subsystems.VisionData;
@@ -41,6 +42,7 @@ public class Robot extends TimedRobot {
   public static ZMQ.Context ZMQContext = ZMQ.context(1);
 
   public static final DriveTrain driveSubsystem = new DriveTrain();
+  public static final Arm arm = new Arm();
   public static final VisionData visionData = new VisionData();
 
   public static OI oi;
@@ -188,8 +190,8 @@ public class Robot extends TimedRobot {
 		StringJoiner sj = new StringJoiner(":");
 		for (double item : data) {
 			sj.add(String.valueOf(item));
-		}
-		return sj.toString();
+    }
+    return sj.toString();
 	}
 	
 	public static double map(double x, double in_min, double in_max, double out_min, double out_max)

@@ -44,6 +44,17 @@ public class RobotMap {
 	public static int maxVelocityHigh;
   public static int minVelocityHigh;
   public static int maxAcceleration;
+  public static int armElbowLeft;
+  public static int armElbowRight;
+  public static int armElbowLimitSwitch;
+  public static int armWrist;
+  public static int armTelescope;
+  public static int armShoulder1Extend;
+  public static int armShoulder1Retract;
+  public static int armShoulder1PCM;
+  public static int armShoulder2Extend;
+  public static int armShoulder2Retract;
+  public static int armShoulder2PCM;
   
   public RobotMap() {
 		switch (robot) {
