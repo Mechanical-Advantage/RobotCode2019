@@ -9,7 +9,7 @@ import java.util.Locale;
 public class LogUtil {
 
 	// RFC2822
-	private static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("EEE', 'dd' 'MMM' 'yyyy' 'HH:mm:ss' 'Z",
+	private static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("EEE', 'dd' 'MMM' 'yyyy' 'HH_mm_ss' 'Z",//creates the date from the device.
 			Locale.US);
 
 	public static String getTimestamp() {

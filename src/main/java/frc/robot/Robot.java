@@ -19,6 +19,8 @@ import org.zeromq.ZMQ;
 import badlog.lib.BadLog;
 import badlog.lib.DataInferMode;
 import frc.robot.util.LogUtil;
+import java.lang.Object;
+import java.io.File;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.SPI;
@@ -93,20 +95,7 @@ public class Robot extends TimedRobot {
       generateCommand.start();
     }
     //initiates BadLog (and helpful time measurements), the tracking code that provides data from matches based on driver input.
-    String date = LogUtil.genSessionName(); //gets the current date for naming the .bag file
-    lastLog = System.currentTimeMillis();
-    log = BadLog.init("/home/lvuser/"  + date + ".bag");
-
-      BadLog.createValue("Match_Number", "" + DriverStation.getInstance().getMatchNumber()); //example Value: key value-string pair known at init. Aka one time check.
-      //Field
-      BadLog.createTopic("Match_Time", "s", () -> DriverStation.getInstance().getMatchTime()); //example Topic: constant stream of numeric data; what we're tracking
-      //Joysticks/Buttons
-      BadLog.createTopicSubscriber("Left_Joystick", BadLog.UNITLESS, DataInferMode.DEFAULT, ""); //example Subscriber: like a topic, but easier for tracking station input.
-      BadLog.createTopicSubscriber("Right_Joystick", BadLog.UNITLESS, DataInferMode.DEFAULT, "");
-      BadLog.createTopicSubscriber("Button_1", BadLog.UNITLESS, DataInferMode.DEFAULT, "");
-      BadLog.createTopicSubscriber("Button_2", BadLog.UNITLESS, DataInferMode.DEFAULT, "");
-      //Robot Stuff
-    log.finishInitialization();
+    BadlogInit();
   }
 
   /**
@@ -240,5 +229,29 @@ public class Robot extends TimedRobot {
 	public static double map(double x, double in_min, double in_max, double out_min, double out_max)
 	{
 	  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
-	}
+  }
+  
+  private void BadlogInit(){
+    File usb = new File("/media/sda1");
+    String date = LogUtil.genSessionName(); //gets the current date for naming the .bag file
+    lastLog = System.currentTimeMillis();
+    if(usb.exists() && usb.isDirectory() && usb.canRead() && usb.canWrite()){//conditional to check wheter ot not there is a usb to save to. default usb dir: /media/sda1. useful info on https://docs.oracle.com/javase/7/docs/api/java/io/File.html
+      log = BadLog.init("/media/sda1/"  + date + ".bag");
+      System.out.println("Sent to USB");
+
+    } else{
+      log = BadLog.init("/home/lvuser/Telemetry"  + date + ".bag");
+      System.out.println("Sent to Roborio");
+    }
+      //Field
+      BadLog.createValue("Match_Number", "" + DriverStation.getInstance().getMatchNumber()); //example Value: key value-string pair known at init. Aka one time check.
+      BadLog.createTopic("Match_Time", "s", () -> DriverStation.getInstance().getMatchTime()); //example Topic: constant stream of numeric data; what we're tracking
+      //Joysticks/Buttons
+      BadLog.createTopicSubscriber("Left_Joystick", BadLog.UNITLESS, DataInferMode.DEFAULT, ""); //example Subscriber: like a topic, but easier for tracking station input.
+      BadLog.createTopicSubscriber("Right_Joystick", BadLog.UNITLESS, DataInferMode.DEFAULT, "");
+      BadLog.createTopicSubscriber("Button_1", BadLog.UNITLESS, DataInferMode.DEFAULT, "");
+      BadLog.createTopicSubscriber("Button_2", BadLog.UNITLESS, DataInferMode.DEFAULT, "");
+      //Robot Stuff
+    log.finishInitialization();
+  }
 }
