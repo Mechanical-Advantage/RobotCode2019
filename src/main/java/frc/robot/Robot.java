@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.commands.DriveWithJoystick.JoystickMode;
+import frc.robot.commands.FusedHeadingTest;
 import frc.robot.commands.GenerateMotionProfiles;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.CameraSystem;
@@ -52,7 +53,7 @@ public class Robot extends TimedRobot {
 
   Command autonomousCommand;
   SendableChooser<Command> tuningModeChooser = new SendableChooser<>();
-  SendableChooser<Command> autoChooser = new SendableChooser<>();
+  SendableChooser<AutoMode> autoChooser = new SendableChooser<>();
   public static SendableChooser<JoystickMode> joystickModeChooser;
 
   /**
@@ -69,7 +70,9 @@ public class Robot extends TimedRobot {
     joystickModeChooser.addOption("Split Arcade", JoystickMode.SplitArcade);
 
     if (RobotMap.tuningMode) {
+      tuningModeChooser.addOption("Fused Heading Test", new FusedHeadingTest());
       SmartDashboard.putData("Tuning Auto Mode", tuningModeChooser);
+      autoChooser.addOption("Tuning Auto", AutoMode.TUNING);
     }
 
     SmartDashboard.putData("Auto mode", autoChooser);
@@ -135,7 +138,10 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     Robot.driveSubsystem.enableBrakeMode(true);
-    autonomousCommand = autoChooser.getSelected();
+    switch (autoChooser.getSelected()) {
+      case TUNING:
+        autonomousCommand = tuningModeChooser.getSelected();
+    }
 
     /*
      * String autoSelected = SmartDashboard.getString("Auto Selector",
@@ -183,6 +189,10 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void testPeriodic() {
+  }
+
+  private enum AutoMode {
+    TUNING;
   }
 
   // Utility functions
