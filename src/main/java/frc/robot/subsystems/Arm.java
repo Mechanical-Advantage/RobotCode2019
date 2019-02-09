@@ -222,17 +222,19 @@ public class Arm extends Subsystem {
 
   @Override
   public void periodic() {
-    if (RobotMap.tuningMode) {
-      initPID();
+    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+      if (RobotMap.tuningMode) {
+        initPID();
+      }
+      if (!elbowZeroed && getElbowLimitSwitch()) {
+        setElbowZeroed();
+      }
+      if (!wristZeroed && getWristLimitSwitch()) {
+        setWristZeroed();
+      }
+      elbowCurrentSchoolZone.applyPosition(getElbowPosition());
+      wristSchoolZone.applyPosition(getRelativeWristPosition());
     }
-    if (!elbowZeroed && getElbowLimitSwitch()) {
-      setElbowZeroed();
-    }
-    if (!wristZeroed && getWristLimitSwitch()) {
-      setWristZeroed();
-    }
-    elbowCurrentSchoolZone.applyPosition(getElbowPosition());
-    wristSchoolZone.applyPosition(getRelativeWristPosition());
   }
 
   @Override
@@ -257,13 +259,15 @@ public class Arm extends Subsystem {
   }
 
   public void setShoulderRaised(boolean raise) {
-    shoulderRaised = raise;
-    shoulder1.set(raise ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
-    shoulder2.set(raise ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
-    // May need to update setpoints for other parts here
-    updateElbowSetpoint();
-    updateElbowLimits();
-    updateWristSetpoint();
+    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+      shoulderRaised = raise;
+      shoulder1.set(raise ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
+      shoulder2.set(raise ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
+      // May need to update setpoints for other parts here
+      updateElbowSetpoint();
+      updateElbowLimits();
+      updateWristSetpoint();
+    }
   }
   public boolean isShoulderRaised() {
     return shoulderRaised;
@@ -291,19 +295,23 @@ public class Arm extends Subsystem {
    * @return The elbow position in degrees from floor
    */
   public double getElbowPosition() {
-    double position = (elbowLeft.getSelectedSensorPosition() + 
-      elbowRight.getSelectedSensorPosition()) / 2; // Average position
-    position = position / elbowReduction / elbowTicksPerRotation * 360; // Convert to degrees
-    if (shoulderRaised) {
-      position = position - elbowOffsetLow;
+    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+      double position = (elbowLeft.getSelectedSensorPosition() + 
+        elbowRight.getSelectedSensorPosition()) / 2; // Average position
+      position = position / elbowReduction / elbowTicksPerRotation * 360; // Convert to degrees
+      if (shoulderRaised) {
+        position = position - elbowOffsetLow;
+      } else {
+        position = position - elbowOffsetHigh;
+      }
+      return position;
     } else {
-      position = position - elbowOffsetHigh;
+      return 0;
     }
-    return position;
   }
 
   private void updateElbowSetpoint() {
-    if (elbowZeroed) {
+    if (elbowZeroed && (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2)) {
       double setpoint;
       if (shoulderRaised) {
         setpoint = targetElbowPosition + elbowOffsetHigh;
@@ -317,45 +325,53 @@ public class Arm extends Subsystem {
   }
 
   private void updateElbowLimits() {
-    double lowerLimit;
-    double upperLimit;
-    if (shoulderRaised) {
-      lowerLimit = elbowLowerLimitHigh;
-      upperLimit = elbowUpperLimitHigh;
-      elbowCurrentSchoolZone = elbowHighSchoolZone;
-    } else {
-      lowerLimit = elbowLowerLimitLow;
-      upperLimit = elbowUpperLimitLow;
-      elbowCurrentSchoolZone = elbowLowSchoolZone;
+    if(RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+      double lowerLimit;
+      double upperLimit;
+      if (shoulderRaised) {
+        lowerLimit = elbowLowerLimitHigh;
+        upperLimit = elbowUpperLimitHigh;
+        elbowCurrentSchoolZone = elbowHighSchoolZone;
+      } else {
+        lowerLimit = elbowLowerLimitLow;
+        upperLimit = elbowUpperLimitLow;
+        elbowCurrentSchoolZone = elbowLowSchoolZone;
+      }
+      // Ensure school zones are applied if needed
+      elbowCurrentSchoolZone.applyPosition(getElbowPosition());
+      elbowCurrentSchoolZone.setControllerLimits();
+      int finalLowerLimit = (int)Math.round(lowerLimit / 360 * elbowTicksPerRotation 
+        * elbowReduction);
+      int finalUpperLimit = (int)Math.round(upperLimit / 360 * elbowTicksPerRotation 
+        * elbowReduction);
+      elbowLeft.configForwardSoftLimitThreshold(finalUpperLimit);
+      elbowLeft.configReverseSoftLimitThreshold(finalLowerLimit);
+      elbowRight.configForwardSoftLimitThreshold(finalUpperLimit);
+      elbowRight.configReverseSoftLimitThreshold(finalLowerLimit);
     }
-    // Ensure school zones are applied if needed
-    elbowCurrentSchoolZone.applyPosition(getElbowPosition());
-    elbowCurrentSchoolZone.setControllerLimits();
-    int finalLowerLimit = (int)Math.round(lowerLimit / 360 * elbowTicksPerRotation 
-      * elbowReduction);
-    int finalUpperLimit = (int)Math.round(upperLimit / 360 * elbowTicksPerRotation 
-      * elbowReduction);
-    elbowLeft.configForwardSoftLimitThreshold(finalUpperLimit);
-    elbowLeft.configReverseSoftLimitThreshold(finalLowerLimit);
-    elbowRight.configForwardSoftLimitThreshold(finalUpperLimit);
-    elbowRight.configReverseSoftLimitThreshold(finalLowerLimit);
   }
 
   /**
    * Set the elbow to be zeroed
    */
   private void setElbowZeroed() {
-    int newPosition = (int)Math.round(elbowZeroedPosition / 360 * elbowTicksPerRotation 
-      * elbowReduction);
-    elbowLeft.setSelectedSensorPosition(newPosition);
-    elbowRight.setSelectedSensorPosition(newPosition);
-    elbowZeroed = true;
-    updateElbowSetpoint();
-    // May affect other parts
+    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+      int newPosition = (int)Math.round(elbowZeroedPosition / 360 * elbowTicksPerRotation 
+        * elbowReduction);
+      elbowLeft.setSelectedSensorPosition(newPosition);
+      elbowRight.setSelectedSensorPosition(newPosition);
+      elbowZeroed = true;
+      updateElbowSetpoint();
+      // May affect other parts
+    }
   }
 
   public boolean getElbowLimitSwitch() {
-    return elbowLimitSwitch.get();
+    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+      return elbowLimitSwitch.get();
+    } else {
+      return false;
+    }
   }
 
   public void setWristPosition(WristPosition position) {
@@ -371,15 +387,23 @@ public class Arm extends Subsystem {
    * @return The wrist position in degrees
    */
   public double getWristPosition() {
-    return convertWristTicksToPosition(wrist.getSelectedSensorPosition(0), true, getElbowPosition());
+    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+      return convertWristTicksToPosition(wrist.getSelectedSensorPosition(0), true, getElbowPosition());
+    } else {
+      return 0;
+    }
   }
   /**
    * Get the wrist position relative to the forearm
    * @return The wrist position in degrees
    */
   public double getRelativeWristPosition() {
-    // Don't apply offset here
-    return convertWristTicksToRelativePosition(wrist.getSelectedSensorPosition(0));
+    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+      // Don't apply offset here
+      return convertWristTicksToRelativePosition(wrist.getSelectedSensorPosition(0));
+    } else {
+      return 0;
+    }
   }
 
   private double convertWristTicksToRelativePosition(int position) {
@@ -416,7 +440,7 @@ public class Arm extends Subsystem {
   }
 
   private void updateWristSetpoint() {
-    if (wristZeroed) {
+    if (wristZeroed && RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
       int setpoint = convertWristPositionToTicks(targetWristPosition.getAngle(), 
         true, getElbowTargetPosition());
       // Make sure aux PID does nothing with DemandType.Neutral
@@ -425,10 +449,12 @@ public class Arm extends Subsystem {
   }
 
   private void setWristZeroed() {
-    wrist.setSelectedSensorPosition(convertWristRelativePositionToTicks(
-      wristZeroedPosition));
-    wristZeroed = true;
-    updateWristSetpoint();
+    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+      wrist.setSelectedSensorPosition(convertWristRelativePositionToTicks(
+        wristZeroedPosition));
+      wristZeroed = true;
+      updateWristSetpoint();
+    }
   }
 
   public boolean getWristLimitSwitch() {
