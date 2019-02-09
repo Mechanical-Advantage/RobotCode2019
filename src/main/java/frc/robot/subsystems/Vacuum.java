@@ -70,6 +70,12 @@ public class Vacuum extends Subsystem {
     relayChannel[channelID].setState(subChannelID, isOn);
   }
 
+  public boolean getSolenoid(VacSolenoid id) {
+    int channelID = VacSolenoid.getChannelID(id);
+    int subChannelID = VacSolenoid.getSubChannelID(id);  
+
+  }
+  
   private static class RelayChannel {
     private Relay relay;
     private boolean[] state;
@@ -77,6 +83,12 @@ public class Vacuum extends Subsystem {
     public RelayChannel(int channel) {
       relay = new Relay(channel, Relay.Direction.kBoth);
       state = new boolean[] { false, false };
+    }
+
+    public boolean getState(){
+
+      // still need to add code in here
+      
     }
 
     public void setState(int subChannel, boolean newState) {
