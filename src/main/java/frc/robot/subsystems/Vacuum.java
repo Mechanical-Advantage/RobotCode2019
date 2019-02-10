@@ -17,7 +17,7 @@ import edu.wpi.first.wpilibj.command.Subsystem;
 public class Vacuum extends Subsystem {
   public enum VacSolenoid {
     PUMP_TAIL, PUMP_TANK, TAIL_TANK, PICKUP, ATMOSPHERE;
-    public static int getChannelID(VacSolenoid id) {
+    private static int getChannelID(VacSolenoid id) {
       int channelID;
       switch (id) {
       case PUMP_TAIL:
@@ -37,7 +37,7 @@ public class Vacuum extends Subsystem {
       return (channelID);
     }
 
-    public static int getSubChannelID(VacSolenoid id) {
+    private static int getSubChannelID(VacSolenoid id) {
       int subChannelID;
       switch (id) {
       case PUMP_TAIL:
@@ -56,7 +56,7 @@ public class Vacuum extends Subsystem {
     }
   }
 
-  private RelayChannel[] relayChannel;
+  private RelayChannel[] relayChannel = new RelayChannel[3];
 
   public Vacuum() {
     for (int i = 0; i <= 2; i++) {
@@ -72,10 +72,10 @@ public class Vacuum extends Subsystem {
 
   public boolean getSolenoid(VacSolenoid id) {
     int channelID = VacSolenoid.getChannelID(id);
-    int subChannelID = VacSolenoid.getSubChannelID(id);  
-
+    int subChannelID = VacSolenoid.getSubChannelID(id);
+    return relayChannel[channelID].getState(subChannelID);
   }
-  
+
   private static class RelayChannel {
     private Relay relay;
     private boolean[] state;
@@ -85,14 +85,13 @@ public class Vacuum extends Subsystem {
       state = new boolean[] { false, false };
     }
 
-    public boolean getState(){
-
-      // still need to add code in here
-      
+    public boolean getState(int subChannel) {
+      return state[subChannel];
     }
 
     public void setState(int subChannel, boolean newState) {
       state[subChannel] = newState;
+      applyState();
     }
 
     private void applyState() {

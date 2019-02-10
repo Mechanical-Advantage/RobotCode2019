@@ -24,24 +24,24 @@ public class RobotMap {
   // public static int rangefinderPort = 1;
   // public static int rangefinderModule = 1;
   public static int rightMaster;
-	public static int rightSlave;
-	public static int rightSlave2;
-	public static int leftMaster;
-	public static int leftSlave;
-	public static int leftSlave2;
-	public static int leftDriveGearSolenoid1;
-	public static int leftDriveGearSolenoid2;
-	public static int leftDriveGearPCM;
-	public static int rightDriveGearSolenoid1;
-	public static int rightDriveGearSolenoid2;
-	public static int rightDriveGearPCM;
-	public static double robotWidth;
-	public static double robotLength;
-	public static final boolean tuningMode = true;
-	public static final RobotType robot = RobotType.ORIGINAL_ROBOT_2018;
-	public static int minVelocityLow; // lower values will be treated as this value, RPM
-	public static int maxVelocityLow; // maximum velocity when sticks are fully forward (value of 1), RPM
-	public static int maxVelocityHigh;
+  public static int rightSlave;
+  public static int rightSlave2;
+  public static int leftMaster;
+  public static int leftSlave;
+  public static int leftSlave2;
+  public static int leftDriveGearSolenoid1;
+  public static int leftDriveGearSolenoid2;
+  public static int leftDriveGearPCM;
+  public static int rightDriveGearSolenoid1;
+  public static int rightDriveGearSolenoid2;
+  public static int rightDriveGearPCM;
+  public static double robotWidth;
+  public static double robotLength;
+  public static final boolean tuningMode = true;
+  public static final RobotType robot = RobotType.EVERYBOT_2019;
+  public static int minVelocityLow; // lower values will be treated as this value, RPM
+  public static int maxVelocityLow; // maximum velocity when sticks are fully forward (value of 1), RPM
+  public static int maxVelocityHigh;
   public static int minVelocityHigh;
   public static int maxAcceleration;
   public static int armElbowLeft;
@@ -55,71 +55,67 @@ public class RobotMap {
   public static int armShoulder2Extend;
   public static int armShoulder2Retract;
   public static int armShoulder2PCM;
-  
+
   public RobotMap() {
-		switch (robot) {
-      case ROBOT_2017:
-        rightMaster = 14;
-        rightSlave = 13;
-        rightSlave2 = 12;
-        leftMaster = 15;
-        leftSlave = 0;
-        leftSlave2 = 1;
-        maxVelocityLow = 3284; // 525 RPM
-        minVelocityLow = 135; // 20 RPM
-        maxAcceleration = 300;
-        robotLength = 31.5;
-        robotWidth = 29.25;
-        break;
-      case ORIGINAL_ROBOT_2018:
-        rightMaster = 2;
-        rightSlave = 0;
-        leftMaster = 12;
-        leftSlave = 13;
-        leftDriveGearSolenoid1 = 0;
-        leftDriveGearSolenoid2 = 1;
-        leftDriveGearPCM = 1;
-        rightDriveGearSolenoid1 = 2;
-        rightDriveGearSolenoid2 = 3;
-        rightDriveGearPCM = 0;
-        maxVelocityHigh = 7056; // ~230 in/s
-        maxVelocityLow = 3252; // 106 in/s
-        minVelocityLow = 100;
-        minVelocityHigh = 400;
-        robotLength = 32+6;
-        robotWidth = 27+6;
-        break;
-      case EVERYBOT_2019:
-        rightMaster = 0;
-        leftMaster = 3;
-        rightSlave = 1;
-        leftSlave = 2;
-        maxVelocityLow = 950; // 950 native units per 100ms
-        minVelocityLow = 40; // 40 native units per 100ms
-        maxAcceleration = 300;
-        break;
-      case ROBOT_2019:
-      case ROBOT_2019_2:
-        rightMaster = 0;
-        rightSlave = 0;
-        rightSlave2 = 0;
-        leftMaster = 0;
-        leftSlave = 0;
-        leftSlave2 = 0;
-        maxVelocityLow = 0;
-        minVelocityLow = 0;
-        maxAcceleration = 0;
-        break;
-      default:
-        break;
-		}
-	}
+    switch (robot) {
+    case ROBOT_2017:
+      rightMaster = 14;
+      rightSlave = 13;
+      rightSlave2 = 12;
+      leftMaster = 15;
+      leftSlave = 0;
+      leftSlave2 = 1;
+      maxVelocityLow = 3284; // 525 RPM
+      minVelocityLow = 135; // 20 RPM
+      maxAcceleration = 300;
+      robotLength = 31.5;
+      robotWidth = 29.25;
+      break;
+    case ORIGINAL_ROBOT_2018:
+      rightMaster = 2;
+      rightSlave = 0;
+      leftMaster = 12;
+      leftSlave = 13;
+      leftDriveGearSolenoid1 = 0;
+      leftDriveGearSolenoid2 = 1;
+      leftDriveGearPCM = 1;
+      rightDriveGearSolenoid1 = 2;
+      rightDriveGearSolenoid2 = 3;
+      rightDriveGearPCM = 0;
+      maxVelocityHigh = 7056; // ~230 in/s
+      maxVelocityLow = 3252; // 106 in/s
+      minVelocityLow = 100;
+      minVelocityHigh = 400;
+      robotLength = 32 + 6;
+      robotWidth = 27 + 6;
+      break;
+    case EVERYBOT_2019:
+      rightMaster = 0;
+      leftMaster = 15;
+      rightSlave = 1;
+      leftSlave = 14;
+      maxVelocityLow = 950; // 950 native units per 100ms
+      minVelocityLow = 40; // 40 native units per 100ms
+      maxAcceleration = 300;
+      break;
+    case ROBOT_2019:
+    case ROBOT_2019_2:
+      rightMaster = 0;
+      rightSlave = 0;
+      rightSlave2 = 0;
+      leftMaster = 0;
+      leftSlave = 0;
+      leftSlave2 = 0;
+      maxVelocityLow = 0;
+      minVelocityLow = 0;
+      maxAcceleration = 0;
+      break;
+    default:
+      break;
+    }
+  }
 
   public enum RobotType {
-    ROBOT_2019,
-    ROBOT_2019_2,
-		ORIGINAL_ROBOT_2018,
-		EVERYBOT_2019,
-		ROBOT_2017
-	}
+    ROBOT_2019, ROBOT_2019_2, ORIGINAL_ROBOT_2018, EVERYBOT_2019, ROBOT_2017
+  }
 }
