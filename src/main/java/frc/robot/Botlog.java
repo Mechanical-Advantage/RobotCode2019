@@ -10,17 +10,19 @@ package frc.robot;
 import badlog.lib.BadLog;
 import badlog.lib.DataInferMode;
 import frc.robot.util.LogUtil;
-import java.lang.Object;
 import java.io.File;
+import java.util.*;
 
 import edu.wpi.first.wpilibj.DriverStation;
 
-public class Botlog  {//wip class tp do all things Badlog. extends BadLog
+public class Botlog{// Wrapper Class to do all things  Badlog.
    
-    private BadLog log;
-    private long lastLog;
+    private static BadLog log;
+    private static long lastLog;
+    private List<String> topicSubNames;
+    private List<String> topicSubSource;
 
-    public void createBadlog(){
+    public static void createBadlog(){//creates the Badlog
       File usb = new File("/media/sda1");
       String date = LogUtil.genSessionName(); //gets the current date for naming the .bag file
       lastLog = System.currentTimeMillis();
@@ -44,33 +46,49 @@ public class Botlog  {//wip class tp do all things Badlog. extends BadLog
       log.finishInitialization();
     }
 
-    public void runPeriodic(){
-        String lJoyInput = "" + Robot.oi.getLeftAxis();  //Badlog needs to recieve/send data constantly
-    String rJoyInput = "" + Robot.oi.getRightAxis();
-  
-    double sniper;
-    if(Robot.oi.getSniperMode()){
-      sniper = 1.0;
-    } else {
-      sniper = 0.0;
+    public static void runPeriodic(){//caled in robot.periodic often, runs slower when disabled.
+      String lJoyInput = "" + Robot.oi.getLeftAxis();
+      String rJoyInput = "" + Robot.oi.getRightAxis();
+    
+      double sniper;
+      if(Robot.oi.getSniperMode()){
+        sniper = 1.0;
+      } else {
+        sniper = 0.0;
+      }
+
+      double canDrive;
+      if(Robot.oi.getDriveEnabled()){
+        canDrive = 1.0;
+      } else {
+        canDrive = 0.0;
+      }
+      long currentMS = System.currentTimeMillis();
+      if (!DriverStation.getInstance().isDisabled() || (currentMS - lastLog) >= 250) {//makes code run slower when disabled; 1/4 the rate when enabled.
+        lastLog = currentMS;
+        BadLog.publish("Left_Joystick", lJoyInput);
+        BadLog.publish("Right_Joystick", rJoyInput);
+        BadLog.publish("Button_1", sniper);
+        BadLog.publish("Button_2", canDrive);
+        log.updateTopics(); 
+        log.log();
+      }
     }
 
-    double canDrive;
-    if(Robot.oi.getDriveEnabled()){
-      canDrive = 1.0;
-    } else {
-      canDrive = 0.0;
+    public void makeValue(String name, String unit){
+
     }
-    long currentMS = System.currentTimeMillis();
-    if (!DriverStation.getInstance().isDisabled() || (currentMS - lastLog) >= 250) {
-			lastLog = currentMS;
-      BadLog.publish("Left_Joystick", lJoyInput);
-      BadLog.publish("Right_Joystick", rJoyInput);
-      BadLog.publish("Button_1", sniper);
-      BadLog.publish("Button_2", canDrive);
-      log.updateTopics(); 
-      log.log();
+
+    public void makeTopic(String name, String unit){
+      
     }
+
+    public void makeTopicSub(String name, Double recording, String unit){
+      
+    }
+
+    public void makeTopicSub(String name, Boolean recording, String unit){
+      
     }
 
 }
