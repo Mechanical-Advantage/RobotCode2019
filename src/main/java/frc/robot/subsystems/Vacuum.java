@@ -42,11 +42,11 @@ public class Vacuum extends Subsystem {
       switch (id) {
       case PUMP_TAIL:
       case PUMP_TANK:
-      case ATMOSPHERE:
         subChannelID = 0;
         break;
       case PICKUP:
       case TAIL_TANK:
+      case ATMOSPHERE:
         subChannelID = 1;
         break;
       default:
@@ -83,6 +83,7 @@ public class Vacuum extends Subsystem {
     public RelayChannel(int channel) {
       relay = new Relay(channel, Relay.Direction.kBoth);
       state = new boolean[] { false, false };
+      applyState();
     }
 
     public boolean getState(int subChannel) {
@@ -97,6 +98,16 @@ public class Vacuum extends Subsystem {
     private void applyState() {
       Relay.Value output;
 
+      // The relay boards used on 2019 robot are active low inputs.
+      // This means a Rio output that is set to ON turns the relay OFF,
+      // and a Rio output that is set to OFF turns the relay ON.
+      // The Rio sets all outputs to OFF in its power up (reset) state, which
+      // means that all relays will be ON at power up/prior to robot enable.
+      // As a consequence, the actuators (solenoids) - which are assumed to
+      // be normally-closed - should be wired to the "Normally Closed" relay
+      // terminals, which will actually be open in the reset state. When
+      // the Rio output is set ON, the relay turns OFF, the normally
+      // closed contacts are again closed, the solenoid is powered and opens.
       if (state[0] == false) {
         if (state[1] == false) {
           output = Value.kOff;

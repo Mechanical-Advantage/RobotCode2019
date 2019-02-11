@@ -15,14 +15,17 @@ import frc.robot.Robot;
  * Add your docs here.
  */
 public class SetVacuumSolenoid extends InstantCommand {
+  private VacSolenoid whichSolenoid;
+  private boolean newState;
+
   /**
    * Add your docs here.
    */
   public SetVacuumSolenoid(VacSolenoid id, boolean isOn) {
     super();
     requires(Robot.vacuum);
-    Robot.vacuum.setSolenoid(id, isOn);
-    System.out.println("Hooray " + id + "'s state " + isOn);
+    whichSolenoid = id;
+    newState = isOn;
     // Use requires() here to declare subsystem dependencies
     // eg. requires(chassis);
   }
@@ -30,6 +33,8 @@ public class SetVacuumSolenoid extends InstantCommand {
   // Called once when the command executes
   @Override
   protected void initialize() {
+    Robot.vacuum.setSolenoid(whichSolenoid, newState);
+    System.out.println("Solenoid " + whichSolenoid + "'s state is " + newState);
   }
 
 }
