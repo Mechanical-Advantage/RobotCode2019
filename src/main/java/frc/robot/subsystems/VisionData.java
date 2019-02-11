@@ -27,8 +27,9 @@ public class VisionData extends Subsystem {
   private static final String senderAddress = "tcp://10.63.28.90:5556";
 
   public HatchPipeline hatch = new HatchPipeline();
+  public WhiteTapePipeline whiteTape = new WhiteTapePipeline();
   public DeliveryTargetPipeline delivery = new DeliveryTargetPipeline();
-  private final Pipeline[] pipelines = new Pipeline[] {hatch, delivery};
+  private final Pipeline[] pipelines = new Pipeline[] {hatch, whiteTape, delivery};
 
   ZMQ.Socket commandSocket = Robot.ZMQContext.socket(ZMQ.PUSH);
   ZMQ.Socket recieverSocket = Robot.ZMQContext.socket(ZMQ.SUB);
@@ -159,6 +160,16 @@ public class VisionData extends Subsystem {
      */
     public double getAngle() {
       return angle;
+    }
+  }
+
+  // White tape pipeline uses almost the same code
+  public class WhiteTapePipeline extends HatchPipeline {
+    private WhiteTapePipeline() {} // Prevent construction outside of VisionData
+
+    @Override
+    public String getName() {
+      return "whitetape";
     }
   }
 
