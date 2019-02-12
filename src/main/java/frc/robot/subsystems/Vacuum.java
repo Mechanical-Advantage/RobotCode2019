@@ -7,6 +7,7 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.Relay;
 import edu.wpi.first.wpilibj.Relay.Value;
 import edu.wpi.first.wpilibj.command.Subsystem;
@@ -57,11 +58,15 @@ public class Vacuum extends Subsystem {
   }
 
   private RelayChannel[] relayChannel = new RelayChannel[3];
+  AnalogInput pressureSensor;
+  private static final int PRESSURE_ANALOG_INPUT = 1;
 
   public Vacuum() {
     for (int i = 0; i <= 2; i++) {
       relayChannel[i] = new RelayChannel(i);
     }
+    pressureSensor = new AnalogInput(PRESSURE_ANALOG_INPUT);
+    pressureSensor.setAverageBits(4);
   }
 
   public void setSolenoid(VacSolenoid id, boolean isOn) {
@@ -74,6 +79,10 @@ public class Vacuum extends Subsystem {
     int channelID = VacSolenoid.getChannelID(id);
     int subChannelID = VacSolenoid.getSubChannelID(id);
     return relayChannel[channelID].getState(subChannelID);
+  }
+
+  public double getPressureSensorVoltage() {
+    return pressureSensor.getAverageVoltage();
   }
 
   private static class RelayChannel {
