@@ -29,6 +29,7 @@ public class RobotMap {
   public static int leftMaster;
   public static int leftSlave;
   public static int leftSlave2;
+  public static int vacuumMotor;
   public static int leftDriveGearSolenoid1;
   public static int leftDriveGearSolenoid2;
   public static int leftDriveGearPCM;
@@ -106,6 +107,7 @@ public class RobotMap {
       leftMaster = 0;
       leftSlave = 0;
       leftSlave2 = 0;
+      vacuumMotor = 0;
       maxVelocityLow = 0;
       minVelocityLow = 0;
       maxAcceleration = 0;

@@ -11,11 +11,24 @@ import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.Relay;
 import edu.wpi.first.wpilibj.Relay.Value;
 import edu.wpi.first.wpilibj.command.Subsystem;
+import frc.robot.RobotMap;
+import frc.robot.RobotMap.RobotType;
+import com.ctre.phoenix.motorcontrol.can.VictorSPX;
+import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
+
+
 
 /**
  * Add your docs here.
  */
 public class Vacuum extends Subsystem {
+
+  private VictorSPX vacuumMotor;
+
+  private static final boolean reverseVacuumMotor = false;
+  private static final boolean vacMotorBrakeMode = false;
+
   public enum VacSolenoid {
     PUMP_TAIL, PUMP_TANK, TAIL_TANK, PICKUP, ATMOSPHERE;
     private static int getChannelID(VacSolenoid id) {
@@ -67,7 +80,23 @@ public class Vacuum extends Subsystem {
     }
     pressureSensor = new AnalogInput(PRESSURE_ANALOG_INPUT);
     pressureSensor.setAverageBits(4);
+
+    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+      vacuumMotor = new VictorSPX(RobotMap.vacuumMotor);
+    }
+
+    vacuumMotor.setInverted(reverseVacuumMotor);
+    vacuumMotor.setNeutralMode(vacMotorBrakeMode ? NeutralMode.Brake : NeutralMode.Coast);
   }
+
+  public void setVacuumMotor(boolean state) {
+    if (state) {
+      vacuumMotor.set(ControlMode.PercentOutput, 1);
+    } else {
+      vacuumMotor.set(ControlMode.PercentOutput, 0);
+    }
+  }
+
 
   public void setSolenoid(VacSolenoid id, boolean isOn) {
     int channelID = VacSolenoid.getChannelID(id);
