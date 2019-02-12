@@ -67,6 +67,11 @@ public class Arm extends Subsystem {
   private static final FeedbackDevice telescopeSensorType = FeedbackDevice.CTRE_MagEncoder_Relative;
   private static final boolean telescopeSensorReversed = false;
   private static final boolean telescopeOutputReversed = false;
+  private static final int telescopeTicksPerRotation = 4096;
+  private static final int telescopeReduction = 1;
+  private static final double telescopeInchesPerRotation = 1;
+  private static final double telescopeZeroedPosition = 0;
+  private static final int telescopeZeroAmps = 40; // How many amps the threshold for considering the telescope to have zeroed is
 
   private static final TunableNumber kPElbow = new TunableNumber("Arm Elbow/p");
   private static final TunableNumber kIElbow = new TunableNumber("Arm Elbow/i");
@@ -113,6 +118,7 @@ public class Arm extends Subsystem {
   private boolean wristZeroed = false;
   private WristPosition targetWristPosition;
   private SchoolZone wristSchoolZone;
+  private boolean telescopeZeroed = false;
 
   /*
   Note: We decided wrist should not use remote elbow sensor and setpoint should be updated when elbow target changed based on new target.
@@ -226,14 +232,20 @@ public class Arm extends Subsystem {
       if (RobotMap.tuningMode) {
         initPID();
       }
+      // Should zeroing multiple times be allowed
       if (!elbowZeroed && getElbowLimitSwitch()) {
         setElbowZeroed();
+      } else {
+        elbowCurrentSchoolZone.applyPosition(getElbowPosition());
       }
       if (!wristZeroed && getWristLimitSwitch()) {
         setWristZeroed();
+      } else {
+        wristSchoolZone.applyPosition(getRelativeWristPosition());
       }
-      elbowCurrentSchoolZone.applyPosition(getElbowPosition());
-      wristSchoolZone.applyPosition(getRelativeWristPosition());
+      if (!telescopeZeroed && getTelescopeLimitSensed()) {
+        setTelescopeZeroed();
+      }
     }
   }
 
@@ -459,6 +471,57 @@ public class Arm extends Subsystem {
 
   public boolean getWristLimitSwitch() {
     // TODO add this
+    return false;
+  }
+
+  public double getTelescopeCurrent() {
+    if (RobotMap.robot == RobotType.ROBOT_2019 || 
+    RobotMap.robot == RobotType.ROBOT_2019_2) {
+      return telescope.getOutputCurrent();
+    }
+    return 0;
+  }
+
+  public double getTelescopePosition() {
+    if (RobotMap.robot == RobotType.ROBOT_2019 || 
+    RobotMap.robot == RobotType.ROBOT_2019_2) {
+      return convertTelescopeTicksToInches(telescope.getSelectedSensorPosition());
+    }
+    return 0;
+  }
+
+  public void setTelescopePosition(double position) {
+    if (RobotMap.robot == RobotType.ROBOT_2019 || 
+    RobotMap.robot == RobotType.ROBOT_2019_2) {
+      telescope.set(ControlMode.Position, convertTelescopeInchesToTicks(position));
+    }
+  }
+
+  private double convertTelescopeTicksToInches(int ticks) {
+    return (double)ticks / telescopeReduction / telescopeTicksPerRotation * 
+        telescopeInchesPerRotation;
+  }
+
+  private int convertTelescopeInchesToTicks(double position) {
+    return (int)Math.round(position / telescopeInchesPerRotation * 
+      telescopeTicksPerRotation * telescopeReduction);
+  }
+
+  private void setTelescopeZeroed() {
+    if (RobotMap.robot == RobotType.ROBOT_2019 || 
+    RobotMap.robot == RobotType.ROBOT_2019_2) {
+      telescope.setSelectedSensorPosition(convertTelescopeInchesToTicks(
+        telescopeZeroedPosition));
+    }
+  }
+
+  private boolean getTelescopeLimitSensed() {
+    if (RobotMap.robot == RobotType.ROBOT_2019 || 
+     RobotMap.robot == RobotType.ROBOT_2019_2) {
+      // If the motor is not moving backwards we can't possibly be at the limit
+      return getTelescopeCurrent() >= telescopeZeroAmps && 
+        telescope.getMotorOutputPercent() < 0;
+    }
     return false;
   }
 
