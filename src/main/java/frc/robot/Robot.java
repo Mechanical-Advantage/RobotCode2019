@@ -86,7 +86,7 @@ public class Robot extends TimedRobot {
       generateCommand.setRunWhenDisabled(true);
       generateCommand.start();
     }
-    //initiates BadLog (and helpful time measurements), the tracking code that provides data from matches based on driver input.
+    //initiates BadLog (and helpful time measurements), the tracking code that provides data from matches based on driver input. Must be called last.
     Botlog.createBadlog();
   }
 

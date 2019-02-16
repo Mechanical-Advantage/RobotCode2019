@@ -12,21 +12,27 @@ import badlog.lib.DataInferMode;
 import frc.robot.util.LogUtil;
 import java.io.File;
 import java.util.*;
+import java.util.function.Supplier;
 
 import edu.wpi.first.wpilibj.DriverStation;
 
-public class Botlog{// Wrapper Class to do all things  Badlog.
+public class Botlog{// Wrapper Class to do all things Badlog. If this creates errors you can blame me, Nicholas!
    
     private static BadLog log;
     private static long lastLog;
-    private List<String> topicSubNames;
-    private List<String> topicSubSource;
+
+    //lists of outside Botlog trackings.
+    private static List<botlogValue> values = new ArrayList<botlogValue>(0);
+    
+    private static List<botlogTopic> topics = new ArrayList<botlogTopic>(0);
+
+    private static List<botlogTopicSub> topSubs = new ArrayList<botlogTopicSub>(0);
 
     public static void createBadlog(){//creates the Badlog
-      File usb = new File("/media/sda1");
+      File usb = new File("/media/sda1");//file location of the usb logs are stored on
       String date = LogUtil.genSessionName(); //gets the current date for naming the .bag file
       lastLog = System.currentTimeMillis();
-      if(usb.exists() && usb.isDirectory() && usb.canRead() && usb.canWrite()){//conditional to check wheter ot not there is a usb to save to. default usb dir: /media/sda1. useful info on https://docs.oracle.com/javase/7/docs/api/java/io/File.html
+      if(usb.exists() && usb.isDirectory() && usb.canRead() && usb.canWrite()){//conditional to check wheter ot not there is a usb to save to. default usb dir: /media/sda1.
         log = BadLog.init("/media/sda1/"  + date + ".bag");
         System.out.println("Sent to USB");
 
@@ -34,15 +40,21 @@ public class Botlog{// Wrapper Class to do all things  Badlog.
         log = BadLog.init("/home/lvuser/Telemetry"  + date + ".bag");
         System.out.println("Sent to Roborio");
       }
+        //Premade values, topics, and subscribers
         //Field
-        BadLog.createValue("Match_Number", "" + DriverStation.getInstance().getMatchNumber()); //example Value: key value-string pair known at init. Aka one time check.
+        BadLog.createValue("Match_Number", "" + DriverStation.getInstance().getMatchNumber());//example Value: key value-string pair known at init. Aka one time check.
         BadLog.createTopic("Match_Time", "s", () -> DriverStation.getInstance().getMatchTime()); //example Topic: constant stream of numeric data; what we're tracking
         //Joysticks/Buttons
         BadLog.createTopicSubscriber("Left_Joystick", BadLog.UNITLESS, DataInferMode.DEFAULT, ""); //example Subscriber: like a topic, but easier for tracking station input.
         BadLog.createTopicSubscriber("Right_Joystick", BadLog.UNITLESS, DataInferMode.DEFAULT, "");
         BadLog.createTopicSubscriber("Button_1", BadLog.UNITLESS, DataInferMode.DEFAULT, "");
         BadLog.createTopicSubscriber("Button_2", BadLog.UNITLESS, DataInferMode.DEFAULT, "");
-        //Robot Stuff
+
+        //outside values, topics, and subscribers made here. Requires that Robot.java is caled after 
+        //EVERY class is run to add every terms.
+        createValues();
+        createTopics();
+        createTopSubs();
       log.finishInitialization();
     }
 
@@ -70,25 +82,145 @@ public class Botlog{// Wrapper Class to do all things  Badlog.
         BadLog.publish("Right_Joystick", rJoyInput);
         BadLog.publish("Button_1", sniper);
         BadLog.publish("Button_2", canDrive);
+        //publishes the topics that were not manually created in Botlog
+        publishSubs();
         log.updateTopics(); 
         log.log();
       }
     }
 
-    public void makeValue(String name, String unit){
-
+    //methods that allow outside classes to be tracked in BotLog. 
+    //Make sure that you choose the right type, have ALL the required variables available,
+    //and that what you are tracking is important.
+    //check the premade examples above for a picture of what is needed. 
+    public static void makeValue(String name, String source){//Creates a Value: one use check. For use outside of Botlog.
+      botlogValue value = new botlogValue(name, source);
+      values.add(value);
     }
 
-    public void makeTopic(String name, String unit){
+    public static void makeTopic(String name, String units, Supplier source){//Creates a Topic: multiple use check from a supplier
+      botlogTopic topic = new botlogTopic(name, units, source);
+      topics.add(topic);
+    }
+
+    public static void makeTopicSub(String name, String unit, DataInferMode infer, String arg, String source, boolean isDouble){//Creates a Topic Subscriber: 
+      botlogTopicSub sub = new botlogTopicSub(name, unit, infer, arg, source, isDouble); //multiple use that keeps a constant view on the source.
+      topSubs.add(sub);
+    }
+
+    public static void createValues(){
+      for (int x = 0; x < values.size(); x++) {
+        BadLog.createValue(values.get(x).getName(), values.get(x).getSource());
+      }
+    }
+
+    public static void createTopics(){
+      for (int x = 0; x < topics.size(); x++) {
+        BadLog.createTopic(topics.get(x).getName(), topics.get(x).getUnit(), topics.get(x).getSup());
+      }
+    }
+
+    public static void createTopSubs(){
+      for (int x = 0; x < topSubs.size(); x++) {
+        BadLog.createTopicSubscriber(topSubs.get(x).getName(), topSubs.get(x).getUnit(), topSubs.get(x).getInfer(), topSubs.get(x).getArg());
+      }
+    }
+
+    public static void publishSubs(){
+      for (int x = 0; x < topSubs.size(); x++) {
+        if(topSubs.get(x).getDouble()){
+          BadLog.publish(topSubs.get(x).getName(), topSubs.get(x).getSource());
+        } else {
+          double isTrue;
+          if(Robot.oi.getDriveEnabled()){
+            isTrue = 1.0;
+          } else {
+            isTrue = 0.0;
+          }
+          BadLog.publish(topSubs.get(x).getName(), isTrue);
+        }
+      }
+    }
+
+    //below are objects that correlate to tgeir respective type.
+    //made to keep the number of lists low.
+    public static class botlogValue{//imagine the value
+      private String vName;
+      private String vSource;
+      botlogValue(String name, String source){
+        vName = name;
+        vSource = source;
+      }
       
+      public String getName(){
+        return vName;
+      }
+
+      public String getSource(){
+        return vSource;
+      }
     }
 
-    public void makeTopicSub(String name, Double recording, String unit){
-      
+    public static class botlogTopic{//how topical
+      private String tName;
+      private String tUnit;
+      private Supplier tSup;  
+      public botlogTopic(String name, String unit, Supplier sup){
+          tName = name;
+          tUnit = unit;
+          tSup = sup;
+        }
+        public String getName(){
+          return tName;
+        }
+
+        public String getUnit(){
+          return tUnit;
+        }
+
+        public Supplier getSup(){
+          return tSup;
+        }
     }
 
-    public void makeTopicSub(String name, Boolean recording, String unit){
-      
-    }
+    public static class botlogTopicSub{//I have no joke for this
+      private String TSName;
+      private String TSUnit;
+      private DataInferMode TSInfer;
+      private String TSArg;
+      private String TSSource;
+      private boolean TSIsDouble;
+      botlogTopicSub(String name, String unit, DataInferMode infer, String arg, String source, boolean isDouble){
+        TSName = name;
+        TSUnit = unit;
+        TSInfer = infer;
+        TSArg = arg;
+        TSSource = source;
+        TSIsDouble = isDouble;
+      }
 
+      public String getName(){
+        return TSName;
+      }
+
+      public String getUnit(){
+        return TSUnit;
+      }
+
+      public DataInferMode getInfer(){
+        return TSInfer;
+      }
+
+      public String getArg(){
+        return TSArg;
+      }
+
+      public String getSource(){
+        return TSSource;
+      }
+
+      public boolean getDouble(){
+        return TSIsDouble;
+      }
+    }
 }
