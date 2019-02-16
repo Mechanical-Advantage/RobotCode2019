@@ -56,6 +56,13 @@ public class RobotMap {
   public static int armShoulder2Extend;
   public static int armShoulder2Retract;
   public static int armShoulder2PCM;
+  public static int intakeLeft;
+  public static int intakeLeftSolenoid1;
+  public static int intakeLeftSolenoid2;
+  public static int intakeRight;
+  public static int intakeRightSolenoid1;
+  public static int intakeRightSolenoid2;
+  public static int intakePCM;
 
   public RobotMap() {
     switch (robot) {
@@ -111,6 +118,11 @@ public class RobotMap {
       maxVelocityLow = 0;
       minVelocityLow = 0;
       maxAcceleration = 0;
+      intakePCM = 0;
+      intakeLeftSolenoid1 = 1;
+      intakeLeftSolenoid2 = 2;
+      intakeRightSolenoid1 = 3;
+      intakeRightSolenoid2 = 4;
       break;
     default:
       break;
