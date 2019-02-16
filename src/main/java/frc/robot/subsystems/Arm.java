@@ -71,7 +71,6 @@ public class Arm extends Subsystem {
   private static final int telescopeReduction = 1;
   private static final double telescopeInchesPerRotation = 1;
   private static final double telescopeZeroedPosition = 0;
-  private static final int telescopeZeroAmps = 40; // How many amps the threshold for considering the telescope to have zeroed is
   private static final double telescopeMaxExtension = 0; // How far the telescope can extend
   private static final double telescopeSchoolZoneSpeedLimit = 0.2;
   private static final double telescopeSchoolZoneLowerStart = 2;
@@ -566,8 +565,7 @@ public class Arm extends Subsystem {
   private boolean getTelescopeLimitSensed() {
     if (RobotMap.robot == RobotType.ROBOT_2019 || 
      RobotMap.robot == RobotType.ROBOT_2019_2) {
-      // If the motor is not moving backwards we can't possibly be at the limit
-      return getTelescopeCurrent() >= telescopeZeroAmps && 
+      return telescope.getSelectedSensorVelocity() == 0 && 
         telescope.getMotorOutputPercent() < 0;
     }
     return false;
