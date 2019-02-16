@@ -15,6 +15,7 @@ import com.ctre.phoenix.motorcontrol.can.BaseMotorController;
 public class SchoolZone {
 
     private double limit;
+    private double normalPercent;
     private double lowerStart;
     private double upperStart;
     private boolean previouslyLimitedForward;
@@ -28,7 +29,19 @@ public class SchoolZone {
      */
     public SchoolZone(double limitPercent, double lowerStart, double upperStart, 
       BaseMotorController...motorControllers) {
+        this(limitPercent, 1, lowerStart, upperStart, motorControllers);
+    }
+
+    /**
+     * Creates a new SchoolZone.
+     * If motor controllers are provided, they will have their peak
+     * limits updated as positions are applied (only if needed).
+     */
+    public SchoolZone(double limitPercent, double normalPercent, 
+      double lowerStart, double upperStart, 
+      BaseMotorController...motorControllers) {
         limit = limitPercent;
+        this.normalPercent = normalPercent;
         this.lowerStart = lowerStart;
         this.upperStart = upperStart;
         this.motorControllers = motorControllers;
@@ -101,14 +114,14 @@ public class SchoolZone {
      * Will be 1 (100%) if not in school zone.
      */
     public double getForwardSpeedLimit() {
-        return previouslyLimitedForward ? limit : 1;
+        return previouslyLimitedForward ? limit : normalPercent;
     }
     /**
      * Get the speed limit that should be in effect based on the last applied position.
      * Will be -1 (-100%) if not in school zone and will always be negative.
      */
     public double getReverseSpeedLimit() {
-        return -1 * (previouslyLimitedReverse ? limit : 1);
+        return -1 * (previouslyLimitedReverse ? limit : normalPercent);
     }
 
     public enum RequiredSpeedLimitChanges {

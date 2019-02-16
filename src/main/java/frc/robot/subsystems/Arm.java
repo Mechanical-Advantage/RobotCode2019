@@ -48,6 +48,7 @@ public class Arm extends Subsystem {
   private static final double elbowLowSchoolZoneUpperStart = 360;
   private static final double elbowHighSchoolZoneLowerStart = -360;
   private static final double elbowHighSchoolZoneUpperStart = 360;
+  private static final double elbowPeakOutput = 1;
 
   private static final FeedbackDevice wristSensorType = FeedbackDevice.CTRE_MagEncoder_Relative;
   private static final boolean wristSensorReversed = false;
@@ -63,6 +64,7 @@ public class Arm extends Subsystem {
   private static final double wristSchoolZoneSpeedLimit = 0.2;
   private static final double wristSchoolZoneLowerStart = -180;
   private static final double wristSchoolZoneUpperStart = 180;
+  private static final double wristPeakOutput = 1;
 
   private static final FeedbackDevice telescopeSensorType = FeedbackDevice.CTRE_MagEncoder_Relative;
   private static final boolean telescopeSensorReversed = false;
@@ -75,6 +77,7 @@ public class Arm extends Subsystem {
   private static final double telescopeSchoolZoneSpeedLimit = 0.2;
   private static final double telescopeSchoolZoneLowerStart = 2;
   private static final double telescopeSchoolZoneUpperStart = telescopeMaxExtension - 2;
+  private static final double telescopePeakOutput = 1;
 
   private static final double allowedFrameExtension = 30;
   private static final double bicepLength = 0;
@@ -180,17 +183,17 @@ public class Arm extends Subsystem {
         telescope = new TalonSRX(RobotMap.armTelescope);
 
         elbowLowSchoolZone = new SchoolZone(elbowSchoolZoneSpeedLimit, 
-          elbowLowSchoolZoneLowerStart, elbowLowSchoolZoneUpperStart, 
-          elbowLeft, elbowRight);
+          elbowPeakOutput, elbowLowSchoolZoneLowerStart,
+          elbowLowSchoolZoneUpperStart, elbowLeft, elbowRight);
         elbowHighSchoolZone = new SchoolZone(elbowSchoolZoneSpeedLimit, 
-          elbowHighSchoolZoneLowerStart, elbowHighSchoolZoneUpperStart, 
-          elbowLeft, elbowRight);
+          elbowPeakOutput, elbowHighSchoolZoneLowerStart,
+          elbowHighSchoolZoneUpperStart, elbowLeft, elbowRight);
         wristSchoolZone = new SchoolZone(wristSchoolZoneSpeedLimit, 
-          wristSchoolZoneLowerStart, wristSchoolZoneUpperStart, 
-          wrist);
+          wristPeakOutput, wristSchoolZoneLowerStart,
+          wristSchoolZoneUpperStart, wrist);
         telescopeSchoolZone = new SchoolZone(telescopeSchoolZoneSpeedLimit, 
-          telescopeSchoolZoneLowerStart, telescopeSchoolZoneUpperStart, 
-          telescope);
+          telescopePeakOutput, telescopeSchoolZoneLowerStart,
+          telescopeSchoolZoneUpperStart, telescope);
 
         elbowLeft.configSelectedFeedbackSensor(elbowSensorType);
         elbowLeft.setSensorPhase(elbowSensorLeftReversed);
@@ -220,6 +223,7 @@ public class Arm extends Subsystem {
         elbowLeft.configReverseSoftLimitEnable(true);
         elbowRight.configForwardSoftLimitEnable(true);
         elbowRight.configReverseSoftLimitEnable(true);
+        elbowLowSchoolZone.setControllerLimits(); // This sets the peak output of the controllers
 
         wrist.configForwardSoftLimitThreshold(convertWristRelativePositionToTicks(
           wristUpperLimit));
@@ -227,10 +231,12 @@ public class Arm extends Subsystem {
           wristLowerLimit));
         wrist.configForwardSoftLimitEnable(true);
         wrist.configReverseSoftLimitEnable(true);
+        wristSchoolZone.setControllerLimits();
 
         telescope.configReverseSoftLimitThreshold(0);
         telescope.configForwardSoftLimitEnable(true);
         telescope.configReverseSoftLimitEnable(true);
+        telescopeSchoolZone.setControllerLimits();
 
         elbowLeft.configContinuousCurrentLimit(elbowContinousCurrentLimit);
         elbowLeft.configPeakCurrentLimit(elbowPeakCurrentLimit);
