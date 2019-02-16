@@ -32,42 +32,54 @@ public class Vacuum extends Subsystem {
   private static final int PRESSURE_ANALOG_INPUT = 1;
 
   public Vacuum() {
-    for (int i = 0; i <= 2; i++) {
-      relayChannel[i] = new RelayChannel(i);
-    }
-    pressureSensor = new AnalogInput(PRESSURE_ANALOG_INPUT);
-    pressureSensor.setAverageBits(4);
-
     if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
-      vacuumMotor = new VictorSPX(RobotMap.vacuumMotor);
-    }
+      for (int i = 0; i <= 2; i++) {
+        relayChannel[i] = new RelayChannel(i);
+      }
+      pressureSensor = new AnalogInput(PRESSURE_ANALOG_INPUT);
+      pressureSensor.setAverageBits(4);
 
-    vacuumMotor.setInverted(reverseVacuumMotor);
-    vacuumMotor.setNeutralMode(vacMotorBrakeMode ? NeutralMode.Brake : NeutralMode.Coast);
+      if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+        vacuumMotor = new VictorSPX(RobotMap.vacuumMotor);
+      }
+
+      vacuumMotor.setInverted(reverseVacuumMotor);
+      vacuumMotor.setNeutralMode(vacMotorBrakeMode ? NeutralMode.Brake : NeutralMode.Coast);
+    }
   }
 
   public void setVacuumMotor(boolean state) {
-    if (state) {
-      vacuumMotor.set(ControlMode.PercentOutput, 1);
-    } else {
-      vacuumMotor.set(ControlMode.PercentOutput, 0);
+    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+      if (state) {
+        vacuumMotor.set(ControlMode.PercentOutput, 1);
+      } else {
+        vacuumMotor.set(ControlMode.PercentOutput, 0);
+      }
     }
   }
 
   public void setSolenoid(VacSolenoid id, boolean isOn) {
-    int channelID = VacSolenoid.getChannelID(id);
-    int subChannelID = VacSolenoid.getSubChannelID(id);
-    relayChannel[channelID].setState(subChannelID, isOn);
+    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+      int channelID = VacSolenoid.getChannelID(id);
+      int subChannelID = VacSolenoid.getSubChannelID(id);
+      relayChannel[channelID].setState(subChannelID, isOn);
+    }
   }
 
   public boolean getSolenoid(VacSolenoid id) {
-    int channelID = VacSolenoid.getChannelID(id);
-    int subChannelID = VacSolenoid.getSubChannelID(id);
-    return relayChannel[channelID].getState(subChannelID);
+    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+      int channelID = VacSolenoid.getChannelID(id);
+      int subChannelID = VacSolenoid.getSubChannelID(id);
+      return relayChannel[channelID].getState(subChannelID);
+    }
+    return false;
   }
 
   public double getPressureSensorVoltage() {
-    return pressureSensor.getAverageVoltage();
+    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+      return pressureSensor.getAverageVoltage();
+    }
+    return 0;
   }
 
   private static class RelayChannel {
