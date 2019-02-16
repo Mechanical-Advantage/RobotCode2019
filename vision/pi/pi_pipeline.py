@@ -612,11 +612,11 @@ BlurType = Enum('BlurType', 'Box_Blur Gaussian_Blur Median_Filter Bilateral_Filt
 
 
 class DeliveryUndistorter:
-    camera_matrix = numpy.array([[3.2949123792544623e+02, 0, 1.6896618562196542e+02],
-    [0, 3.2949123792544623e+02, 1.1561801315292639e+02], [0, 0, 1]])
-    dist_coeffs = numpy.array([-4.3246837941193539e-01, 
-    2.5607576947005017e-01, 9.2925541330240516e-03, 1.6721151146201763e-03, 
-    -1.0157224207952989e-01])
+    camera_matrix = numpy.array([[2.196312958075195e+02, 0, 1.3828622034927059e+02],
+        [0, 2.196319580751959e+02, 1.1695904527813433e+02], [0, 0, 1]])
+    dist_coeffs = numpy.array([-4.0927618319459197e-01,
+        2.16383244830097e-01, -1.554154605770095e-03, 3.8508678850099663e-04,
+        -6.71848345285492879e-02])
     image_size = (320, 240)
     map_type = cv2.CV_32FC1 # CV_32FC1 or CV_16SC2
     alpha = 0
@@ -669,7 +669,7 @@ class ExtraProcessingDelivery:
     target_width_squared = target_width**2
 
     VisionTarget = namedtuple("VisionTarget", ["left_box", "right_box", "center"])
-    TapeBox = namedtuple("TapeBox", ["left", "bottom", "top", "right"])
+    TapeBox = namedtuple("TapeBox", ["bottom_left", "bottom_right", "top_left", "top_right"])
 
     tape_height = 5.82557 # Vertical, farthest bottom to farthest top
     top_bottom_height = 4.82405 # Vertical, left to right height
@@ -677,14 +677,15 @@ class ExtraProcessingDelivery:
     target_width = 14.7106299 # Horizontal, farthest left on left tape to farthest right on right target
     top_target_width = 11.8637795 # Horizontal, left top to right top distance
     bottom_target_width = 10.8468504 # Horizontal, left bottom to right bottom distance
-    model_points = numpy.array([(0, -target_width/2, -top_bottom_height/2), # Left Left
-                                (0, -bottom_target_width/2, -tape_height/2), # Left Bottom
-                                (0, -top_target_width/2, tape_height/2), # Left Top
-                                (0, -4, top_bottom_height/2), # Left Right
-                                (0, 4, top_bottom_height/2), # Right Left
-                                (0, bottom_target_width/2, -tape_height/2), # Right Bottom
-                                (0, top_target_width/2, tape_height/2), # Right Top
-                                (0, target_width/2, -top_bottom_height/2)]) # Right Right
+    model_points = numpy.array([(-target_width/2, -top_bottom_height/2, 0), # Left Bottom Left
+                                (-bottom_target_width/2, -tape_height/2, 0), # Left Bottom Right
+                                (-top_target_width/2, tape_height/2, 0), # Left Top Left
+                                (-4, top_bottom_height/2, 0), # Left Top Right
+                                (bottom_target_width/2, -tape_height/2, 0), # Right Bottom Left
+                                (target_width/2, -top_bottom_height/2, 0), # Right Bottom Right
+                                (4, top_bottom_height/2, 0), # Right Top Left
+                                (top_target_width/2, tape_height/2, 0)]) # Right Top Right
+
 
 
     def __init__(self, zmq_pub, undistorter):
@@ -692,9 +693,9 @@ class ExtraProcessingDelivery:
         self._undistorter = undistorter
 
     def _tilted_left(self, box):
-        return box.left[1] < box.right[1] # 1st point y above 4th point y
+        return box.top_right[0] < box.bottom_right[0] # Top right x less than bottom right x
     def _tilted_right(self, box):
-        return box.right[1] < box.left[1] # 4th point y above 1st point y
+        return box.top_left[0] > box.bottom_left[0] # Top left x greater than bottom left x
     def _find_center(self, box1, box2):
         """
         Take a (corner coords, arearect) and return (x, y)
@@ -724,14 +725,14 @@ class ExtraProcessingDelivery:
         return (distance, angle_v)
 
     def _gen_tape_box(self, box_points):
-            new_box = [-1] * 4
-            sorted_box = sorted(box_points, key=lambda point: point[0]) # X pos sort
-            new_box[0] = sorted_box[0] # Left
-            new_box[3] = sorted_box[3] # Right
             sorted_box = sorted(box_points, key=lambda point: point[1]) # Y pos sort
-            new_box[1] = sorted_box[3] # Bottom
-            new_box[2] = sorted_box[0] # Top
-            return self.TapeBox(*new_box)
+            top_points = sorted_box[0:2] # Top two points
+            bottom_points = sorted_box[2:4] # Bottom two points
+            top_points.sort(key=lambda point: point[0]) # X pos sort
+            bottom_points.sort(key=lambda point: point[0]) # X pos soft
+            return self.TapeBox(bottom_left=bottom_points[0], 
+                bottom_right=bottom_points[1], top_left=top_points[0],
+                top_right=top_points[1])
 
     def _gen_boxes(self, contours):
         boxes = [cv2.minAreaRect(contour) for contour in contours]
@@ -781,26 +782,40 @@ class ExtraProcessingDelivery:
         self._zmq_pub.zmqPubDoubles("distangle", 0.0, distance, angle_h_robot, target_angle)
 
     def _target_calc_solvepnp(self, target):
-        image_points = numpy.array([target.left_box[0].left,
-                                    target.left_box[0].bottom,
-                                    target.left_box[0].top,
-                                    target.left_box[0].right,
-                                    target.right_box[0].left,
-                                    target.right_box[0].bottom,
-                                    target.right_box[0].top,
-                                    target.right_box[0].right])
+        image_points = numpy.array([target.left_box[0].bottom_left,
+                                    target.left_box[0].bottom_right,
+                                    target.left_box[0].top_left,
+                                    target.left_box[0].top_right,
+                                    target.right_box[0].bottom_left,
+                                    target.right_box[0].bottom_right,
+                                    target.right_box[0].top_left,
+                                    target.right_box[0].top_right])
         success, rotation_vector, translation_vector = \
             cv2.solvePnP(self.model_points, image_points, 
                         self._undistorter.camera_matrix, 
                         self._undistorter.dist_coeffs, 
                         flags=cv2.SOLVEPNP_ITERATIVE)
+        print("Model Points:", self.model_points)
+        print("Image Points:", image_points)
         if success:
-            print(translation_vector)
+            print("Translation:", translation_vector)
+            x = translation_vector[0][0]
+            z = translation_vector[2][0]
+            # distance in the horizontal plane between camera and target
+            distance = math.sqrt(x**2 + z**2)
+            angle1 = math.atan2(x, z)
+            rot, _ = cv2.Rodrigues(rotation_vector)
+            rot_inv = rot.transpose()
+            pzero_world = numpy.matmul(rot_inv, -translation_vector)
+            # horizontal angle between camera center line and target
+            angle2 = math.atan2(pzero_world[0][0], pzero_world[2][0])
+            print("Camera point angle:", math.degrees(angle2))
+            print("Position angle:", math.degrees(angle1))
         else:
             print("SolvePnP failed")
 
     def process(self, pipeline):
-        boxes = _gen_boxes(pipeline.convex_hulls_output)
+        boxes = self._gen_boxes(pipeline.convex_hulls_output)
         boxes.sort(key=lambda box: box[1][0][0]) # Sort by x position
         targets = []
         # Iterate over pairs of boxes (saving to VisionTargets) and find centers
@@ -984,9 +999,9 @@ def main():
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
     cap.set(cv2.CAP_PROP_FPS, 30)
-    # cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25) # Disable auto exposure
-    cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.75) # Enable auto exposure
-    # cap.set(cv2.CAP_PROP_EXPOSURE, 0.002) # Minimum exposure, should be 0 on LifeCam/XBox and 0.003 on new ELP
+    cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25) # Disable auto exposure
+    # cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.75) # Enable auto exposure
+    cap.set(cv2.CAP_PROP_EXPOSURE, 0.002) # Minimum exposure, should be 0 on LifeCam/XBox and 0.003 on new ELP
     cap.set(cv2.CAP_PROP_SHARPNESS, 0) # Removes haloing on ELP, not needed on LifeCam or XBox
     delivery_undistorter = DeliveryUndistorter()
     pipelines = {b"none" : None, \
