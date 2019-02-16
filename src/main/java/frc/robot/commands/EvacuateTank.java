@@ -11,19 +11,19 @@ import edu.wpi.first.wpilibj.command.Command;
 import frc.robot.Robot;
 import frc.robot.subsystems.Vacuum.VacSolenoid;
 
-
 public class EvacuateTank extends Command {
   public EvacuateTank() {
     // Use requires() here to declare subsystem dependencies
     // eg. requires(chassis);
-
-    Robot.vacuum.setVacuumMotor(true);
-    Robot.vacuum.setSolenoid(VacSolenoid.PUMP_TANK, true);
+    super();
+    requires(Robot.vacuum);
   }
 
   // Called just before this Command runs the first time
   @Override
   protected void initialize() {
+    Robot.vacuum.setVacuumMotor(true);
+    Robot.vacuum.setSolenoid(VacSolenoid.PUMP_TANK, true);
     end();
   }
 

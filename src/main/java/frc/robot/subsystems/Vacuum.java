@@ -17,9 +17,8 @@ import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 
-
 /**
- * Add your docs here.
+ * Robot Vacuum System
  */
 public class Vacuum extends Subsystem {
 
@@ -27,47 +26,6 @@ public class Vacuum extends Subsystem {
 
   private static final boolean reverseVacuumMotor = false;
   private static final boolean vacMotorBrakeMode = false;
-
-  public enum VacSolenoid {
-    PUMP_TAIL, PUMP_TANK, TAIL_TANK, PICKUP, ATMOSPHERE;
-    private static int getChannelID(VacSolenoid id) {
-      int channelID;
-      switch (id) {
-      case PUMP_TAIL:
-      case PICKUP:
-        channelID = 0;
-        break;
-      case PUMP_TANK:
-      case TAIL_TANK:
-        channelID = 1;
-        break;
-      case ATMOSPHERE:
-        channelID = 2;
-        break;
-      default:
-        throw new IndexOutOfBoundsException("Invalid Solenoid ID");
-      }
-      return (channelID);
-    }
-
-    private static int getSubChannelID(VacSolenoid id) {
-      int subChannelID;
-      switch (id) {
-      case PUMP_TAIL:
-      case PUMP_TANK:
-        subChannelID = 0;
-        break;
-      case PICKUP:
-      case TAIL_TANK:
-      case ATMOSPHERE:
-        subChannelID = 1;
-        break;
-      default:
-        throw new IndexOutOfBoundsException("Invalid Solenoid ID");
-      }
-      return (subChannelID);
-    }
-  }
 
   private RelayChannel[] relayChannel = new RelayChannel[3];
   AnalogInput pressureSensor;
@@ -95,7 +53,6 @@ public class Vacuum extends Subsystem {
       vacuumMotor.set(ControlMode.PercentOutput, 0);
     }
   }
-
 
   public void setSolenoid(VacSolenoid id, boolean isOn) {
     int channelID = VacSolenoid.getChannelID(id);
@@ -159,6 +116,47 @@ public class Vacuum extends Subsystem {
         }
       }
       relay.set(output);
+    }
+  }
+
+  public enum VacSolenoid {
+    PUMP_TAIL, PUMP_TANK, TAIL_TANK, PICKUP, ATMOSPHERE;
+    private static int getChannelID(VacSolenoid id) {
+      int channelID;
+      switch (id) {
+      case PUMP_TAIL:
+      case PICKUP:
+        channelID = 0;
+        break;
+      case PUMP_TANK:
+      case TAIL_TANK:
+        channelID = 1;
+        break;
+      case ATMOSPHERE:
+        channelID = 2;
+        break;
+      default:
+        throw new IndexOutOfBoundsException("Invalid Solenoid ID");
+      }
+      return (channelID);
+    }
+
+    private static int getSubChannelID(VacSolenoid id) {
+      int subChannelID;
+      switch (id) {
+      case PUMP_TAIL:
+      case PUMP_TANK:
+        subChannelID = 0;
+        break;
+      case PICKUP:
+      case TAIL_TANK:
+      case ATMOSPHERE:
+        subChannelID = 1;
+        break;
+      default:
+        throw new IndexOutOfBoundsException("Invalid Solenoid ID");
+      }
+      return (subChannelID);
     }
   }
   // Put methods for controlling this subsystem

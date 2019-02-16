@@ -12,15 +12,12 @@ import frc.robot.subsystems.Vacuum.VacSolenoid;
 import frc.robot.Robot;
 
 /**
- * Add your docs here.
+ * Sets each vacuum solenoid's state
  */
 public class SetVacuumSolenoid extends InstantCommand {
   private VacSolenoid whichSolenoid;
   private boolean newState;
 
-  /**
-   * Add your docs here.
-   */
   public SetVacuumSolenoid(VacSolenoid id, boolean isOn) {
     super();
     requires(Robot.vacuum);

@@ -15,15 +15,16 @@ public class VacDrop extends Command {
   public VacDrop() {
     // Use requires() here to declare subsystem dependencies
     // eg. requires(chassis);
-
+    super();
+    requires(Robot.vacuum);
     Robot.vacuum.setVacuumMotor(false);
-    Robot.vacuum.setSolenoid(VacSolenoid.PICKUP, true);
-    Robot.vacuum.setSolenoid(VacSolenoid.ATMOSPHERE, true);
   }
 
   // Called just before this Command runs the first time
   @Override
   protected void initialize() {
+    Robot.vacuum.setSolenoid(VacSolenoid.PICKUP, true);
+    Robot.vacuum.setSolenoid(VacSolenoid.ATMOSPHERE, true);
   }
 
   // Called repeatedly when this Command is scheduled to run

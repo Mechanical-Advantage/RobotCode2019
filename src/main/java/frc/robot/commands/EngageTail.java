@@ -15,15 +15,16 @@ public class EngageTail extends Command {
   public EngageTail() {
     // Use requires() here to declare subsystem dependencies
     // eg. requires(chassis);
-
-    Robot.vacuum.setVacuumMotor(true);
-    Robot.vacuum.setSolenoid(VacSolenoid.PUMP_TAIL, true);
-    Robot.vacuum.setSolenoid(VacSolenoid.TAIL_TANK, true);
+    super();
+    requires(Robot.vacuum);
   }
 
   // Called just before this Command runs the first time
   @Override
   protected void initialize() {
+    Robot.vacuum.setVacuumMotor(true);
+    Robot.vacuum.setSolenoid(VacSolenoid.PUMP_TAIL, true);
+    Robot.vacuum.setSolenoid(VacSolenoid.TAIL_TANK, true);
     end();
   }
 
