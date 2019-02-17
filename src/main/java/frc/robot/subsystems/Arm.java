@@ -49,6 +49,7 @@ public class Arm extends Subsystem {
   private static final double elbowHighSchoolZoneLowerStart = -360;
   private static final double elbowHighSchoolZoneUpperStart = 360;
   private static final double elbowPeakOutput = 1;
+  private static final double elbowZeroPercent = -0.05;
 
   private static final FeedbackDevice wristSensorType = FeedbackDevice.CTRE_MagEncoder_Relative;
   private static final boolean wristSensorReversed = false;
@@ -65,6 +66,7 @@ public class Arm extends Subsystem {
   private static final double wristSchoolZoneLowerStart = -180;
   private static final double wristSchoolZoneUpperStart = 180;
   private static final double wristPeakOutput = 1;
+  private static final double wristZeroPercent = -0.05;
 
   private static final FeedbackDevice telescopeSensorType = FeedbackDevice.CTRE_MagEncoder_Relative;
   private static final boolean telescopeSensorReversed = false;
@@ -78,6 +80,7 @@ public class Arm extends Subsystem {
   private static final double telescopeSchoolZoneLowerStart = 2;
   private static final double telescopeSchoolZoneUpperStart = telescopeMaxExtension - 2;
   private static final double telescopePeakOutput = 1;
+  private static final double telescopeZeroPercent = -0.05;
 
   private static final double allowedFrameExtension = 30;
   private static final double bicepLength = 0;
@@ -260,6 +263,13 @@ public class Arm extends Subsystem {
         telescope.overrideSoftLimitsEnable(false);
 
         setShoulderRaised(false); // Will set elbow limits as well and ensures consistent state
+
+        // Start zeroing the mechanisms
+        // Normal control will not work until this is complete (see periodic())
+        elbowLeft.set(ControlMode.PercentOutput, elbowZeroPercent, 
+          DemandType.Neutral, 0);
+        wrist.set(ControlMode.PercentOutput, wristZeroPercent);
+        telescope.set(ControlMode.PercentOutput, telescopeZeroPercent);
     }
   }
 
@@ -582,19 +592,22 @@ public class Arm extends Subsystem {
    * @param setpointChanged Whether the setpoint of the telescope has been changed and needs to be reevaluated
    */
   private void updateTelescopeForwardLimit(boolean setpointChanged) {
-    double currentMaxExtension = getAllowedTelescopeExtension(getElbowPosition());
-    int currentMaxExtensionTicks = convertTelescopeInchesToTicks(
-      currentMaxExtension);
-    int limit = currentMaxExtensionTicks > telescopeMaxExtensionTicks ?
-      telescopeMaxExtensionTicks : currentMaxExtensionTicks;
-    if (limit != previousTelescopeLimit || setpointChanged) {
-      telescope.configForwardSoftLimitThreshold(limit, 0);
-      if (targetTelescopePositionTicks > limit) {
-        telescope.set(ControlMode.Position, limit);
-      } else {
-        telescope.set(ControlMode.Position, targetTelescopePositionTicks);
+    if ((RobotMap.robot == RobotType.ROBOT_2019 ||
+    RobotMap.robot == RobotType.ROBOT_2019_2) && telescopeZeroed && elbowZeroed) {
+      double currentMaxExtension = getAllowedTelescopeExtension(getElbowPosition());
+      int currentMaxExtensionTicks = convertTelescopeInchesToTicks(
+        currentMaxExtension);
+      int limit = currentMaxExtensionTicks > telescopeMaxExtensionTicks ?
+        telescopeMaxExtensionTicks : currentMaxExtensionTicks;
+      if (limit != previousTelescopeLimit || setpointChanged) {
+        telescope.configForwardSoftLimitThreshold(limit, 0);
+        if (targetTelescopePositionTicks > limit) {
+          telescope.set(ControlMode.Position, limit);
+        } else {
+          telescope.set(ControlMode.Position, targetTelescopePositionTicks);
+        }
+        previousTelescopeLimit = limit;
       }
-      previousTelescopeLimit = limit;
     }
   }
 
