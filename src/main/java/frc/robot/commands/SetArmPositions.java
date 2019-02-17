@@ -10,85 +10,89 @@ package frc.robot.commands;
 import java.util.Map;
 
 import edu.wpi.first.wpilibj.command.Command;
-import frc.robot.Robot;
-import frc.robot.commands.SetArmPositions.ArmPosition;
+import frc.robot.subsystems.Arm;
 
 public class SetArmPositions extends Command {
 
   public enum ArmPosition {
     ROCKET_HI_PLATE, ROCKET_HI_CARGO, ROCKET_MID_PLATE, ROCKET_MID_CARGO, ROCKET_LO_PLATE, ROCKET_LO_CARGO, CARGOSHIP_PLATE, CARGOSHIP_CARGO, FLOOR_PLATE, FLOOR_CARGO, LOADING_PICKUP;
     
+      //THE VALUES SET BELOW ARE JUST ESTIMATES- still need to be checked/tested!!
 
-    private static final Map<ArmPosition,Boolean> shoulderMap = Map.of(ROCKET_HI_PLATE, false, 
-                                                                      ROCKET_HI_CARGO, false,
-                                                                      ROCKET_MID_PLATE, false,
-                                                                      ROCKET_MID_CARGO, false,
-                                                                      ROCKET_LO_PLATE, false,
-                                                                      ROCKET_LO_CARGO, false,
-                                                                      CARGOSHIP_PLATE, false,
-                                                                      CARGOSHIP_CARGO, false,
-                                                                      FLOOR_PLATE, false,
-                                                                      FLOOR_CARGO, false,
-                                                                      LOADING_PICKUP, false);
+    private static final Map<ArmPosition,Boolean> shoulderMap = Map.ofEntries(Map.entry(ROCKET_HI_PLATE, true), 
+                                                                      Map.entry(ROCKET_HI_CARGO, true),
+                                                                      Map.entry(ROCKET_MID_PLATE, true),
+                                                                      Map.entry(ROCKET_MID_CARGO, true),
+                                                                      Map.entry(ROCKET_LO_PLATE, false),
+                                                                      Map.entry(ROCKET_LO_CARGO, false),
+                                                                      Map.entry(CARGOSHIP_PLATE, false),
+                                                                      Map.entry(CARGOSHIP_CARGO, false),
+                                                                      Map.entry(FLOOR_PLATE, false),
+                                                                      Map.entry(FLOOR_CARGO, false),
+                                                                      Map.entry(LOADING_PICKUP, false));
 
-    private static final Map<ArmPosition,Double> wristMap = Map.of(ROCKET_HI_PLATE, 0, 
-                                                                      ROCKET_HI_CARGO, 0,
-                                                                      ROCKET_MID_PLATE, 0,
-                                                                      ROCKET_MID_CARGO, 0,
-                                                                      ROCKET_LO_PLATE, 0,
-                                                                      ROCKET_LO_CARGO, 0,
-                                                                      CARGOSHIP_PLATE, 0,
-                                                                      CARGOSHIP_CARGO, 0,
-                                                                      FLOOR_PLATE, 0,
-                                                                      FLOOR_CARGO, 0,
-                                                                      LOADING_PICKUP, 0);
+    private static final Map<SetArmPositions.ArmPosition,Double> wristMap = Map.ofEntries(Map.entry(ROCKET_HI_PLATE, 0.0), // units are angle degrees.
+                                                                      Map.entry(ROCKET_HI_CARGO, 0.0),
+                                                                      Map.entry(ROCKET_MID_PLATE, 45.0),
+                                                                      Map.entry(ROCKET_MID_CARGO, 45.0),
+                                                                      Map.entry(ROCKET_LO_PLATE, 45.0),
+                                                                      Map.entry(ROCKET_LO_CARGO, 45.0),
+                                                                      Map.entry(CARGOSHIP_PLATE, 45.0),
+                                                                      Map.entry(CARGOSHIP_CARGO, 45.0),
+                                                                      Map.entry(FLOOR_PLATE, 90.0),
+                                                                      Map.entry(FLOOR_CARGO, 90.0),
+                                                                      Map.entry(LOADING_PICKUP, 45.0));
 
-    private static final Map<ArmPosition,Double> elbowMap = Map.of(ROCKET_HI_PLATE, 0, 
-                                                                  ROCKET_HI_CARGO, 0,
-                                                                  ROCKET_MID_PLATE, 0,
-                                                                  ROCKET_MID_CARGO, 0,
-                                                                  ROCKET_LO_PLATE, 0,
-                                                                  ROCKET_LO_CARGO, 0,
-                                                                  CARGOSHIP_PLATE, 0,
-                                                                  CARGOSHIP_CARGO, 0,
-                                                                  FLOOR_PLATE, 0,
-                                                                  FLOOR_CARGO, 0,
-                                                                  LOADING_PICKUP, 0);
-    private static final Map<ArmPosition,Double> telescopeMap = Map.of(ROCKET_HI_PLATE, 0, 
-                                                                  ROCKET_HI_CARGO, 0,
-                                                                  ROCKET_MID_PLATE, 0,
-                                                                  ROCKET_MID_CARGO, 0,
-                                                                  ROCKET_LO_PLATE, 0,
-                                                                  ROCKET_LO_CARGO, 0,
-                                                                  CARGOSHIP_PLATE, 0,
-                                                                  CARGOSHIP_CARGO, 0,
-                                                                  FLOOR_PLATE, 0,
-                                                                  FLOOR_CARGO, 0,
-                                                                  LOADING_PICKUP, 0);
-    public lookUpPosition () {  // still need to add more here
-      // ArmPosition.shoulderMap = Robot.Arm.;
+    private static final Map<ArmPosition,Double> elbowMap = Map.ofEntries(Map.entry(ROCKET_HI_PLATE, 0.0), // still need to change
+                                                                  Map.entry(ROCKET_HI_CARGO, 0.0),        // still need to change
+                                                                  Map.entry(ROCKET_MID_PLATE, 120.0),
+                                                                  Map.entry(ROCKET_MID_CARGO, 120.0),
+                                                                  Map.entry(ROCKET_LO_PLATE, 125.0),
+                                                                  Map.entry(ROCKET_LO_CARGO, 125.0),
+                                                                  Map.entry(CARGOSHIP_PLATE, 125.0),
+                                                                  Map.entry(CARGOSHIP_CARGO, 125.0),
+                                                                  Map.entry(FLOOR_PLATE, -60.0),
+                                                                  Map.entry(FLOOR_CARGO, -60.0),
+                                                                  Map.entry(LOADING_PICKUP, -45.0));
+                                                                  
+    private static final Map<ArmPosition,Double> telescopeMap = Map.ofEntries(Map.entry(ROCKET_HI_PLATE, 0.0), // probably want longer extension values for higher targets? 
+                                                                  Map.entry(ROCKET_HI_CARGO, 0.0),
+                                                                  Map.entry(ROCKET_MID_PLATE, 0.0),
+                                                                  Map.entry(ROCKET_MID_CARGO, 0.0),
+                                                                  Map.entry(ROCKET_LO_PLATE, 0.0),
+                                                                  Map.entry(ROCKET_LO_CARGO, 0.0),
+                                                                  Map.entry(CARGOSHIP_PLATE, 0.0),
+                                                                  Map.entry(CARGOSHIP_CARGO, 0.0),
+                                                                  Map.entry(FLOOR_PLATE, 0.0),
+                                                                  Map.entry(FLOOR_CARGO, 0.0),
+                                                                  Map.entry(LOADING_PICKUP, 0.0));
 
-    }                                                                  
+    public boolean lookUpShoulderPosition(ArmPosition position) {
+      return shoulderMap.get(position);
+    }
+
+    public double lookUpWristPosition(ArmPosition position) {
+      return wristMap.get(position);
+    }
+
+    public double lookUpElbowPosition(ArmPosition position) {
+      return elbowMap.get(position);
+    }
+
+    public double lookUpTelescopePosition(ArmPosition position) {
+      return telescopeMap.get(position);
+    }
+  }
   
-  private int armPositions;
-
   public SetArmPositions() {
     // Use requires() here to declare subsystem dependencies
     // eg. requires(chassis);
-   
   }
 
   // Called just before this Command runs the first time
   @Override
   protected void initialize() {
-  
-    switch() {      // call to arm subsystem to set
-      case ELBOW:
-        return Robot.Subsystems.Arm();
-      case TELESCOPE:
-        return 0;
 
-    }
   }
 
   // Called repeatedly when this Command is scheduled to run
