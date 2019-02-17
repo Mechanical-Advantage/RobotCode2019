@@ -56,6 +56,7 @@ public class OI {
 	// Start the command when the button is released and let it run the command
 	// until it is finished as determined by it's isFinished method.
 	// button.whenReleased(new ExampleCommand());
+	private static final double ejectSliderMin = 0.3;
 
 	private boolean joysticksReversed = false;
 
@@ -173,8 +174,17 @@ public class OI {
 																				// 1, subtract from 1 so 1 is up
 	}
 
+	public double getIntakeLevel() {
+		return (1 - ((leftController.getRawAxis(2) + 1) / 2)); // control returns -1 to 1, scale to 0 to 1, subtract
+																// from 1 so 1 is up
+	}
+
 	public void reverseJoysticks(boolean reverse) {
 		joysticksReversed = reverse;
+	}
+
+	public double getEjectForce() {
+		return Robot.map(oiController2.getRawAxis(1), -1, 1, ejectSliderMin, 1);
 	}
 
 	public boolean isShiftingEnabled() {

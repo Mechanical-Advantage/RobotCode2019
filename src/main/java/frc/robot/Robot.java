@@ -30,6 +30,7 @@ import frc.robot.subsystems.CameraSystem;
 import frc.robot.subsystems.DriveTrain;
 import frc.robot.subsystems.VisionData;
 import frc.robot.subsystems.Vacuum;
+import frc.robot.subsystems.Intake;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -45,6 +46,7 @@ public class Robot extends TimedRobot {
 
   public static final DriveTrain driveSubsystem = new DriveTrain();
   public static final Arm arm = new Arm();
+  public static final Intake intake = new Intake();
   public static final Vacuum vacuum = new Vacuum();
   public static final VisionData visionData = new VisionData();
 
