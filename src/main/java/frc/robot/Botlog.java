@@ -17,7 +17,7 @@ import java.util.function.Supplier;
 import edu.wpi.first.wpilibj.DriverStation;
 
 public class Botlog{// Wrapper Class to do all things Badlog. If this creates errors you can blame me, Nicholas!
-   
+    
     private static BadLog log;
     private static long lastLog;
 
@@ -28,7 +28,9 @@ public class Botlog{// Wrapper Class to do all things Badlog. If this creates er
 
     private static List<botlogTopicSub> topSubs = new ArrayList<botlogTopicSub>(0);
 
-    public static void createBadlog(){//creates the Badlog
+    //when Botlog is turned off, it will still make a .bag file to prevent errors,
+    //but it won't be able to create/publish anything.
+    public static void createBadlog(boolean runBotlog){//creates the Badlog
       File usb = new File("/media/sda1");//file location of the usb logs are stored on
       String date = LogUtil.genSessionName(); //gets the current date for naming the .bag file
       lastLog = System.currentTimeMillis();
@@ -40,28 +42,27 @@ public class Botlog{// Wrapper Class to do all things Badlog. If this creates er
         log = BadLog.init("/home/lvuser/Telemetry"  + date + ".bag");
         System.out.println("Sent to Roborio");
       }
-        //Premade values, topics, and subscribers
-        //Field
-        BadLog.createValue("Match_Number", "" + DriverStation.getInstance().getMatchNumber());//example Value: key value-string pair known at init. Aka one time check.
-        BadLog.createTopic("Match_Time", "s", () -> DriverStation.getInstance().getMatchTime()); //example Topic: constant stream of numeric data; what we're tracking
-        //Joysticks/Buttons
-        BadLog.createTopicSubscriber("Left_Joystick", BadLog.UNITLESS, DataInferMode.DEFAULT, ""); //example Subscriber: like a topic, but easier for tracking station input.
-        BadLog.createTopicSubscriber("Right_Joystick", BadLog.UNITLESS, DataInferMode.DEFAULT, "");
-        BadLog.createTopicSubscriber("Button_1", BadLog.UNITLESS, DataInferMode.DEFAULT, "");
-        BadLog.createTopicSubscriber("Button_2", BadLog.UNITLESS, DataInferMode.DEFAULT, "");
+        if(runBotlog){
+          //Premade values, topics, and subscribers
+          //Field
+          BadLog.createValue("Match_Number", "" + DriverStation.getInstance().getMatchNumber());//example Value: key value-string pair known at init. Aka one time check.
+          BadLog.createTopic("Match_Time", "s", () -> DriverStation.getInstance().getMatchTime()); //example Topic: constant stream of numeric data; what we're tracking
+          //Joysticks/Buttons
+          //BadLog.createTopicSubscriber("Left_Joystick", BadLog.UNITLESS, DataInferMode.DEFAULT, ""); //example Subscriber: like a topic, but easier for tracking station input.
+          BadLog.createTopicSubscriber("Right_Joystick", BadLog.UNITLESS, DataInferMode.DEFAULT, "");
+          BadLog.createTopicSubscriber("Button_1", BadLog.UNITLESS, DataInferMode.DEFAULT, "");
+          BadLog.createTopicSubscriber("Button_2", BadLog.UNITLESS, DataInferMode.DEFAULT, "");
 
-        //outside values, topics, and subscribers made here. Requires that Robot.java is caled after 
-        //EVERY class is run to add every terms.
-        createValues();
-        createTopics();
-        createTopSubs();
-      log.finishInitialization();
+          //outside values, topics, and subscribers made here. Requires that Robot.java is caled after 
+          //EVERY class is run to add every terms.
+          createValues();
+          createTopics();
+          createTopSubs();
+        }
+        log.finishInitialization();
     }
 
     public static void runPeriodic(){//caled in robot.periodic often, runs slower when disabled.
-      String lJoyInput = "" + Robot.oi.getLeftAxis();
-      String rJoyInput = "" + Robot.oi.getRightAxis();
-    
       double sniper;
       if(Robot.oi.getSniperMode()){
         sniper = 1.0;
@@ -78,12 +79,12 @@ public class Botlog{// Wrapper Class to do all things Badlog. If this creates er
       long currentMS = System.currentTimeMillis();
       if (!DriverStation.getInstance().isDisabled() || (currentMS - lastLog) >= 250) {//makes code run slower when disabled; 1/4 the rate when enabled.
         lastLog = currentMS;
-        BadLog.publish("Left_Joystick", lJoyInput);
-        BadLog.publish("Right_Joystick", rJoyInput);
+        //BadLog.publish("Left_Joystick", Robot.oi.getLeftAxis());
+        BadLog.publish("Right_Joystick", Robot.oi.getRightAxis());
         BadLog.publish("Button_1", sniper);
         BadLog.publish("Button_2", canDrive);
         //publishes the topics that were not manually created in Botlog
-        publishSubs();
+        //publishSubs(); topic subscribers made outside cannot possibly function: cannot send method call as string to access resources.
         log.updateTopics(); 
         log.log();
       }

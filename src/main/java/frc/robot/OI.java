@@ -7,6 +7,8 @@
 
 package frc.robot;
 
+import badlog.lib.BadLog;
+import badlog.lib.DataInferMode;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -89,6 +91,7 @@ public class OI {
 		highGear.whenPressed(new SwitchGear(DriveGear.HIGH));
 		lowGear.whenPressed(new SwitchGear(DriveGear.LOW));
 		toggleGear.whenPressed(new ToggleGear());
+		Botlog.makeTopic("Left Joystick", BadLog.UNITLESS, () -> getLeftAxis());
   	}
 
  	 public double getLeftAxis() {

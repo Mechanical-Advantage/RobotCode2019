@@ -16,7 +16,6 @@ import com.kauailabs.navx.frc.AHRS;
 
 import org.zeromq.ZMQ;
 
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.command.Command;
@@ -43,6 +42,8 @@ public class Robot extends TimedRobot {
   public static final AHRS ahrs = new AHRS(SPI.Port.kMXP);
 
   public static final CameraSystem cameraSubsystem = new CameraSystem();
+
+  public boolean runBotlog = true;//set to false to disable Botlog
 
   Command autonomousCommand;
   SendableChooser<Command> tuningModeChooser = new SendableChooser<>();
@@ -86,8 +87,8 @@ public class Robot extends TimedRobot {
       generateCommand.setRunWhenDisabled(true);
       generateCommand.start();
     }
+    Botlog.createBadlog(runBotlog);
     //initiates BadLog (and helpful time measurements), the tracking code that provides data from matches based on driver input. Must be called last.
-    Botlog.createBadlog();
   }
 
   /**
@@ -100,7 +101,8 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-    Botlog.runPeriodic();
+    if(runBotlog)
+      Botlog.runPeriodic();
   }
 
   /**
