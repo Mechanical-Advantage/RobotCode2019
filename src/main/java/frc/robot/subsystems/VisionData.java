@@ -72,6 +72,11 @@ public class VisionData extends Subsystem {
   }
 
   public void setPipeline(Pipeline pipeline) {
+    // The pi would be up and blocking on recieve at this point
+    commandSocket.send("set_time", ZMQ.SNDMORE);
+    byte[] currentTime = new byte[8];
+    ByteBuffer.wrap(currentTime).putDouble(Timer.getFPGATimestamp());
+    commandSocket.send(currentTime, 0);
     commandSocket.send("set_pipeline", ZMQ.SNDMORE);
     if (pipeline != null) {
       commandSocket.send(pipeline.getName());
@@ -93,8 +98,8 @@ public class VisionData extends Subsystem {
     public abstract String getName();
     public abstract byte[][] getSubscriptions();
     protected void processData(List<byte[]> frames) {
-      // lastTimestamp = ByteBuffer.wrap(frames.get(1)).getDouble();
-      lastTimestamp = Timer.getFPGATimestamp(); // Temporary until real timestamps
+      lastTimestamp = ByteBuffer.wrap(frames.get(1)).getDouble();
+      // lastTimestamp = Timer.getFPGATimestamp(); // Temporary until real timestamps
       currentDataHandled = false;
     }
     /**

@@ -14,8 +14,7 @@ import time
 import zmq
 import struct
 from collections import namedtuple
-from code import interact
-
+import timeit
 # Retro reflective tape pipeline
 class GripPipelineRetro:
     """
@@ -740,7 +739,7 @@ class ExtraProcessingDelivery:
         return [[cv2.boxPoints(box), box] for box in boxes] # Create [corner coords, arearect] lists
 
 
-    def _target_calc(self, target):
+    def _target_calc(self, target, time):
         # Average the y of the lowest in frame (max y) corner coords
         # max returns (x,y) so get [1]
         lower_center_y = (max(target.left_box[0], key=lambda point: point[1])[1] + \
@@ -778,9 +777,9 @@ class ExtraProcessingDelivery:
         print("Target Angle:", math.degrees(target_angle))
         print("Target Angle L:", math.degrees(target_angle_left))
         print("Target Angle R:", math.degrees(target_angle_right))
-        self._zmq_pub.zmqPubDoubles("distangle", 0.0, distance, angle_h_robot, target_angle)
+        self._zmq_pub.zmqPubDoubles("distangle", time, distance, angle_h_robot, target_angle)
 
-    def _target_calc_solvepnp(self, target):
+    def _target_calc_solvepnp(self, target, time):
         image_points = numpy.array([target.left_box[0].bottom_left,
                                     target.left_box[0].bottom_right,
                                     target.left_box[0].top_left,
@@ -820,12 +819,12 @@ class ExtraProcessingDelivery:
                   numpy.degrees(angle2), "\r\nX Offset: ", xoffset, 
                   "Z Offset: ", zoffset, "World Angle:", 
                   angle_world, "\n")
-            self._zmq_pub.zmqPubDoubles("coordinates", 0.0, xoffset, zoffset, 
+            self._zmq_pub.zmqPubDoubles("coordinates", time, xoffset, zoffset, 
                                         angle_world)
         else:
             print("SolvePnP failed")
 
-    def process(self, pipeline):
+    def process(self, pipeline, time):
         boxes = self._gen_boxes(pipeline.convex_hulls_output)
         boxes.sort(key=lambda box: box[1][0][0]) # Sort by x position
         targets = []
@@ -855,7 +854,7 @@ class ExtraProcessingDelivery:
         except IndexError:
             print("No valid targets found")
             return
-        self._target_calc_solvepnp(target)
+        self._target_calc_solvepnp(target, time)
 
 
 class ExtraProcessingHatch:
@@ -878,7 +877,7 @@ class ExtraProcessingHatch:
     def __init__(self, zmq_pub):
         self._zmq_pub = zmq_pub
 
-    def process(self, pipeline):
+    def process(self, pipeline, time):
         contours = pipeline.filter_contours_output
         contours.sort(key=cv2.contourArea) # Find largest area contour
         try:
@@ -896,7 +895,7 @@ class ExtraProcessingHatch:
                 horiz_distance = math.tan(math.radians(angle_h)) * distance
                 horiz_distance += self.horiz_offset
                 angle_h = math.degrees(math.atan(horiz_distance/distance))
-            self._zmq_pub.zmqPubDoubles("distangle", 0.0, distance, angle_h)
+            self._zmq_pub.zmqPubDoubles("distangle", time, distance, angle_h)
             print("Distance:", distance)
             print("Angle:", angle_h)
         except IndexError:
@@ -928,7 +927,7 @@ class ExtraProcessingWhiteTape(ExtraProcessingDelivery):
     def __init__(self, zmq_pub):
         self._zmq_pub = zmq_pub
 
-    def process(self, pipeline):
+    def process(self, pipeline, time):
         boxes = self._gen_boxes(pipeline.filter_contours_output)
         boxes = [[self._gen_tape_box(box[0]), box[1]] for box in boxes]
         # Find box with longest left-top distance (tape on floor has longest edge)
@@ -946,7 +945,7 @@ class ExtraProcessingWhiteTape(ExtraProcessingDelivery):
             angle_h = self._calc_angle_h(point[0], distance)
             print("Angle:", angle_h)
             print("Distance", distance)
-            self._zmq_pub.zmqPubDoubles("distangle", 0.0, distance, angle_h)
+            self._zmq_pub.zmqPubDoubles("distangle", time, distance, angle_h)
         except IndexError:
             print("No tape pieces found")
 
@@ -990,6 +989,22 @@ class ZmqRecvIF:
         self.flags = 0 if block else zmq.NOBLOCK
 
 
+class RioTimer:
+    """
+    A class to return a time that matches the roboRIO
+    """
+    camera_latency = 0.131272727
+    # How long it takes between the rio sending the time and set_rio_timer being called
+    network_latency = 0.01 # Guess
+
+    def set_rio_timer(self, time):
+        self._rio_time_offset = time + self.network_latency - timeit.default_timer()
+
+    def get_time(self):
+        return timeit.default_timer() + self._rio_time_offset - \
+               self.camera_latency
+
+
 context = zmq.Context()
 def main():
     zmq_publish_port = "5556"
@@ -1002,6 +1017,8 @@ def main():
 
     print('Initializing ZMQ Reciever')
     zmq_recv = ZmqRecvIF(zmq_recv_port)
+
+    timer = RioTimer()
 
     print('Creating pipelines')
     cap = cv2.VideoCapture(0)
@@ -1029,6 +1046,7 @@ def main():
         try:
             zmq_command = zmq_recv.recv_command()
             print("Recieved command", zmq_command[0])
+            # print("Additionad frames:", zmq_command[1:])
             if zmq_command[0] == b"set_pipeline":
                 print("Set pipeline to {}".format(zmq_command[1].decode()))
                 pipeline = pipelines[zmq_command[1]]
@@ -1044,11 +1062,14 @@ def main():
                 else:
                     cv2.imwrite("capture.jpg", cap.read()[1])
                     print("Saved frame to capture.jpg using default camera")
+            elif zmq_command[0] == b"set_time":
+                timer.set_rio_timer(struct.unpack("!d", zmq_command[1])[0])
         except zmq.ZMQError:
             # No command
             pass
         if pipeline is not None:
             have_frame, frame = pipeline.camera.read()
+            time = timer.get_time()
             try:
                 frame = pipeline.undistorter.undistort(frame)
                 pass
@@ -1057,7 +1078,7 @@ def main():
                 pass
             if have_frame:
                 pipeline.GRIP_pipeline.process(frame)
-                pipeline.processing_class.process(pipeline.GRIP_pipeline)
+                pipeline.processing_class.process(pipeline.GRIP_pipeline, time)
 
     print('Capture closed')
 
