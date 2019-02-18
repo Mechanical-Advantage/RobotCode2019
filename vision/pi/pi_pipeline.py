@@ -35,7 +35,7 @@ class GripPipelineRetro:
         self.__hsv_threshold_input = self.resize_image_output
         self.__hsv_threshold_hue = [57, 78]
         self.__hsv_threshold_saturation = [15, 255.0]
-        self.__hsv_threshold_value = [112, 255]
+        self.__hsv_threshold_value = [50, 255]
 
         self.hsv_threshold_output = None
 
@@ -612,12 +612,11 @@ BlurType = Enum('BlurType', 'Box_Blur Gaussian_Blur Median_Filter Bilateral_Filt
 
 
 class DeliveryUndistorter:
-    camera_matrix = numpy.array([[2.196312958075195e+02, 0, 1.3828622034927059e+02],
-        [0, 2.196319580751959e+02, 1.1695904527813433e+02], [0, 0, 1]])
-    dist_coeffs = numpy.array([-4.0927618319459197e-01,
-        2.16383244830097e-01, -1.554154605770095e-03, 3.8508678850099663e-04,
-        -6.71848345285492879e-02])
-    image_size = (320, 240)
+    camera_matrix = numpy.array([[512.0486676110471, 0.0, 305.52035364138726], 
+        [0.0, 515.3532387199512, 262.41020845383434], [0.0, 0.0, 1.0]])
+    dist_coeffs = numpy.array([0.08454318371194253, -0.24818779001569383, 
+        0.002509250787445395, 0.0033838430868377263, 0.12424667264216427])
+    image_size = (640, 480)
     map_type = cv2.CV_32FC1 # CV_32FC1 or CV_16SC2
     alpha = 0
     interpolation = cv2.INTER_LINEAR
@@ -648,11 +647,11 @@ class ExtraProcessingDelivery:
     horiz_FOV = 57.64 # ELP 57.64, LifeCam 25.18 * 2, XBox 41.97
     vert_FOV = 42.36 # ELP 42.36, LifeCam 52.696, XBox 32.67
     height = 35.75
-    vert_angle = 21 # How far down the camera is pointed
+    vert_angle = 0 # How far down the camera is pointed
     horiz_angle = 0 # How far to the right the camera is pointed
     horiz_offset = 0 # How far to the right the camera is shifted
-    width_pixels = 320
-    height_pixels = 240
+    width_pixels = 640
+    height_pixels = 480
 
     # Target constants
     target_bottom_height = 26.17519
@@ -725,14 +724,14 @@ class ExtraProcessingDelivery:
         return (distance, angle_v)
 
     def _gen_tape_box(self, box_points):
-            sorted_box = sorted(box_points, key=lambda point: point[1]) # Y pos sort
-            top_points = sorted_box[0:2] # Top two points
-            bottom_points = sorted_box[2:4] # Bottom two points
-            top_points.sort(key=lambda point: point[0]) # X pos sort
-            bottom_points.sort(key=lambda point: point[0]) # X pos soft
-            return self.TapeBox(bottom_left=bottom_points[0], 
-                bottom_right=bottom_points[1], top_left=top_points[0],
-                top_right=top_points[1])
+        sorted_box = sorted(box_points, key=lambda point: point[1]) # Y pos sort
+        top_points = sorted_box[0:2] # Top two points
+        bottom_points = sorted_box[2:4] # Bottom two points
+        top_points.sort(key=lambda point: point[0]) # X pos sort
+        bottom_points.sort(key=lambda point: point[0]) # X pos soft
+        return self.TapeBox(bottom_left=bottom_points[0], 
+            bottom_right=bottom_points[1], top_left=top_points[0],
+            top_right=top_points[1])
 
     def _gen_boxes(self, contours):
         boxes = [cv2.minAreaRect(contour) for contour in contours]
@@ -801,16 +800,28 @@ class ExtraProcessingDelivery:
             print("Translation:", translation_vector)
             x = translation_vector[0][0]
             z = translation_vector[2][0]
+            z2 = math.sin(self.vert_angle) * translation_vector[1][0] + math.cos(self.vert_angle) * translation_vector[2][0]
             # distance in the horizontal plane between camera and target
             distance = math.sqrt(x**2 + z**2)
+            distance2 = math.sqrt(x**2 + z2**2)
+
+            # horizontal angle between camera center line and target
             angle1 = math.atan2(x, z)
             rot, _ = cv2.Rodrigues(rotation_vector)
             rot_inv = rot.transpose()
             pzero_world = numpy.matmul(rot_inv, -translation_vector)
-            # horizontal angle between camera center line and target
             angle2 = math.atan2(pzero_world[0][0], pzero_world[2][0])
-            print("Camera point angle:", math.degrees(angle2))
-            print("Position angle:", math.degrees(angle1))
+            xoffset = math.sin(angle2)*distance
+            zoffset = math.sqrt(distance**2 - xoffset**2)
+            angle_world = numpy.degrees((angle1 + angle2) * -1)
+            #print(pzero_world[0][0], pzero_world[2][0])
+            print("Distance: ", distance, "Distance Adjusted: ", distance2, 
+                  "Angle1: ", numpy.degrees(angle1), "Angle 2: ", 
+                  numpy.degrees(angle2), "\r\nX Offset: ", xoffset, 
+                  "Z Offset: ", zoffset, "World Angle:", 
+                  angle_world, "\n")
+            self._zmq_pub.zmqPubDoubles("coordinates", 0.0, xoffset, zoffset, 
+                                        angle_world)
         else:
             print("SolvePnP failed")
 
@@ -995,14 +1006,14 @@ def main():
     print('Creating pipelines')
     cap = cv2.VideoCapture(0)
     cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
-    # cap.set(cv2.CAP_PROP_BRIGHTNESS, 0)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
+    # cap.set(cv2.CAP_PROP_BRIGHTNESS, 0) # Only needed on Logitech (maybe)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
     cap.set(cv2.CAP_PROP_FPS, 30)
     cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25) # Disable auto exposure
     # cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.75) # Enable auto exposure
-    cap.set(cv2.CAP_PROP_EXPOSURE, 0.002) # Minimum exposure, should be 0 on LifeCam/XBox and 0.003 on new ELP
-    cap.set(cv2.CAP_PROP_SHARPNESS, 0) # Removes haloing on ELP, not needed on LifeCam or XBox
+    cap.set(cv2.CAP_PROP_EXPOSURE, 0.002) # Minimum exposure, should be 0 on LifeCam/XBox, 0.002 on new ELP, 2 on Logitech (have had problems on Logitech)
+    # cap.set(cv2.CAP_PROP_SHARPNESS, 0) # Removes haloing on ELP, not needed on LifeCam or XBox
     delivery_undistorter = DeliveryUndistorter()
     pipelines = {b"none" : None, \
     b"delivery" : Pipeline(GripPipelineRetro(), \

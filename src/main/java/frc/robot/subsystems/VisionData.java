@@ -93,7 +93,8 @@ public class VisionData extends Subsystem {
     public abstract String getName();
     public abstract byte[][] getSubscriptions();
     protected void processData(List<byte[]> frames) {
-      lastTimestamp = ByteBuffer.wrap(frames.get(1)).getDouble();
+      // lastTimestamp = ByteBuffer.wrap(frames.get(1)).getDouble();
+      lastTimestamp = Timer.getFPGATimestamp(); // Temporary until real timestamps
       currentDataHandled = false;
     }
     /**
@@ -144,7 +145,6 @@ public class VisionData extends Subsystem {
         super.processData(frames);
         distance = ByteBuffer.wrap(frames.get(2)).getDouble();
         angle = ByteBuffer.wrap(frames.get(3)).getDouble();
-        lastTimestamp = Timer.getFPGATimestamp(); // Temporary until real timestamps
       }
     }
 
@@ -192,14 +192,14 @@ public class VisionData extends Subsystem {
       * frame 1: timestamp (double)
       * frame 2: x from target (double)
       * frame 3: y from target (double)
-      * frame 4: angle from robot to target (double)
+      * frame 4: angle from robot in world coordinates (double)
       */
       return new byte[][] {"coordinates".getBytes()};
     }
 
     @Override
     protected void processData(List<byte[]> frames) {
-      if (frames.get(0) == "coordinates".getBytes()) {
+      if (Arrays.equals(frames.get(0), "coordinates".getBytes())) {
         super.processData(frames);
         x = ByteBuffer.wrap(frames.get(2)).getDouble();
         y = ByteBuffer.wrap(frames.get(3)).getDouble();

@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj.buttons.Button;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.command.Command;
 import frc.robot.commands.CancelCommand;
-import frc.robot.commands.DriveToTapeLine;
+import frc.robot.commands.DriveToVisionTarget;
 import frc.robot.commands.SetCamera;
 import frc.robot.commands.SwitchGear;
 import frc.robot.commands.ToggleGear;
@@ -79,7 +79,7 @@ public class OI {
 	private Button lowGear = new JoystickButton(leftController, 4);
 
 	private Button hatchPickup = new JoystickButton(oiController1, 11);
-	private Button driveToTape = new JoystickButton(rightController, 10);
+	private Button driveToTarget = new JoystickButton(rightController, 10);
 	private Button visionTest = new JoystickButton(oiController1, 1);
 
  	NetworkTable ledTable;
@@ -102,9 +102,9 @@ public class OI {
 		Command hatchPickupCommand = new VisionHatchPickup();
 		hatchPickup.whenPressed(hatchPickupCommand);
 		hatchPickup.whenReleased(new CancelCommand(hatchPickupCommand));
-		Command driveToTapeLineCommand = new DriveToTapeLine();
-		driveToTape.whenPressed(driveToTapeLineCommand);
-		driveToTape.whenReleased(new CancelCommand(driveToTapeLineCommand));
+		Command driveToTargetCommand = new DriveToVisionTarget();
+		driveToTarget.whenPressed(driveToTargetCommand);
+		driveToTarget.whenReleased(new CancelCommand(driveToTargetCommand));
 		visionTest.whileHeld(new VisionRecieverTest());
   	}
 

@@ -17,25 +17,34 @@ import frc.robot.Robot;
 import frc.robot.RobotMap;
 import frc.robot.RobotMap.RobotType;
 import frc.robot.subsystems.DriveTrain.DriveGear;
+import frc.robot.subsystems.VisionData.DeliveryTargetPipeline;
+import frc.robot.subsystems.VisionData.Pipeline;
+import frc.robot.subsystems.VisionData.WhiteTapePipeline;
 import jaci.pathfinder.Pathfinder;
 
-public class DriveToTapeLine extends Command {
+public class DriveToVisionTarget extends Command {
 
   private static final int dataPoints = 100;
   private static final double kUpdatePeriodDistance = 0.02;
-  private static final double kUpdatePeriodAngle = 0.05;
+  private static final double kUpdatePeriodAngle = 0.01; // Originally 0.05
   // % velocity reserved for turn correction
-  private static final double kTurnCorrectionAmount = 0.1;
+  private static final double kTurnCorrectionAmount = 0.2;
   // PID output will be limited to negative to positive this
-  private static final double kMaxOutput = 0.3;
+  private static final double kMaxOutput = 0.9;
   // Limit change in one iteration to this - % of max output
   private static final double kMaxChange = 0.06;
   private static final double targetDistance = 12; // Distance from camera to try to get to
   private static final double distanceTolerance = 0.5;
   private static final double angleTolerance = 1;
-  private static final float tapeAngle = -90; // Varies based on which tape line
+  private static final float tapeAngle = -90; // Varies based on which tape line, only used if processor does not provide vision angle
   private static final double maxTargetY = 36; // The maximum distance away the angle will target based on target distance
-  private static final double maxTargetYDistance = 48; // What distance from target should be maxTargetY as a target, scales down at closer distances
+  private static final double maxTargetYDistance = 60; // What distance from target should be maxTargetY as a target, scales down at closer distances
+  private static final double lookAheadDistance = 8; // How many inches in front of the current y position to target
+  private static final boolean useLookAheadNav = true; // Whether to use look ahead distance or scaling based on distance to get target y (see calcAngleSetpoint)
+  private static final double minCameraDistance = 24; // Vision data ignored when closer than this
+  private static final Pipeline pipeline = Robot.visionData.delivery;
+  // pipelineProcessor cannot be static because it can refer to local variables of this class
+  private final PipelineProcessor pipelineProcessor = new RetroSolvePnPProcessor();
 
   private double kPDistance;
   private double kIDistance;
@@ -50,9 +59,10 @@ public class DriveToTapeLine extends Command {
   private static double maxOutputVelocityChange = kMaxOutput * kMaxChange;
   private LatencyData xData = new LatencyData(dataPoints);
   private LatencyData yData = new LatencyData(dataPoints);
-  private LatencyData angleData = new LatencyData(dataPoints); // This is not used for correction but just to get historical angle data
-  private float previousYaw;
+  private LatencyData angleData = new LatencyData(dataPoints); // This is not used for correction but just to get historical angle data if the processor does not provide vision angle values
   private double previousDistance;
+  private float previousRawYaw; // Yaw value from the gyro
+  private double previousYaw; // Yaw value used for processing, equals previousRawYaw if processor does not provide vision angle
   private PIDController distanceController, turnController;
   private DriveOutputter driveOutputter = new DriveOutputter();
   private DistanceCalculator distanceCalc = new DistanceCalculator();
@@ -68,7 +78,7 @@ public class DriveToTapeLine extends Command {
   How far out is based on distance to target
   */
 
-  public DriveToTapeLine() {
+  public DriveToVisionTarget() {
     super();
     requires(Robot.driveSubsystem);
     requires(Robot.visionData);
@@ -93,7 +103,7 @@ public class DriveToTapeLine extends Command {
       kIAngle = 0;
       kDAngle = 0;
       kFAngle = 0;
-      gear = DriveGear.HIGH;
+      gear = DriveGear.LOW; // Originally HIGH
       break;
     case EVERYBOT_2019:
       kPDistance = 0.017;
@@ -143,8 +153,16 @@ public class DriveToTapeLine extends Command {
     xData.clear();
     yData.clear();
     angleData.clear();
-    Robot.visionData.setPipeline(Robot.visionData.whiteTape);
-    previousYaw = Robot.ahrs.getYaw() - tapeAngle; // This makes the initial difference 0
+    Robot.visionData.setPipeline(pipeline);
+    // Makes the initial differences 0
+    if (pipelineProcessor.providesVisionAngle()) {
+      previousRawYaw = (float)Pathfinder.boundHalfDegrees(Robot.ahrs.getYaw());
+      previousYaw = 0;
+    } else {
+      previousRawYaw = (float)Pathfinder.boundHalfDegrees(Robot.ahrs.getYaw() - 
+        tapeAngle);
+      previousYaw = previousRawYaw;
+    }
     previousDistance = (Robot.driveSubsystem.getDistanceLeft() + Robot.driveSubsystem.getDistanceRight()) / 2;
   }
 
@@ -152,40 +170,48 @@ public class DriveToTapeLine extends Command {
   @Override
   protected void execute() {
     double currentRawDistance = (Robot.driveSubsystem.getDistanceLeft() + Robot.driveSubsystem.getDistanceRight()) / 2;
-    float currentYaw = (float)Pathfinder.boundHalfDegrees(Robot.ahrs.getYaw() - tapeAngle);
+    // Tape angle does not matter if vision angle available
+    float currentRawYaw = (float)Pathfinder.boundHalfDegrees(Robot.ahrs.getYaw() - 
+      (pipelineProcessor.providesVisionAngle() ? 0 : tapeAngle));
+    if (pipelineProcessor.providesVisionAngle()) {
+      angleData.addDataPoint(Pathfinder.boundHalfDegrees(angleData.getCurrentPoint() + (currentRawYaw - previousRawYaw)));
+    } else {
+      // If no vision angle data, do not use the method above that results in a starting point of 0
+      angleData.addDataPoint(currentRawYaw);
+    }
     // Apply distance moved in average angle
-    updateXYData(currentRawDistance - previousDistance, (currentYaw + previousYaw) / 2);
-    angleData.addDataPoint(currentYaw);
+    updateXYData(currentRawDistance - previousDistance, 
+      (angleData.getCurrentPoint() + previousYaw) / 2);
     previousDistance = currentRawDistance;
-    previousYaw = currentYaw;
-    if (!Robot.visionData.whiteTape.isDataHandled()) {
-      // Calculate x and y
-      // Uses the gyro angle at the time the frame was taken in these calculations
-      Double angleAtCapture = angleData.getPoint(Robot.visionData.whiteTape.getLastTimestamp());
-      if (angleAtCapture != null) {
-        double angleToTarget = angleAtCapture
-            + Robot.visionData.whiteTape.getAngle();
-        double distance = Robot.visionData.whiteTape.getDistance();
-        double x = Math.sin(Math.toRadians(angleToTarget)) * distance;
-        double y = Math.cos(Math.toRadians(angleToTarget)) * distance;
-
-        boolean dataApplied = xData.addCorrectedData(x, Robot.visionData.whiteTape.getLastTimestamp());
-        dataApplied = dataApplied && yData.addCorrectedData(y, Robot.visionData.whiteTape.getLastTimestamp());
-        Robot.visionData.whiteTape.dataHandled();
+    previousRawYaw = currentRawYaw;
+    previousYaw = angleData.getCurrentPoint();
+    if (!pipeline.isDataHandled() && (!visionDataRecieved || distanceCalc.pidGet() > minCameraDistance)) {
+      // Calculate x and y using the pipeline processor
+      boolean dataApplied = false;
+      if (pipelineProcessor.process(pipeline)) {
+        dataApplied = xData.addCorrectedData(pipelineProcessor.getX(), 
+          pipeline.getLastTimestamp());
+        dataApplied = dataApplied && yData.addCorrectedData(pipelineProcessor.getY(), 
+          pipeline.getLastTimestamp());
+        if (pipelineProcessor.providesVisionAngle()) {
+          dataApplied = dataApplied && angleData.addCorrectedData(pipelineProcessor.getAngle(),
+            pipeline.getLastTimestamp());
+        }
+        pipeline.dataHandled();
         // Start actually driving if this is the first data and
         // vision data has been incorporated into the LatencyData objs
         if (!visionDataRecieved && dataApplied) {
           turnController.enable();
           distanceController.enable();
+          visionDataRecieved = true;
         }
-        visionDataRecieved = true;
       }
     }
     // Calculate a new angle setpoint
     turnController.setSetpoint(calcAngleSetpoint());
     System.out.println("X: " + xData.getCurrentPoint());
     System.out.println("Y: " + yData.getCurrentPoint());
-    System.out.println("Cur angle: " + currentYaw);
+    System.out.println("Cur angle: " + angleData.getCurrentPoint());
     System.out.println("Target angle: " + turnController.getSetpoint());
     System.out.println("Distance: " + distanceCalc.pidGet());
   }
@@ -193,7 +219,8 @@ public class DriveToTapeLine extends Command {
   // Make this return true when this Command no longer needs to run execute()
   @Override
   protected boolean isFinished() {
-    return false;
+    // TODO make this smarter
+    return visionDataRecieved && distanceCalc.pidGet() <= targetDistance;
   }
 
   // Called once after isFinished returns true
@@ -216,12 +243,15 @@ public class DriveToTapeLine extends Command {
 
   private double calcAngleSetpoint() {
     double distance = distanceCalc.pidGet();
+    double y = yData.getCurrentPoint();
     double targetY;
-    if (distance >= maxTargetYDistance) {
+    if ((useLookAheadNav ? y : distance) >= maxTargetYDistance) {
       // map will scale out of range values so this enforces the maximum
       targetY = maxTargetY;
+    } else if (useLookAheadNav) {
+      targetY = y-lookAheadDistance;
     } else {
-      targetY = Robot.map(distance, 0, maxTargetYDistance, 0, maxTargetY);
+      targetY = Robot.map(distance, 0, maxTargetYDistance, targetDistance, maxTargetY);
     }
     double angle = Math.atan2(yData.getCurrentPoint()-targetY, 
       xData.getCurrentPoint());
@@ -299,5 +329,87 @@ public class DriveToTapeLine extends Command {
         angleOutput = output;
       }
     }
+  }
+
+  private static abstract class PipelineProcessor {
+
+    protected double x, y;
+    protected Double angle = null;
+
+    /**
+     * Process the data from the pipeline
+     * Note: Store x, y, angle in their local vars
+     * @return Whether the processing was successful
+     */
+    public abstract boolean process(Pipeline pipeline);
+
+    /**
+     * Get the x value from the last call to process()
+     * @return The last x value
+     */
+    public double getX() {return x;};
+
+    /**
+     * Get the y value from the last call to process()
+     * @return The last y value
+     */
+    public double getY() {return y;};
+
+    /**
+     * Get the angle value from the last call to process().
+     * Note: Pipeline processors that do not provide vision angle data may return null
+     * @return The last angle (in world coords)
+     */
+    public Double getAngle() {return angle;};
+
+    /**
+     * Get whether the pipeline processor can provide vision-based angle information
+     * @return Whether the processor can be used for vision-based angles
+     */
+    public abstract boolean providesVisionAngle();
+  }
+
+  @SuppressWarnings("unused")
+  private class WhiteTapeProcessor extends PipelineProcessor {
+
+    @Override
+    public boolean process(Pipeline pipeline) {
+      WhiteTapePipeline tapePipeline = (WhiteTapePipeline)pipeline;
+      // Uses the gyro angle at the time the frame was taken in these calculations
+      Double angleAtCapture = angleData.getPoint(tapePipeline.getLastTimestamp());
+      if (angleAtCapture != null) {
+        double angleToTarget = angleAtCapture
+            + tapePipeline.getAngle();
+        double distance = tapePipeline.getDistance();
+        x = Math.sin(Math.toRadians(angleToTarget)) * distance;
+        y = Math.cos(Math.toRadians(angleToTarget)) * distance;
+        return true;
+      }
+      return false;
+    }
+
+    @Override
+    public boolean providesVisionAngle() {
+      return false;
+    }
+  }
+
+  @SuppressWarnings("unused")
+  private static class RetroSolvePnPProcessor extends PipelineProcessor {
+
+    @Override
+    public boolean process(Pipeline pipeline) {
+      DeliveryTargetPipeline retroPipeline = (DeliveryTargetPipeline)pipeline;
+      x = retroPipeline.getX();
+      y = retroPipeline.getY();
+      angle = retroPipeline.getAngle();
+      return true;
+    }
+
+    @Override
+    public boolean providesVisionAngle() {
+      return true;
+    }
+
   }
 }
