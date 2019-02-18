@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.commands.DriveWithJoystick.JoystickMode;
+import frc.robot.commands.ArmTuning;
 import frc.robot.commands.FusedHeadingTest;
 import frc.robot.commands.GenerateMotionProfiles;
 import frc.robot.subsystems.Arm;
@@ -73,6 +74,7 @@ public class Robot extends TimedRobot {
 
     if (RobotMap.tuningMode) {
       tuningModeChooser.addOption("Fused Heading Test", new FusedHeadingTest());
+      tuningModeChooser.addOption("Arm Tuning", new ArmTuning());
       SmartDashboard.putData("Tuning Auto Mode", tuningModeChooser);
       autoChooser.addOption("Tuning Auto", AutoMode.TUNING);
     }
