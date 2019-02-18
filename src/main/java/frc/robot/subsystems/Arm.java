@@ -42,12 +42,14 @@ public class Arm extends Subsystem {
   private static final double elbowUpperLimitHigh = 360;
   private static final int elbowReduction = 1; // Multiplier on setpoints
   private static final double elbowOffsetLow = 0; // Elbow offset applied when shoulder is lowered
-  private static final double elbowOffsetHigh = 0; // Elbow offset applied when shoulder is raised
+  private static final double elbowOffsetHigh = 60; // Elbow offset applied when shoulder is raised
   private static final double elbowSchoolZoneSpeedLimit = 0.2;
   private static final double elbowLowSchoolZoneLowerStart = -360;
   private static final double elbowLowSchoolZoneUpperStart = 360;
   private static final double elbowHighSchoolZoneLowerStart = -360;
   private static final double elbowHighSchoolZoneUpperStart = 360;
+  private static final double elbowPeakOutput = 1;
+  private static final double elbowZeroPercent = -0.05;
 
   private static final FeedbackDevice wristSensorType = FeedbackDevice.CTRE_MagEncoder_Relative;
   private static final boolean wristSensorReversed = false;
@@ -63,10 +65,28 @@ public class Arm extends Subsystem {
   private static final double wristSchoolZoneSpeedLimit = 0.2;
   private static final double wristSchoolZoneLowerStart = -180;
   private static final double wristSchoolZoneUpperStart = 180;
+  private static final double wristPeakOutput = 1;
+  private static final double wristZeroPercent = -0.05;
 
   private static final FeedbackDevice telescopeSensorType = FeedbackDevice.CTRE_MagEncoder_Relative;
   private static final boolean telescopeSensorReversed = false;
   private static final boolean telescopeOutputReversed = false;
+  private static final int telescopeTicksPerRotation = 4096;
+  private static final int telescopeReduction = 1;
+  private static final double telescopeInchesPerRotation = 1;
+  private static final double telescopeZeroedPosition = 0;
+  private static final double telescopeMaxExtension = 0; // How far the telescope can extend
+  private static final double telescopeSchoolZoneSpeedLimit = 0.2;
+  private static final double telescopeSchoolZoneLowerStart = 2;
+  private static final double telescopeSchoolZoneUpperStart = telescopeMaxExtension - 2;
+  private static final double telescopePeakOutput = 1;
+  private static final double telescopeZeroPercent = -0.05;
+
+  private static final double allowedFrameExtension = 30;
+  private static final double bicepLength = 0;
+  private static final double forearmLength = 0; // Length of the forearm with no telescope extension
+  private static final double framePerimeterFrontFromShoulder = 6; // How far forward the front edge of the frame perimeter is from the shoulder joint
+  private static final double framePerimeterBackFromShoulder = -20; // How far forward the back edge of the frame perimeter is from the shoulder joint
 
   private static final TunableNumber kPElbow = new TunableNumber("Arm Elbow/p");
   private static final TunableNumber kIElbow = new TunableNumber("Arm Elbow/i");
@@ -96,6 +116,13 @@ public class Arm extends Subsystem {
 
   private static final int configTimeout = 10; // Method forms without timeout used where possible
 
+  // Calculated constants
+  private static final double shoulderDistanceLow = -1 * 
+    Math.cos(Math.toRadians(elbowOffsetLow)) * bicepLength; // How far forward of the shoulder base the elbow joint is when the shoulder is lowered
+  private static final double shoulderDistanceHigh = -1 * 
+    Math.cos(Math.toRadians(elbowOffsetHigh)) * bicepLength; // How far forward of the shoulder base the elbow joint is when the shoulder is raised
+  private static final int telescopeMaxExtensionTicks = convertTelescopeInchesToTicks(telescopeMaxExtension);
+
   private TalonSRX elbowLeft;
   private TalonSRX elbowRight;
   private TalonSRX wrist;
@@ -113,6 +140,11 @@ public class Arm extends Subsystem {
   private boolean wristZeroed = false;
   private WristPosition targetWristPosition;
   private SchoolZone wristSchoolZone;
+  private boolean telescopeZeroed = false;
+  private int previousTelescopeLimit;
+  private double targetTelescopePosition;
+  private int targetTelescopePositionTicks;
+  private SchoolZone telescopeSchoolZone;
 
   /*
   Note: We decided wrist should not use remote elbow sensor and setpoint should be updated when elbow target changed based on new target.
@@ -154,14 +186,17 @@ public class Arm extends Subsystem {
         telescope = new TalonSRX(RobotMap.armTelescope);
 
         elbowLowSchoolZone = new SchoolZone(elbowSchoolZoneSpeedLimit, 
-          elbowLowSchoolZoneLowerStart, elbowLowSchoolZoneUpperStart, 
-          elbowLeft, elbowRight);
+          elbowPeakOutput, elbowLowSchoolZoneLowerStart,
+          elbowLowSchoolZoneUpperStart, elbowLeft, elbowRight);
         elbowHighSchoolZone = new SchoolZone(elbowSchoolZoneSpeedLimit, 
-          elbowHighSchoolZoneLowerStart, elbowHighSchoolZoneUpperStart, 
-          elbowLeft, elbowRight);
+          elbowPeakOutput, elbowHighSchoolZoneLowerStart,
+          elbowHighSchoolZoneUpperStart, elbowLeft, elbowRight);
         wristSchoolZone = new SchoolZone(wristSchoolZoneSpeedLimit, 
-          wristSchoolZoneLowerStart, wristSchoolZoneUpperStart, 
-          wrist);
+          wristPeakOutput, wristSchoolZoneLowerStart,
+          wristSchoolZoneUpperStart, wrist);
+        telescopeSchoolZone = new SchoolZone(telescopeSchoolZoneSpeedLimit, 
+          telescopePeakOutput, telescopeSchoolZoneLowerStart,
+          telescopeSchoolZoneUpperStart, telescope);
 
         elbowLeft.configSelectedFeedbackSensor(elbowSensorType);
         elbowLeft.setSensorPhase(elbowSensorLeftReversed);
@@ -191,6 +226,7 @@ public class Arm extends Subsystem {
         elbowLeft.configReverseSoftLimitEnable(true);
         elbowRight.configForwardSoftLimitEnable(true);
         elbowRight.configReverseSoftLimitEnable(true);
+        elbowLowSchoolZone.setControllerLimits(); // This sets the peak output of the controllers
 
         wrist.configForwardSoftLimitThreshold(convertWristRelativePositionToTicks(
           wristUpperLimit));
@@ -198,25 +234,42 @@ public class Arm extends Subsystem {
           wristLowerLimit));
         wrist.configForwardSoftLimitEnable(true);
         wrist.configReverseSoftLimitEnable(true);
+        wristSchoolZone.setControllerLimits();
+
+        telescope.configReverseSoftLimitThreshold(0);
+        telescope.configForwardSoftLimitEnable(true);
+        telescope.configReverseSoftLimitEnable(true);
+        telescopeSchoolZone.setControllerLimits();
 
         elbowLeft.configContinuousCurrentLimit(elbowContinousCurrentLimit);
         elbowLeft.configPeakCurrentLimit(elbowPeakCurrentLimit);
         elbowLeft.configPeakCurrentDuration(elbowPeakCurrentLimitDuration);
         elbowLeft.enableCurrentLimit(elbowEnableCurrentLimit);
+        elbowLeft.overrideSoftLimitsEnable(false); // Before zeroing this does not work
         elbowRight.configContinuousCurrentLimit(elbowContinousCurrentLimit);
         elbowRight.configPeakCurrentLimit(elbowPeakCurrentLimit);
         elbowRight.configPeakCurrentDuration(elbowPeakCurrentLimitDuration);
         elbowRight.enableCurrentLimit(elbowEnableCurrentLimit);
+        elbowRight.overrideSoftLimitsEnable(false);
         wrist.configContinuousCurrentLimit(wristContinousCurrentLimit);
         wrist.configPeakCurrentLimit(wristPeakCurrentLimit);
         wrist.configPeakCurrentDuration(wristPeakCurrentLimitDuration);
         wrist.enableCurrentLimit(wristEnableCurrentLimit);
+        wrist.overrideSoftLimitsEnable(false);
         telescope.configContinuousCurrentLimit(telescopeContinousCurrentLimit);
         telescope.configPeakCurrentLimit(telescopePeakCurrentLimit);
         telescope.configPeakCurrentDuration(telescopePeakCurrentLimitDuration);
         telescope.enableCurrentLimit(telescopeEnableCurrentLimit);
+        telescope.overrideSoftLimitsEnable(false);
 
         setShoulderRaised(false); // Will set elbow limits as well and ensures consistent state
+
+        // Start zeroing the mechanisms
+        // Normal control will not work until this is complete (see periodic())
+        elbowLeft.set(ControlMode.PercentOutput, elbowZeroPercent, 
+          DemandType.Neutral, 0);
+        wrist.set(ControlMode.PercentOutput, wristZeroPercent);
+        telescope.set(ControlMode.PercentOutput, telescopeZeroPercent);
     }
   }
 
@@ -226,14 +279,23 @@ public class Arm extends Subsystem {
       if (RobotMap.tuningMode) {
         initPID();
       }
+      // Should zeroing multiple times be allowed?
       if (!elbowZeroed && getElbowLimitSwitch()) {
         setElbowZeroed();
+      } else {
+        elbowCurrentSchoolZone.applyPosition(getElbowPosition());
       }
       if (!wristZeroed && getWristLimitSwitch()) {
         setWristZeroed();
+      } else {
+        wristSchoolZone.applyPosition(getRelativeWristPosition());
       }
-      elbowCurrentSchoolZone.applyPosition(getElbowPosition());
-      wristSchoolZone.applyPosition(getRelativeWristPosition());
+      if (!telescopeZeroed && getTelescopeLimitSensed()) {
+        setTelescopeZeroed();
+      } else {
+        updateTelescopeForwardLimit(false);
+        telescopeSchoolZone.applyPosition(getTelescopePosition());
+      }
     }
   }
 
@@ -361,6 +423,8 @@ public class Arm extends Subsystem {
       elbowLeft.setSelectedSensorPosition(newPosition);
       elbowRight.setSelectedSensorPosition(newPosition);
       elbowZeroed = true;
+      elbowLeft.overrideSoftLimitsEnable(true);
+      elbowRight.overrideSoftLimitsEnable(true);
       updateElbowSetpoint();
       // May affect other parts
     }
@@ -453,6 +517,7 @@ public class Arm extends Subsystem {
       wrist.setSelectedSensorPosition(convertWristRelativePositionToTicks(
         wristZeroedPosition));
       wristZeroed = true;
+      wrist.overrideSoftLimitsEnable(true);
       updateWristSetpoint();
     }
   }
@@ -460,6 +525,135 @@ public class Arm extends Subsystem {
   public boolean getWristLimitSwitch() {
     // TODO add this
     return false;
+  }
+
+  public double getTelescopeCurrent() {
+    if (RobotMap.robot == RobotType.ROBOT_2019 || 
+    RobotMap.robot == RobotType.ROBOT_2019_2) {
+      return telescope.getOutputCurrent();
+    }
+    return 0;
+  }
+
+  public double getTelescopePosition() {
+    if (RobotMap.robot == RobotType.ROBOT_2019 || 
+    RobotMap.robot == RobotType.ROBOT_2019_2) {
+      return convertTelescopeTicksToInches(telescope.getSelectedSensorPosition());
+    }
+    return 0;
+  }
+
+  public double getTelescopeTargetPosition() {
+    return targetTelescopePosition;
+  }
+
+  public void setTelescopePosition(double position) {
+    if (RobotMap.robot == RobotType.ROBOT_2019 || 
+    RobotMap.robot == RobotType.ROBOT_2019_2) {
+      targetTelescopePosition = position;
+      targetTelescopePositionTicks = convertTelescopeInchesToTicks(position);
+      // Passing true to updateTelescopeForwardLimit forces the setpoint to be 
+      // changed on the controller
+      updateTelescopeForwardLimit(true);
+    }
+  }
+
+  private static double convertTelescopeTicksToInches(int ticks) {
+    return (double)ticks / telescopeReduction / telescopeTicksPerRotation * 
+        telescopeInchesPerRotation;
+  }
+
+  private static int convertTelescopeInchesToTicks(double position) {
+    return (int)Math.round(position / telescopeInchesPerRotation * 
+      telescopeTicksPerRotation * telescopeReduction);
+  }
+
+  private void setTelescopeZeroed() {
+    if (RobotMap.robot == RobotType.ROBOT_2019 || 
+    RobotMap.robot == RobotType.ROBOT_2019_2) {
+      telescope.setSelectedSensorPosition(convertTelescopeInchesToTicks(
+        telescopeZeroedPosition));
+      telescopeZeroed = true;
+      telescope.overrideSoftLimitsEnable(true);
+    }
+  }
+
+  private boolean getTelescopeLimitSensed() {
+    if (RobotMap.robot == RobotType.ROBOT_2019 || 
+     RobotMap.robot == RobotType.ROBOT_2019_2) {
+      return telescope.getSelectedSensorVelocity() == 0 && 
+        telescope.getMotorOutputPercent() < 0;
+    }
+    return false;
+  }
+
+  /**
+   * Updates the forward soft limit of the telescope and changes the setpoint if needed.
+   * @param setpointChanged Whether the setpoint of the telescope has been changed and needs to be reevaluated
+   */
+  private void updateTelescopeForwardLimit(boolean setpointChanged) {
+    if ((RobotMap.robot == RobotType.ROBOT_2019 ||
+    RobotMap.robot == RobotType.ROBOT_2019_2) && telescopeZeroed && elbowZeroed) {
+      double currentMaxExtension = getAllowedTelescopeExtension(getElbowPosition());
+      int currentMaxExtensionTicks = convertTelescopeInchesToTicks(
+        currentMaxExtension);
+      int limit = currentMaxExtensionTicks > telescopeMaxExtensionTicks ?
+        telescopeMaxExtensionTicks : currentMaxExtensionTicks;
+      if (limit != previousTelescopeLimit || setpointChanged) {
+        telescope.configForwardSoftLimitThreshold(limit, 0);
+        if (targetTelescopePositionTicks > limit) {
+          telescope.set(ControlMode.Position, limit);
+        } else {
+          telescope.set(ControlMode.Position, targetTelescopePositionTicks);
+        }
+        previousTelescopeLimit = limit;
+      }
+    }
+  }
+
+  /**
+   * Calculates how far outside the frame perimeter the arm currently is
+   * @return Extension outside the frame perimeter (inches)
+   */
+  public double getDistanceOutsideFrame() {
+    if (RobotMap.robot == RobotType.ROBOT_2019 ||
+    RobotMap.robot == RobotType.ROBOT_2019_2) {
+      double elbowPosition = getElbowPosition();
+      double distanceFromElbow = Math.cos(Math.toRadians(elbowPosition)) *
+        (getTelescopePosition() + forearmLength);
+      double distanceFromShoulder = distanceFromElbow + (isShoulderRaised() ?
+        shoulderDistanceHigh : shoulderDistanceLow);
+      double frameExtension = distanceFromShoulder - (elbowPosition <= 90 ? 
+        framePerimeterFrontFromShoulder : framePerimeterBackFromShoulder);
+      if (elbowPosition > 90) {
+        frameExtension *= -1;
+      }
+      return frameExtension;
+    } else {
+      return 0;
+    }
+  }
+
+  /**
+   * Calculates how much the telescope is allowed to extend at a given elbow angle
+   * @param elbowPosition The angle of the elbow (0 = parallel with floor in front)
+   * @return Allowed telescope extension (inches)
+   */
+  private double getAllowedTelescopeExtension(double elbowPosition) {
+    if (RobotMap.robot == RobotType.ROBOT_2019 ||
+    RobotMap.robot == RobotType.ROBOT_2019_2) {
+      double allowedDistanceFromShoulder = allowedFrameExtension * 
+        (elbowPosition > 90 ? -1 : 1) + (elbowPosition <= 90 ? 
+        framePerimeterFrontFromShoulder : framePerimeterBackFromShoulder);
+      double allowedDistanceFromElbow = allowedDistanceFromShoulder - 
+        (isShoulderRaised() ? shoulderDistanceHigh : shoulderDistanceLow);
+      double allowedExtensionFromElbow = allowedDistanceFromElbow / 
+        Math.cos(Math.toRadians(elbowPosition));
+      double allowedExtension = allowedExtensionFromElbow - forearmLength;
+      return allowedExtension;
+    } else {
+      return 0;
+    }
   }
 
   public enum WristPosition {

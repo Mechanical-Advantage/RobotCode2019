@@ -46,26 +46,46 @@ public class LatencyData implements PIDSource{
      * @returns Whether the point was successfully applied
      */
     public boolean addCorrectedData(double point, double timestamp) {
+        PointAndIndexes originalPointAndIndexes = getPointAndIndexes(timestamp);
+        if (originalPointAndIndexes == null) {
+            return false;
+        }
+        double originalPoint = originalPointAndIndexes.getPoint();
+        double difference = point - originalPoint;
+        // Iternate from currentIndex-1 (most recent point) backwards to indexBefore, apply difference
+        for (int i = Math.floorMod((currentIndex-1), data.length); 
+          Math.floorMod(i, data.length) != originalPointAndIndexes.getIndexBefore(); 
+          i--) {
+            data[Math.floorMod(i, data.length)] += difference;
+        }
+        return true;
+    }
+
+    private PointAndIndexes getPointAndIndexes(double timestamp) {
         int indexBefore = Math.floorMod((currentIndex-1), data.length);
         while (timestamps[indexBefore] > timestamp) {
             indexBefore--;
             indexBefore = Math.floorMod(indexBefore, data.length);
             if (timestamps[indexBefore] == 0) {
                 // No valid data is there for the time
-                return false;
+                return null;
             }
         }
         int indexAfter = (indexBefore+1) % data.length;
         // Linear interpolation
-        double originalPoint = data[indexBefore] + (timestamp-timestamps[indexBefore])
+        double point = data[indexBefore] + (timestamp-timestamps[indexBefore])
             * ((data[indexAfter]-data[indexBefore])/
             (double)(timestamps[indexAfter]-timestamps[indexBefore]));
-        double difference = point - originalPoint;
-        // Iternate from currentIndex-1 (most recent point) backwards to indexBefore, apply difference
-        for (int i = Math.floorMod((currentIndex-1), data.length); Math.floorMod(i, data.length) != indexBefore; i--) {
-            data[Math.floorMod(i, data.length)] += difference;
+        return new PointAndIndexes(point, indexBefore, indexAfter);
+    }
+
+    public Double getPoint(double timestamp) {
+        PointAndIndexes pointAndIndexes = getPointAndIndexes(timestamp);
+        if (pointAndIndexes != null) {
+            return pointAndIndexes.getPoint();
+        } else {
+            return null;
         }
-        return true;
     }
 
     public void clear() {
@@ -90,5 +110,38 @@ public class LatencyData implements PIDSource{
     @Override
     public double pidGet() {
         return getCurrentPoint();
-	}
+    }
+    
+    private static class PointAndIndexes {
+        private double point;
+        private int indexBefore, indexAfter;
+
+        public PointAndIndexes(double point, int indexBefore, int indexAfter) {
+            this.point = point;
+            this.indexBefore = indexBefore;
+            this.indexAfter = indexAfter;
+        }
+
+        /**
+         * @return the point
+         */
+        public double getPoint() {
+            return point;
+        }
+
+        /**
+         * @return the indexBefore
+         */
+        public int getIndexBefore() {
+            return indexBefore;
+        }
+
+        /**
+         * @return the indexAfter
+         */
+        @SuppressWarnings("unused")
+        public int getIndexAfter() {
+            return indexAfter;
+        }
+    }
 }
