@@ -648,7 +648,7 @@ class ExtraProcessingDelivery:
     height = 35.75
     vert_angle = 0 # How far down the camera is pointed
     horiz_angle = 0 # How far to the right the camera is pointed
-    horiz_offset = 0 # How far to the right the camera is shifted
+    horiz_offset = 3 # How far to the right the camera is shifted
     width_pixels = 640
     height_pixels = 480
 
@@ -812,8 +812,13 @@ class ExtraProcessingDelivery:
             angle2 = math.atan2(pzero_world[0][0], pzero_world[2][0])
             xoffset = math.sin(angle2)*distance
             zoffset = math.sqrt(distance**2 - xoffset**2)
-            angle_world = numpy.degrees((angle1 + angle2) * -1)
+            angle_world = (angle1 + angle2) * -1
+            # Apply horiz offset 90 deg from angle_world
+            offset_angle = angle_world + math.pi / 2 # pi/2 rad = 90 deg
+            xoffset -= math.sin(offset_angle) * self.horiz_offset
+            zoffset -= math.cos(offset_angle) * self.horiz_offset
             #print(pzero_world[0][0], pzero_world[2][0])
+            angle_world = numpy.degrees(angle_world)
             print("Distance: ", distance, "Distance Adjusted: ", distance2, 
                   "Angle1: ", numpy.degrees(angle1), "Angle 2: ", 
                   numpy.degrees(angle2), "\r\nX Offset: ", xoffset, 
