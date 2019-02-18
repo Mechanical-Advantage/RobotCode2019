@@ -10,62 +10,72 @@ package frc.robot.commands;
 import java.util.Map;
 
 import edu.wpi.first.wpilibj.command.Command;
-import frc.robot.subsystems.Arm;
 
 public class SetArmPositions extends Command {
 
   public enum ArmPosition {
     ROCKET_HI_PLATE, ROCKET_HI_CARGO, ROCKET_MID_PLATE, ROCKET_MID_CARGO, ROCKET_LO_PLATE, ROCKET_LO_CARGO, CARGOSHIP_PLATE, CARGOSHIP_CARGO, FLOOR_PLATE, FLOOR_CARGO, LOADING_PICKUP;
     
-      //THE VALUES SET BELOW ARE JUST ESTIMATES- still need to be checked/tested!!
+      //The values set below are just estimates- still need to be checked/tested!
 
-    private static final Map<ArmPosition,Boolean> shoulderMap = Map.ofEntries(Map.entry(ROCKET_HI_PLATE, true), 
+    private static final Map<ArmPosition,Boolean> shoulderMap = Map.ofEntries(Map.entry(ROCKET_HI_PLATE, true),  
                                                                       Map.entry(ROCKET_HI_CARGO, true),
-                                                                      Map.entry(ROCKET_MID_PLATE, true),
-                                                                      Map.entry(ROCKET_MID_CARGO, true),
-                                                                      Map.entry(ROCKET_LO_PLATE, false),
+                                                                      Map.entry(ROCKET_MID_PLATE, false),
+                                                                      Map.entry(ROCKET_MID_CARGO, false),
+                                                                      Map.entry(ROCKET_LO_PLATE, false),  
                                                                       Map.entry(ROCKET_LO_CARGO, false),
-                                                                      Map.entry(CARGOSHIP_PLATE, false),
-                                                                      Map.entry(CARGOSHIP_CARGO, false),
+                                                                      Map.entry(CARGOSHIP_PLATE, true),
+                                                                      Map.entry(CARGOSHIP_CARGO, true),
                                                                       Map.entry(FLOOR_PLATE, false),
                                                                       Map.entry(FLOOR_CARGO, false),
                                                                       Map.entry(LOADING_PICKUP, false));
 
-    private static final Map<SetArmPositions.ArmPosition,Double> wristMap = Map.ofEntries(Map.entry(ROCKET_HI_PLATE, 0.0), // units are angle degrees.
-                                                                      Map.entry(ROCKET_HI_CARGO, 0.0),
-                                                                      Map.entry(ROCKET_MID_PLATE, 45.0),
-                                                                      Map.entry(ROCKET_MID_CARGO, 45.0),
-                                                                      Map.entry(ROCKET_LO_PLATE, 45.0),
-                                                                      Map.entry(ROCKET_LO_CARGO, 45.0),
+    private static final Map<SetArmPositions.ArmPosition,Double> wristMap = Map.ofEntries(Map.entry(ROCKET_HI_PLATE, 90.0), // units are angle degrees.
+                                                                      Map.entry(ROCKET_HI_CARGO, 90.0),
+                                                                      Map.entry(ROCKET_MID_PLATE, 90.0),
+                                                                      Map.entry(ROCKET_MID_CARGO, 90.0),
+                                                                      Map.entry(ROCKET_LO_PLATE, 90.0),
+                                                                      Map.entry(ROCKET_LO_CARGO, 90.0),
                                                                       Map.entry(CARGOSHIP_PLATE, 45.0),
                                                                       Map.entry(CARGOSHIP_CARGO, 45.0),
-                                                                      Map.entry(FLOOR_PLATE, 90.0),
-                                                                      Map.entry(FLOOR_CARGO, 90.0),
+                                                                      Map.entry(FLOOR_PLATE, 0.0),
+                                                                      Map.entry(FLOOR_CARGO, 0.0),
                                                                       Map.entry(LOADING_PICKUP, 45.0));
-
-    private static final Map<ArmPosition,Double> elbowMap = Map.ofEntries(Map.entry(ROCKET_HI_PLATE, 0.0), // still need to change
-                                                                  Map.entry(ROCKET_HI_CARGO, 0.0),        // still need to change
-                                                                  Map.entry(ROCKET_MID_PLATE, 120.0),
-                                                                  Map.entry(ROCKET_MID_CARGO, 120.0),
-                                                                  Map.entry(ROCKET_LO_PLATE, 125.0),
-                                                                  Map.entry(ROCKET_LO_CARGO, 125.0),
+                                                                      // private double getAngle() {
+                                                                      //   switch (this) {
+                                                                      //     case UPRIGHT:
+                                                                      //       return 0;
+                                                                      //     case FLAT:
+                                                                      //       return 90;
+                                                                      //     case CARGO_PICKUP:
+                                                                      //       return 45;
+                                                                      //   }
+                                                                      //   return 0;
+                                                                      // }
+                                                                      
+    private static final Map<ArmPosition,Double> elbowMap = Map.ofEntries(Map.entry(ROCKET_HI_PLATE, 135.0),
+                                                                  Map.entry(ROCKET_HI_CARGO, 120.0), 
+                                                                  Map.entry(ROCKET_MID_PLATE, 110.0),
+                                                                  Map.entry(ROCKET_MID_CARGO, 105.0),
+                                                                  Map.entry(ROCKET_LO_PLATE, 170.0),
+                                                                  Map.entry(ROCKET_LO_CARGO, 170.0),
                                                                   Map.entry(CARGOSHIP_PLATE, 125.0),
                                                                   Map.entry(CARGOSHIP_CARGO, 125.0),
                                                                   Map.entry(FLOOR_PLATE, -60.0),
                                                                   Map.entry(FLOOR_CARGO, -60.0),
                                                                   Map.entry(LOADING_PICKUP, -45.0));
                                                                   
-    private static final Map<ArmPosition,Double> telescopeMap = Map.ofEntries(Map.entry(ROCKET_HI_PLATE, 0.0), // probably want longer extension values for higher targets? 
-                                                                  Map.entry(ROCKET_HI_CARGO, 0.0),
-                                                                  Map.entry(ROCKET_MID_PLATE, 0.0),
-                                                                  Map.entry(ROCKET_MID_CARGO, 0.0),
+    private static final Map<ArmPosition,Double> telescopeMap = Map.ofEntries(Map.entry(ROCKET_HI_PLATE, 15.0), // probably want longer extension values for higher targets? 
+                                                                  Map.entry(ROCKET_HI_CARGO, 20.0),    // lengths are in addition to 30 inches of "forearm"
+                                                                  Map.entry(ROCKET_MID_PLATE, 3.0),
+                                                                  Map.entry(ROCKET_MID_CARGO, 8.0),
                                                                   Map.entry(ROCKET_LO_PLATE, 0.0),
-                                                                  Map.entry(ROCKET_LO_CARGO, 0.0),
-                                                                  Map.entry(CARGOSHIP_PLATE, 0.0),
+                                                                  Map.entry(ROCKET_LO_CARGO, 5.0),
+                                                                  Map.entry(CARGOSHIP_PLATE, 5.0),
                                                                   Map.entry(CARGOSHIP_CARGO, 0.0),
                                                                   Map.entry(FLOOR_PLATE, 0.0),
-                                                                  Map.entry(FLOOR_CARGO, 0.0),
-                                                                  Map.entry(LOADING_PICKUP, 0.0));
+                                                                  Map.entry(FLOOR_CARGO, 5.0),
+                                                                  Map.entry(LOADING_PICKUP, 3.0));
 
     public boolean lookUpShoulderPosition(ArmPosition position) {
       return shoulderMap.get(position);
