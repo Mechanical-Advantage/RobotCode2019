@@ -91,7 +91,6 @@ public class OI {
 		highGear.whenPressed(new SwitchGear(DriveGear.HIGH));
 		lowGear.whenPressed(new SwitchGear(DriveGear.LOW));
 		toggleGear.whenPressed(new ToggleGear());
-		Botlog.makeTopic("Left Joystick", BadLog.UNITLESS, () -> getLeftAxis());
   	}
 
  	 public double getLeftAxis() {

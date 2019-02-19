@@ -28,6 +28,8 @@ public class Botlog{// Wrapper Class to do all things Badlog. If this creates er
 
     private static List<botlogTopicSub> topSubs = new ArrayList<botlogTopicSub>(0);
 
+    private static int defaultUpdate = 250;
+
     //when Botlog is turned off, it will still make a .bag file to prevent errors,
     //but it won't be able to create/publish anything.
     public static void createBadlog(boolean runBotlog){//creates the Badlog
@@ -48,7 +50,7 @@ public class Botlog{// Wrapper Class to do all things Badlog. If this creates er
           BadLog.createValue("Match_Number", "" + DriverStation.getInstance().getMatchNumber());//example Value: key value-string pair known at init. Aka one time check.
           BadLog.createTopic("Match_Time", "s", () -> DriverStation.getInstance().getMatchTime()); //example Topic: constant stream of numeric data; what we're tracking
           //Joysticks/Buttons
-          //BadLog.createTopicSubscriber("Left_Joystick", BadLog.UNITLESS, DataInferMode.DEFAULT, ""); //example Subscriber: like a topic, but easier for tracking station input.
+          BadLog.createTopicSubscriber("Left_Joystick", BadLog.UNITLESS, DataInferMode.DEFAULT, ""); //example Subscriber: like a topic, but easier for tracking station input.
           BadLog.createTopicSubscriber("Right_Joystick", BadLog.UNITLESS, DataInferMode.DEFAULT, "");
           BadLog.createTopicSubscriber("Button_1", BadLog.UNITLESS, DataInferMode.DEFAULT, "");
           BadLog.createTopicSubscriber("Button_2", BadLog.UNITLESS, DataInferMode.DEFAULT, "");
@@ -77,17 +79,18 @@ public class Botlog{// Wrapper Class to do all things Badlog. If this creates er
         canDrive = 0.0;
       }
       long currentMS = System.currentTimeMillis();
-      if (!DriverStation.getInstance().isDisabled() || (currentMS - lastLog) >= 250) {//makes code run slower when disabled; 1/4 the rate when enabled.
+      if (!DriverStation.getInstance().isDisabled() || (currentMS - lastLog) >= defaultUpdate) {//makes code run slower when disabled; 1/4 the rate when enabled.
         lastLog = currentMS;
-        //BadLog.publish("Left_Joystick", Robot.oi.getLeftAxis());
+        BadLog.publish("Left_Joystick", Robot.oi.getLeftAxis());
         BadLog.publish("Right_Joystick", Robot.oi.getRightAxis());
         BadLog.publish("Button_1", sniper);
         BadLog.publish("Button_2", canDrive);
         //publishes the topics that were not manually created in Botlog
-        //publishSubs(); topic subscribers made outside cannot possibly function: cannot send method call as string to access resources.
+        publishSubs(currentMS - lastLog);
         log.updateTopics(); 
         log.log();
       }
+      
     }
 
     //methods that allow outside classes to be tracked in BotLog. 
@@ -104,8 +107,8 @@ public class Botlog{// Wrapper Class to do all things Badlog. If this creates er
       topics.add(topic);
     }
 
-    public static void makeTopicSub(String name, String unit, DataInferMode infer, String arg, String source, boolean isDouble){//Creates a Topic Subscriber: 
-      botlogTopicSub sub = new botlogTopicSub(name, unit, infer, arg, source, isDouble); //multiple use that keeps a constant view on the source.
+    public static void makeTopicSub(String name, String unit, DataInferMode infer, String arg, Supplier source, boolean isDouble,  int time, boolean largo, boolean smol, double when){//Creates a Topic Subscriber: 
+      botlogTopicSub sub = new botlogTopicSub(name, unit, infer, arg, source, isDouble, time, largo, smol, when); //multiple use that keeps a constant view on the source.
       topSubs.add(sub);
     }
 
@@ -127,18 +130,40 @@ public class Botlog{// Wrapper Class to do all things Badlog. If this creates er
       }
     }
 
-    public static void publishSubs(){
+    public static void publishSubs(double milis){//publishes ALL the topic subscribers.
       for (int x = 0; x < topSubs.size(); x++) {
-        if(topSubs.get(x).getDouble()){
-          BadLog.publish(topSubs.get(x).getName(), topSubs.get(x).getSource());
-        } else {
-          double isTrue;
-          if(Robot.oi.getDriveEnabled()){
-            isTrue = 1.0;
+        if(topSubs.get(x).pubTime >= milis && !DriverStation.getInstance().isDisabled()){//controls when the sub will publish based on time and wheter pr not the robot is enabled. If you want a topic sub to update outside dissables, define it inside Botlog itself.
+          if(topSubs.get(x).getDouble()){
+            if(topSubs.get(x).greater){
+              if(topSubs.get(x).pubWhen > (double) topSubs.get(x).getSource().get()){//only publishes when the value is above the requirement
+                BadLog.publish(topSubs.get(x).getName(), "" + topSubs.get(x).getSource().get());
+              }
+            } else if(topSubs.get(x).lesser){
+              if(topSubs.get(x).pubWhen < (double) topSubs.get(x).getSource().get()){//only publishes when the value is below the requirement
+                BadLog.publish(topSubs.get(x).getName(), "" + topSubs.get(x).getSource().get());
+              }
+            } else {
+              BadLog.publish(topSubs.get(x).getName(), "" + topSubs.get(x).getSource().get());
+            }
           } else {
-            isTrue = 0.0;
+            double isTrue;
+            if(Robot.oi.getDriveEnabled()){
+              isTrue = 1.0;
+            } else {
+              isTrue = 0.0;
+            }
+            if(topSubs.get(x).greater){
+              if(topSubs.get(x).pubWhen > isTrue){
+                BadLog.publish(topSubs.get(x).getName(), isTrue);
+              }
+            } else if(topSubs.get(x).lesser){
+              if(topSubs.get(x).pubWhen < isTrue){
+                BadLog.publish(topSubs.get(x).getName(), isTrue);
+              }
+            } else {
+              BadLog.publish(topSubs.get(x).getName(), isTrue);
+            }
           }
-          BadLog.publish(topSubs.get(x).getName(), isTrue);
         }
       }
     }
@@ -189,15 +214,23 @@ public class Botlog{// Wrapper Class to do all things Badlog. If this creates er
       private String TSUnit;
       private DataInferMode TSInfer;
       private String TSArg;
-      private String TSSource;
+      private Supplier TSSource;
       private boolean TSIsDouble;
-      botlogTopicSub(String name, String unit, DataInferMode infer, String arg, String source, boolean isDouble){
+      private int pubTime = defaultUpdate;//time between pulishes, miliseconds
+      private boolean greater;//will update only when output is greater than pubWhen
+      private boolean lesser;//above but for less than. If neither, set both to false. NEVER SET BOTH TO TRUE.
+      private double pubWhen;//sets conditional for publish
+      botlogTopicSub(String name, String unit, DataInferMode infer, String arg, Supplier source, boolean isDouble, int time, boolean largo, boolean smol, double when){
         TSName = name;
         TSUnit = unit;
         TSInfer = infer;
         TSArg = arg;
         TSSource = source;
         TSIsDouble = isDouble;
+        pubTime = time;
+        greater = largo;
+        lesser = smol;
+        pubWhen = when;
       }
 
       public String getName(){
@@ -216,7 +249,7 @@ public class Botlog{// Wrapper Class to do all things Badlog. If this creates er
         return TSArg;
       }
 
-      public String getSource(){
+      public Supplier getSource(){
         return TSSource;
       }
 
