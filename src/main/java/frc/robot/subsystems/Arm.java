@@ -137,14 +137,17 @@ public class Arm extends Subsystem {
   private SchoolZone elbowLowSchoolZone;
   private SchoolZone elbowHighSchoolZone;
   private SchoolZone elbowCurrentSchoolZone;
+  private boolean elbowEnabled;
   private boolean wristZeroed = false;
   private WristPosition targetWristPosition;
   private SchoolZone wristSchoolZone;
+  private boolean wristEnabled;
   private boolean telescopeZeroed = false;
   private int previousTelescopeLimit;
   private double targetTelescopePosition;
   private int targetTelescopePositionTicks;
   private SchoolZone telescopeSchoolZone;
+  private boolean telescopeEnabled;
 
   /*
   Note: We decided wrist should not use remote elbow sensor and setpoint should be updated when elbow target changed based on new target.
@@ -221,7 +224,6 @@ public class Arm extends Subsystem {
         elbowLeft.selectProfileSlot(0, 0); // Use slot 0 for main PID
         elbowLeft.selectProfileSlot(1, 1); // Use slot 1 for secondary PID
         elbowLeft.configAuxPIDPolarity(elbowDiffPIDPolarity);
-        elbowRight.follow(elbowLeft, FollowerType.AuxOutput1); // Aux PID get applied in opposite direction on right
         elbowLeft.configForwardSoftLimitEnable(true);
         elbowLeft.configReverseSoftLimitEnable(true);
         elbowRight.configForwardSoftLimitEnable(true);
@@ -262,6 +264,9 @@ public class Arm extends Subsystem {
         telescope.enableCurrentLimit(telescopeEnableCurrentLimit);
         telescope.overrideSoftLimitsEnable(false);
 
+        enableElbow();
+        enableWrist();
+        enableTelescope();
         setShoulderRaised(false); // Will set elbow limits as well and ensures consistent state
 
         // Start zeroing the mechanisms
@@ -373,7 +378,7 @@ public class Arm extends Subsystem {
   }
 
   private void updateElbowSetpoint() {
-    if (elbowZeroed && (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2)) {
+    if (elbowZeroed && (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) && elbowEnabled) {
       double setpoint;
       if (shoulderRaised) {
         setpoint = targetElbowPosition + elbowOffsetHigh;
@@ -504,7 +509,7 @@ public class Arm extends Subsystem {
   }
 
   private void updateWristSetpoint() {
-    if (wristZeroed && RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+    if (wristZeroed && (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) && wristEnabled) {
       int setpoint = convertWristPositionToTicks(targetWristPosition.getAngle(), 
         true, getElbowTargetPosition());
       // Make sure aux PID does nothing with DemandType.Neutral
@@ -587,13 +592,45 @@ public class Arm extends Subsystem {
     return false;
   }
 
+  public void disableElbow() {
+    elbowEnabled = false;
+    elbowLeft.set(ControlMode.Disabled, 0);
+    elbowRight.set(ControlMode.Disabled, 0);
+  }  
+
+  public void disableWrist() {
+    wristEnabled = false;
+    wrist.set(ControlMode.Disabled, 0);
+  }  
+
+  public void disableTelescope() {
+    telescopeEnabled = false;
+    telescope.set(ControlMode.Disabled, 0);
+  }
+
+  public void enableElbow() {
+    elbowEnabled = true;
+    elbowRight.follow(elbowLeft, FollowerType.AuxOutput1); // Aux PID get applied in opposite direction on right
+    updateElbowSetpoint();
+  }  
+
+  public void enableWrist() {
+    wristEnabled = true;
+    updateWristSetpoint();
+  }  
+
+  public void enableTelescope() {
+    telescopeEnabled = true;
+    updateTelescopeForwardLimit(true);
+  }
+
   /**
    * Updates the forward soft limit of the telescope and changes the setpoint if needed.
    * @param setpointChanged Whether the setpoint of the telescope has been changed and needs to be reevaluated
    */
   private void updateTelescopeForwardLimit(boolean setpointChanged) {
     if ((RobotMap.robot == RobotType.ROBOT_2019 ||
-    RobotMap.robot == RobotType.ROBOT_2019_2) && telescopeZeroed && elbowZeroed) {
+    RobotMap.robot == RobotType.ROBOT_2019_2) && telescopeZeroed && elbowZeroed && telescopeEnabled) {
       double currentMaxExtension = getAllowedTelescopeExtension(getElbowPosition());
       int currentMaxExtensionTicks = convertTelescopeInchesToTicks(
         currentMaxExtension);
@@ -671,4 +708,5 @@ public class Arm extends Subsystem {
       return 0;
     }
   }
+
 }

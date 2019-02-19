@@ -30,10 +30,28 @@ public class ArmTuning extends Command {
     SmartDashboard.putNumber("Arm Wrist Position", Robot.arm.getWristPosition());
     SmartDashboard.putNumber("Arm Telescope Position", Robot.arm.getTelescopePosition());
     Robot.arm.setShoulderRaised(SmartDashboard.getBoolean("Arm Shoulder High", false));
-    Robot.arm.setElbowPosition(SmartDashboard.getNumber("Arm Elbow/setpoint", 0.0));
-    Robot.arm.setWristPosition(Arm.WristPosition.values()[(int)SmartDashboard.getNumber("Arm Wrist/setpoint", 0)]);
-    Robot.arm.setTelescopePosition(SmartDashboard.getNumber("Arm Telescope/setpoint", 0.0));
-  }
+    
+    if (SmartDashboard.getBoolean("Arm Elbow/enabled", false)) {
+      Robot.arm.setElbowPosition(SmartDashboard.getNumber("Arm Elbow/setpoint", 0.0));
+      Robot.arm.enableElbow();
+    } else {
+      Robot.arm.disableElbow();
+    }
+
+    if (SmartDashboard.getBoolean("Arm Wrist/enabled", false)) {
+      Robot.arm.setWristPosition(Arm.WristPosition.values()[(int)SmartDashboard.getNumber("Arm Wrist/setpoint", 0)]);
+      Robot.arm.enableWrist();
+    } else {
+      Robot.arm.disableWrist();
+    }
+
+    if (SmartDashboard.getBoolean("Arm Telescope/enabled", false)) {
+      Robot.arm.setTelescopePosition(SmartDashboard.getNumber("Arm Telescope/setpoint", 0.0));
+      Robot.arm.enableTelescope();
+    } else {
+      Robot.arm.disableTelescope();
+    }
+   }
 
   // Make this return true when this Command no longer needs to run execute()
   @Override
