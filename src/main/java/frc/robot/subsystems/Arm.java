@@ -40,7 +40,7 @@ public class Arm extends Subsystem {
   private static final double elbowUpperLimitLow = 360;
   private static final double elbowLowerLimitHigh = 0;
   private static final double elbowUpperLimitHigh = 360;
-  private static final int elbowReduction = 1; // Multiplier on setpoints
+  private static final double elbowReduction = 1.5*33; // Multiplier on setpoints
   private static final double elbowOffsetLow = 0; // Elbow offset applied when shoulder is lowered
   private static final double elbowOffsetHigh = 60; // Elbow offset applied when shoulder is raised
   private static final double elbowSchoolZoneSpeedLimit = 0.2;
@@ -48,7 +48,7 @@ public class Arm extends Subsystem {
   private static final double elbowLowSchoolZoneUpperStart = 360;
   private static final double elbowHighSchoolZoneLowerStart = -360;
   private static final double elbowHighSchoolZoneUpperStart = 360;
-  private static final double elbowPeakOutput = /*1*/0;
+  private static final double elbowPeakOutput = 1;
   private static final double elbowZeroPercent = /*-0.05*/0;
 
   private static final FeedbackDevice wristSensorType = FeedbackDevice.CTRE_MagEncoder_Relative;
