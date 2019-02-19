@@ -24,8 +24,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.commands.DriveWithJoystick.JoystickMode;
 import frc.robot.commands.ArmTuning;
+import frc.robot.commands.DriveDistanceOnHeading;
 import frc.robot.commands.FusedHeadingTest;
 import frc.robot.commands.GenerateMotionProfiles;
+import frc.robot.commands.TurnToAngle;
 import frc.robot.commands.VelocityPIDTuner;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.CameraSystem;
@@ -79,6 +81,8 @@ public class Robot extends TimedRobot {
       tuningModeChooser.addOption("Fused Heading Test", new FusedHeadingTest());
       tuningModeChooser.addOption("Arm Tuning", new ArmTuning());
       tuningModeChooser.addOption("Velocity PID Tuner", new VelocityPIDTuner());
+      tuningModeChooser.addOption("Turn 90 degrees", new TurnToAngle(90));
+      tuningModeChooser.addOption("Drive 5 feet", new DriveDistanceOnHeading(60));
       SmartDashboard.putData("Tuning Auto Mode", tuningModeChooser);
       autoChooser.addOption("Tuning Auto", AutoMode.TUNING);
     }
