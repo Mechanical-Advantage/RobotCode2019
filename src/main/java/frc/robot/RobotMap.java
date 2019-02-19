@@ -24,24 +24,24 @@ public class RobotMap {
   // public static int rangefinderPort = 1;
   // public static int rangefinderModule = 1;
   public static int rightMaster;
-	public static int rightSlave;
-	public static int rightSlave2;
-	public static int leftMaster;
-	public static int leftSlave;
-	public static int leftSlave2;
-	public static int leftDriveGearSolenoid1;
-	public static int leftDriveGearSolenoid2;
-	public static int leftDriveGearPCM;
-	public static int rightDriveGearSolenoid1;
-	public static int rightDriveGearSolenoid2;
-	public static int rightDriveGearPCM;
-	public static double robotWidth;
-	public static double robotLength;
-	public static final boolean tuningMode = true;
-	public static final RobotType robot = RobotType.ORIGINAL_ROBOT_2018;
-	public static int minVelocityLow; // lower values will be treated as this value, RPM
-	public static int maxVelocityLow; // maximum velocity when sticks are fully forward (value of 1), RPM
-	public static int maxVelocityHigh;
+  public static int rightSlave;
+  public static int rightSlave2;
+  public static int leftMaster;
+  public static int leftSlave;
+  public static int leftSlave2;
+  public static int leftDriveGearSolenoid1;
+  public static int leftDriveGearSolenoid2;
+  public static int leftDriveGearPCM;
+  public static int rightDriveGearSolenoid1;
+  public static int rightDriveGearSolenoid2;
+  public static int rightDriveGearPCM;
+  public static double robotWidth;
+  public static double robotLength;
+  public static final boolean tuningMode = true;
+  public static final RobotType robot = RobotType.EVERYBOT_2019;
+  public static int minVelocityLow; // lower values will be treated as this value, RPM
+  public static int maxVelocityLow; // maximum velocity when sticks are fully forward (value of 1), RPM
+  public static int maxVelocityHigh;
   public static int minVelocityHigh;
   public static int maxAcceleration;
   public static int armElbowLeft;
@@ -55,7 +55,9 @@ public class RobotMap {
   public static int armShoulder2Extend;
   public static int armShoulder2Retract;
   public static int armShoulder2PCM;
-  
+  public static int vacuumMotor;
+  public static int vacuumPressureSensor;
+
   public RobotMap() {
 		switch (robot) {
       case ROBOT_2017:
@@ -115,6 +117,8 @@ public class RobotMap {
         armElbowRight = 0;
         armTelescope = 5;
         armWrist = 11;
+        vacuumMotor = 4;
+        vacuumPressureSensor = 1;
         break;
       default:
         break;
@@ -122,10 +126,6 @@ public class RobotMap {
 	}
 
   public enum RobotType {
-    ROBOT_2019,
-    ROBOT_2019_2,
-		ORIGINAL_ROBOT_2018,
-		EVERYBOT_2019,
-		ROBOT_2017
-	}
+    ROBOT_2019, ROBOT_2019_2, ORIGINAL_ROBOT_2018, EVERYBOT_2019, ROBOT_2017
+  }
 }
