@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.PIDOutput;
 import edu.wpi.first.wpilibj.PIDSource;
 import edu.wpi.first.wpilibj.PIDSourceType;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.command.Command;
 import frc.robot.LatencyData;
 import frc.robot.Robot;
@@ -25,7 +26,7 @@ import jaci.pathfinder.Pathfinder;
 public class DriveToVisionTarget extends Command {
 
   private static final int dataPoints = 100;
-  private static final double kUpdatePeriodDistance = 0.02;
+  private static final double kUpdatePeriodDistance = 0.01; // Originally 0.02
   private static final double kUpdatePeriodAngle = 0.01; // Originally 0.05
   // % velocity reserved for turn correction
   private static final double kTurnCorrectionAmount = 0.2;
@@ -37,11 +38,12 @@ public class DriveToVisionTarget extends Command {
   private static final double distanceTolerance = 0.5;
   private static final double angleTolerance = 1;
   private static final float tapeAngle = -90; // Varies based on which tape line, only used if processor does not provide vision angle
-  private static final double maxTargetY = 36; // The maximum distance away the angle will target based on target distance
-  private static final double maxTargetYDistance = 60; // What distance from target should be maxTargetY as a target, scales down at closer distances
-  private static final double lookAheadDistance = 8; // How many inches in front of the current y position to target
+  private static final double maxTargetY = 48; // The maximum distance away the angle will target based on target distance or current position (see useLookAheadNav)
+  private static final double minTargetY = 6; // The mimumum distance away the angle will target, applies to both angle calc modes
+  private static final double maxTargetYDistance = 60; // What distance from target should be maxTargetY as a target, scales down at closer distances, only used for non-lookahead mode
+  private static final double lookAheadDistance = 8; // How many inches in front of the current y position to target, only used for lookahead mode
   private static final boolean useLookAheadNav = true; // Whether to use look ahead distance or scaling based on distance to get target y (see calcAngleSetpoint)
-  private static final double minCameraDistance = 24; // Vision data ignored when closer than this
+  private static final double minCameraDistance = 0; // Vision data ignored when closer than this
   private static final Pipeline pipeline = Robot.visionData.delivery;
   // pipelineProcessor cannot be static because it can refer to local variables of this class
   private final PipelineProcessor pipelineProcessor = new RetroSolvePnPProcessor();
@@ -99,7 +101,7 @@ public class DriveToVisionTarget extends Command {
       kIDistance = 0.000000;
       kDDistance = 0;
       kFDistance = 0;
-      kPAngle = 0.05; // was 0.05, disabled due to WPILib Tolerance buffer phase lag
+      kPAngle = 0.05; // was 0.05
       kIAngle = 0;
       kDAngle = 0;
       kFAngle = 0;
@@ -147,7 +149,7 @@ public class DriveToVisionTarget extends Command {
   @Override
   protected void initialize() {
     visionDataRecieved = false;
-    if (RobotMap.robot == RobotType.ORIGINAL_ROBOT_2018) {
+    if (Robot.driveSubsystem.isDualGear()) {
       Robot.driveSubsystem.switchGear(gear);
     }
     xData.clear();
@@ -186,6 +188,7 @@ public class DriveToVisionTarget extends Command {
     previousRawYaw = currentRawYaw;
     previousYaw = angleData.getCurrentPoint();
     if (!pipeline.isDataHandled() && (!visionDataRecieved || distanceCalc.pidGet() > minCameraDistance)) {
+      // System.out.println("Current time: " + Timer.getFPGATimestamp() + " Data time: " + pipeline.getLastTimestamp());
       // Calculate x and y using the pipeline processor
       boolean dataApplied = false;
       if (pipelineProcessor.process(pipeline)) {
@@ -209,18 +212,20 @@ public class DriveToVisionTarget extends Command {
     }
     // Calculate a new angle setpoint
     turnController.setSetpoint(calcAngleSetpoint());
-    System.out.println("X: " + xData.getCurrentPoint());
-    System.out.println("Y: " + yData.getCurrentPoint());
-    System.out.println("Cur angle: " + angleData.getCurrentPoint());
-    System.out.println("Target angle: " + turnController.getSetpoint());
-    System.out.println("Distance: " + distanceCalc.pidGet());
+    // System.out.println("X: " + xData.getCurrentPoint());
+    // System.out.println("Y: " + yData.getCurrentPoint());
+    // System.out.println("Cur angle: " + angleData.getCurrentPoint());
+    // System.out.println("Target angle: " + turnController.getSetpoint());
+    // System.out.println("Distance: " + distanceCalc.pidGet());
   }
 
   // Make this return true when this Command no longer needs to run execute()
   @Override
   protected boolean isFinished() {
-    // TODO make this smarter
-    return visionDataRecieved && distanceCalc.pidGet() <= targetDistance;
+    return visionDataRecieved && Math.abs(distanceCalc.pidGet() - targetDistance) 
+      <= distanceTolerance && distanceController.onTarget() && 
+      turnController.onTarget() && Math.abs(angleData.getCurrentPoint()) <= 
+      angleTolerance;
   }
 
   // Called once after isFinished returns true
@@ -245,13 +250,21 @@ public class DriveToVisionTarget extends Command {
     double distance = distanceCalc.pidGet();
     double y = yData.getCurrentPoint();
     double targetY;
-    if ((useLookAheadNav ? y : distance) >= maxTargetYDistance) {
-      // map will scale out of range values so this enforces the maximum
-      targetY = maxTargetY;
-    } else if (useLookAheadNav) {
+    if (useLookAheadNav) {
       targetY = y-lookAheadDistance;
+      if (targetY > maxTargetY) {
+        targetY = maxTargetY;
+      }
     } else {
-      targetY = Robot.map(distance, 0, maxTargetYDistance, targetDistance, maxTargetY);
+      if (distance >= maxTargetYDistance) {
+        // map will scale out of range values so this enforces the maximum
+        targetY = maxTargetY;
+      } else {
+        targetY = Robot.map(distance, 0, maxTargetYDistance, 0, maxTargetY);
+      }
+    }
+    if (targetY < minTargetY) {
+      targetY = minTargetY;
     }
     double angle = Math.atan2(yData.getCurrentPoint()-targetY, 
       xData.getCurrentPoint());

@@ -32,7 +32,7 @@ class GripPipelineRetro:
         self.resize_image_output = None
 
         self.__hsv_threshold_input = self.resize_image_output
-        self.__hsv_threshold_hue = [57, 78]
+        self.__hsv_threshold_hue = [57, 89]
         self.__hsv_threshold_saturation = [15, 255.0]
         self.__hsv_threshold_value = [50, 255]
 
@@ -611,11 +611,11 @@ BlurType = Enum('BlurType', 'Box_Blur Gaussian_Blur Median_Filter Bilateral_Filt
 
 
 class DeliveryUndistorter:
-    camera_matrix = numpy.array([[512.0486676110471, 0.0, 305.52035364138726], 
-        [0.0, 515.3532387199512, 262.41020845383434], [0.0, 0.0, 1.0]])
-    dist_coeffs = numpy.array([0.08454318371194253, -0.24818779001569383, 
-        0.002509250787445395, 0.0033838430868377263, 0.12424667264216427])
-    image_size = (640, 480)
+    camera_matrix = numpy.array([[264.7876446046661, 0.0, 207.62782931350256],
+        [0.0, 264.2253792678676, 125.03849605333183], [0.0, 0.0, 1.0]])
+    dist_coeffs = numpy.array([[0.08421771475786244, -0.1956031035834607,
+        0.0009461811761875692, 0.0021443473212697023, 0.054783615960790254]])
+    image_size = (424, 240)
     map_type = cv2.CV_32FC1 # CV_32FC1 or CV_16SC2
     alpha = 0
     interpolation = cv2.INTER_LINEAR
@@ -646,11 +646,11 @@ class ExtraProcessingDelivery:
     horiz_FOV = 57.64 # ELP 57.64, LifeCam 25.18 * 2, XBox 41.97
     vert_FOV = 42.36 # ELP 42.36, LifeCam 52.696, XBox 32.67
     height = 35.75
-    vert_angle = 0 # How far down the camera is pointed
+    vert_angle = 7 # How far down the camera is pointed
     horiz_angle = 0 # How far to the right the camera is pointed
-    horiz_offset = 3 # How far to the right the camera is shifted
-    width_pixels = 640
-    height_pixels = 480
+    horiz_offset = 0 # How far to the right the camera is shifted
+    width_pixels = 424
+    height_pixels = 240
 
     # Target constants
     target_bottom_height = 26.17519
@@ -689,6 +689,9 @@ class ExtraProcessingDelivery:
     def __init__(self, zmq_pub, undistorter):
         self._zmq_pub = zmq_pub
         self._undistorter = undistorter
+
+    def reset(self):
+        self._seen_target = False
 
     def _tilted_left(self, box):
         return box.top_right[0] < box.bottom_right[0] # Top right x less than bottom right x
@@ -851,11 +854,17 @@ class ExtraProcessingDelivery:
         self._tilted_left(target.right_box[0]), targets))
         # Find target with lowest y value (closest to camera)
         # targets.sort(key=lambda target: target.center[1], reverse=True)
-        # Pick target closest to center of frame (x), may need to use angle_h if off center camera
-        targets.sort(key = lambda target: abs(target.center[0]-self.half_width_pixels))
-        print([abs(target.center[0]-self.half_width_pixels) for target in targets])
+        if self._seen_target:
+            # Pick target closest to where last target was seen
+            targets.sort(key=lambda target: math.sqrt(
+                abs(target[0] - self._last_target_coords[0])**2 + 
+                abs(target[1] - self._last_target_coords[1])**2))
+        else:
+            # Pick target closest to center of frame (x), may need to use angle_h if off center camera
+            targets.sort(key = lambda target: abs(target.center[0]-self.half_width_pixels))
         try:
             target = targets[0]
+            self._last_target_coords = target.center
         except IndexError:
             print("No valid targets found")
             return
@@ -1029,12 +1038,12 @@ def main():
     cap = cv2.VideoCapture(0)
     cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
     # cap.set(cv2.CAP_PROP_BRIGHTNESS, 0) # Only needed on Logitech (maybe)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 424)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
     cap.set(cv2.CAP_PROP_FPS, 30)
     cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25) # Disable auto exposure
     # cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.75) # Enable auto exposure
-    cap.set(cv2.CAP_PROP_EXPOSURE, 0.002) # Minimum exposure, should be 0 on LifeCam/XBox, 0.002 on new ELP, 2 on Logitech (have had problems on Logitech)
+    cap.set(cv2.CAP_PROP_EXPOSURE, 20) # Minimum exposure, should be 0 on LifeCam/XBox, 0.002 on new ELP, 20 on Logitech (have had problems on Logitech)
     # cap.set(cv2.CAP_PROP_SHARPNESS, 0) # Removes haloing on ELP, not needed on LifeCam or XBox
     delivery_undistorter = DeliveryUndistorter()
     pipelines = {b"none" : None, \
@@ -1055,6 +1064,11 @@ def main():
             if zmq_command[0] == b"set_pipeline":
                 print("Set pipeline to {}".format(zmq_command[1].decode()))
                 pipeline = pipelines[zmq_command[1]]
+                try:
+                    pipeline.processing_class.reset()
+                except AttributeError:
+                    # Pipeline does not have a reset function
+                    pass
                 if pipeline is not None:
                     zmq_recv.set_blocking(False)
                     pipeline.camera.grab() # Flush the 1 frame that could be in the buffer
