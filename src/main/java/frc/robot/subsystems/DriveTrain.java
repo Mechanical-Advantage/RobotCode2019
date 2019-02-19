@@ -176,7 +176,7 @@ public class DriveTrain extends Subsystem {
 				dualGear = false;
 				encoderType = FeedbackDevice.CTRE_MagEncoder_Relative;
 				ticksPerRotation = 4096;
-				wheelDiameter = 4; // Testing of DriveDistanceOnHeading suggests this may not be right
+				wheelDiameter = 4.633; // Testing of DriveDistanceOnHeading suggests this may not be right
 				reverseSensorRight = true;
 				reverseSensorLeft = true;
 				reverseOutputLeft = true;

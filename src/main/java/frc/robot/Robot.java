@@ -83,6 +83,7 @@ public class Robot extends TimedRobot {
       tuningModeChooser.addOption("Velocity PID Tuner", new VelocityPIDTuner());
       tuningModeChooser.addOption("Turn 90 degrees", new TurnToAngle(90));
       tuningModeChooser.addOption("Drive 5 feet", new DriveDistanceOnHeading(60));
+      tuningModeChooser.addOption("Drive 10 feet", new DriveDistanceOnHeading(120));
       SmartDashboard.putData("Tuning Auto Mode", tuningModeChooser);
       autoChooser.addOption("Tuning Auto", AutoMode.TUNING);
     }

@@ -164,7 +164,7 @@ public class DriveDistanceOnHeading extends Command {
 				break;
 			case ROBOT_2019:
 			case ROBOT_2019_2:
-				kPDistance = 0.02;
+				kPDistance = 0.014;
 				kIDistance = 0.000000;
 				kDDistance = 0;
 				kFDistance = 0;
