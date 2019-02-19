@@ -88,7 +88,6 @@ public class OI {
 	private Button pumpTankSolenoid = new JoystickButton(oiController1, 3);
 	private Button tailTankSolenoid = new JoystickButton(oiController1, 4);
 	private Button pickupSolenoid = new JoystickButton(oiController1, 5);
-	private Button atmosphereSolenoid = new JoystickButton(oiController1, 6);
 
 	NetworkTable ledTable;
 	NetworkTableEntry ledEntry;
@@ -111,13 +110,11 @@ public class OI {
 		pumpTankSolenoid.whenPressed(new SetVacuumSolenoid(VacSolenoid.PUMP_TANK, true));
 		tailTankSolenoid.whenPressed(new SetVacuumSolenoid(VacSolenoid.TAIL_TANK, true));
 		pickupSolenoid.whenPressed(new SetVacuumSolenoid(VacSolenoid.PICKUP, true));
-		atmosphereSolenoid.whenPressed(new SetVacuumSolenoid(VacSolenoid.ATMOSPHERE, true));
 
 		pumpTailSolenoid.whenReleased(new SetVacuumSolenoid(VacSolenoid.PUMP_TAIL, false));
 		pumpTankSolenoid.whenReleased(new SetVacuumSolenoid(VacSolenoid.PUMP_TANK, false));
 		tailTankSolenoid.whenReleased(new SetVacuumSolenoid(VacSolenoid.TAIL_TANK, false));
 		pickupSolenoid.whenReleased(new SetVacuumSolenoid(VacSolenoid.PICKUP, false));
-		atmosphereSolenoid.whenReleased(new SetVacuumSolenoid(VacSolenoid.ATMOSPHERE, false));
 
 		Command hatchPickupCommand = new VisionHatchPickup();
 		hatchPickup.whenPressed(hatchPickupCommand);

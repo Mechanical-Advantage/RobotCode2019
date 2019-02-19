@@ -22,7 +22,7 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
  */
 public class Vacuum extends Subsystem {
 
-  private static final boolean reverseVacuumMotor = false;
+  private static final boolean reverseVacuumMotor = true;
   private static final boolean vacMotorBrakeMode = false;
 
   private RelayChannel[] relayChannel = new RelayChannel[3];
@@ -130,7 +130,7 @@ public class Vacuum extends Subsystem {
   }
 
   public enum VacSolenoid {
-    PUMP_TAIL, PUMP_TANK, TAIL_TANK, PICKUP, ATMOSPHERE;
+    PUMP_TAIL, PUMP_TANK, TAIL_TANK, PICKUP;
     private static int getChannelID(VacSolenoid id) {
       int channelID;
       switch (id) {
@@ -141,9 +141,6 @@ public class Vacuum extends Subsystem {
       case PUMP_TANK:
       case TAIL_TANK:
         channelID = 1;
-        break;
-      case ATMOSPHERE:
-        channelID = 2;
         break;
       default:
         throw new IndexOutOfBoundsException("Invalid Solenoid ID");
@@ -160,7 +157,6 @@ public class Vacuum extends Subsystem {
         break;
       case PICKUP:
       case TAIL_TANK:
-      case ATMOSPHERE:
         subChannelID = 1;
         break;
       default:

@@ -24,7 +24,7 @@ public class VacDrop extends Command {
   protected void initialize() {
     Robot.vacuum.setVacuumMotor(false); // This shouldn't do anything but just make sure
     Robot.vacuum.setSolenoid(VacSolenoid.PICKUP, true);
-    Robot.vacuum.setSolenoid(VacSolenoid.ATMOSPHERE, true);
+    Robot.vacuum.setSolenoid(VacSolenoid.PUMP_TAIL, true);
   }
 
   // Called repeatedly when this Command is scheduled to run
@@ -42,7 +42,7 @@ public class VacDrop extends Command {
   @Override
   protected void end() {
     Robot.vacuum.setSolenoid(VacSolenoid.PICKUP, false);
-    Robot.vacuum.setSolenoid(VacSolenoid.ATMOSPHERE, false);
+    Robot.vacuum.setSolenoid(VacSolenoid.PUMP_TAIL, false);
   }
 
   // Called when another command which requires one or more of the same
