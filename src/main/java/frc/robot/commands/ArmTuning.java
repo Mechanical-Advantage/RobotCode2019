@@ -51,7 +51,6 @@ public class ArmTuning extends Command {
     } else {
       Robot.arm.disableTelescope();
     }
-
    }
 
   // Make this return true when this Command no longer needs to run execute()

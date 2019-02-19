@@ -224,7 +224,6 @@ public class Arm extends Subsystem {
         elbowLeft.selectProfileSlot(0, 0); // Use slot 0 for main PID
         elbowLeft.selectProfileSlot(1, 1); // Use slot 1 for secondary PID
         elbowLeft.configAuxPIDPolarity(elbowDiffPIDPolarity);
-        elbowRight.follow(elbowLeft, FollowerType.AuxOutput1); // Aux PID get applied in opposite direction on right
         elbowLeft.configForwardSoftLimitEnable(true);
         elbowLeft.configReverseSoftLimitEnable(true);
         elbowRight.configForwardSoftLimitEnable(true);
@@ -265,6 +264,9 @@ public class Arm extends Subsystem {
         telescope.enableCurrentLimit(telescopeEnableCurrentLimit);
         telescope.overrideSoftLimitsEnable(false);
 
+        enableElbow();
+        enableWrist();
+        enableTelescope();
         setShoulderRaised(false); // Will set elbow limits as well and ensures consistent state
 
         // Start zeroing the mechanisms
@@ -608,6 +610,7 @@ public class Arm extends Subsystem {
 
   public void enableElbow() {
     elbowEnabled = true;
+    elbowRight.follow(elbowLeft, FollowerType.AuxOutput1); // Aux PID get applied in opposite direction on right
     updateElbowSetpoint();
   }  
 
