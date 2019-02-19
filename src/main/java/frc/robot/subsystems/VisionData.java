@@ -14,9 +14,12 @@ import java.util.List;
 
 import org.zeromq.ZMQ;
 
+import edu.wpi.first.wpilibj.Relay;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import frc.robot.Robot;
+import frc.robot.RobotMap;
+import frc.robot.RobotMap.RobotType;
 
 /**
  * Communicates with the coprocessor to recieve vision data
@@ -34,6 +37,7 @@ public class VisionData extends Subsystem {
   ZMQ.Socket commandSocket = Robot.ZMQContext.socket(ZMQ.PUSH);
   ZMQ.Socket recieverSocket = Robot.ZMQContext.socket(ZMQ.SUB);
   private Pipeline currentPipeline;
+  private Relay LEDRelay;
 
   public VisionData() {
     commandSocket.connect(commandAddress);
@@ -44,6 +48,10 @@ public class VisionData extends Subsystem {
       for (byte[] subscription : pipeline.getSubscriptions()) {
         recieverSocket.subscribe(subscription);
       }
+    }
+    if (RobotMap.robot == RobotType.ROBOT_2019 || 
+    RobotMap.robot == RobotType.ROBOT_2019_2) {
+      LEDRelay = new Relay(2, Relay.Direction.kForward);
     }
   }
 
@@ -65,6 +73,17 @@ public class VisionData extends Subsystem {
   public void initDefaultCommand() {
     // Set the default command for a subsystem here.
     // setDefaultCommand(new MySpecialCommand());
+  }
+
+  /**
+   * Turns on or off the green LED ring
+   * @param on Whether the ring should be on
+   */
+  public void setLEDRing(boolean on) {
+    if (RobotMap.robot == RobotType.ROBOT_2019 || 
+    RobotMap.robot == RobotType.ROBOT_2019_2) {
+      LEDRelay.set(on ? Relay.Value.kForward : Relay.Value.kOff);
+    }
   }
 
   public void stopPipeline() {

@@ -150,6 +150,9 @@ public class DriveToVisionTarget extends Command {
     if (Robot.driveSubsystem.isDualGear()) {
       Robot.driveSubsystem.switchGear(gear);
     }
+    if (pipelineProcessor.LEDRingRequired()) {
+      Robot.visionData.setLEDRing(true);
+    }
     xData.clear();
     yData.clear();
     angleData.clear();
@@ -235,6 +238,9 @@ public class DriveToVisionTarget extends Command {
     distanceController.reset();
     Robot.driveSubsystem.stop();
     Robot.visionData.stopPipeline();
+    if (pipelineProcessor.LEDRingRequired()) {
+      Robot.visionData.setLEDRing(false);
+    }
   }
 
   // Called when another command which requires one or more of the same
@@ -378,6 +384,12 @@ public class DriveToVisionTarget extends Command {
      * @return Whether the processor can be used for vision-based angles
      */
     public abstract boolean providesVisionAngle();
+
+    /**
+     * Get whether the pipeline used by the pipeline processor requires the LED ring to be turned on
+     * @return Whether the LED ring is needed
+     */
+    public abstract boolean LEDRingRequired();
   }
 
   @SuppressWarnings("unused")
@@ -403,6 +415,11 @@ public class DriveToVisionTarget extends Command {
     public boolean providesVisionAngle() {
       return false;
     }
+
+    @Override
+    public boolean LEDRingRequired() {
+      return false;
+    }
   }
 
   @SuppressWarnings("unused")
@@ -422,5 +439,9 @@ public class DriveToVisionTarget extends Command {
       return true;
     }
 
+    @Override
+    public boolean LEDRingRequired() {
+      return true;
+    }
   }
 }

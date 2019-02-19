@@ -57,6 +57,7 @@ public class RobotMap {
   public static int armShoulder2PCM;
   public static int vacuumMotor;
   public static int vacuumPressureSensor;
+  public static int greenLEDRing; // Currently requires an entire relay channel
 
   public RobotMap() {
 		switch (robot) {
@@ -123,7 +124,7 @@ public class RobotMap {
         armShoulder2Extend = 2;
         armShoulder2Retract = 3;
         armShoulder2PCM = 1;
-      
+        greenLEDRing = 2;
         break;
       default:
         break;
