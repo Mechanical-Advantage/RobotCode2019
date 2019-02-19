@@ -26,6 +26,7 @@ import frc.robot.commands.DriveWithJoystick.JoystickMode;
 import frc.robot.commands.ArmTuning;
 import frc.robot.commands.FusedHeadingTest;
 import frc.robot.commands.GenerateMotionProfiles;
+import frc.robot.commands.VelocityPIDTuner;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.CameraSystem;
 import frc.robot.subsystems.DriveTrain;
@@ -77,6 +78,7 @@ public class Robot extends TimedRobot {
     if (RobotMap.tuningMode) {
       tuningModeChooser.addOption("Fused Heading Test", new FusedHeadingTest());
       tuningModeChooser.addOption("Arm Tuning", new ArmTuning());
+      tuningModeChooser.addOption("Velocity PID Tuner", new VelocityPIDTuner());
       SmartDashboard.putData("Tuning Auto Mode", tuningModeChooser);
       autoChooser.addOption("Tuning Auto", AutoMode.TUNING);
     }

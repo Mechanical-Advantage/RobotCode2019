@@ -48,8 +48,8 @@ public class Arm extends Subsystem {
   private static final double elbowLowSchoolZoneUpperStart = 360;
   private static final double elbowHighSchoolZoneLowerStart = -360;
   private static final double elbowHighSchoolZoneUpperStart = 360;
-  private static final double elbowPeakOutput = 1;
-  private static final double elbowZeroPercent = -0.05;
+  private static final double elbowPeakOutput = /*1*/0;
+  private static final double elbowZeroPercent = /*-0.05*/0;
 
   private static final FeedbackDevice wristSensorType = FeedbackDevice.CTRE_MagEncoder_Relative;
   private static final boolean wristSensorReversed = false;
@@ -65,8 +65,8 @@ public class Arm extends Subsystem {
   private static final double wristSchoolZoneSpeedLimit = 0.2;
   private static final double wristSchoolZoneLowerStart = -180;
   private static final double wristSchoolZoneUpperStart = 180;
-  private static final double wristPeakOutput = 1;
-  private static final double wristZeroPercent = -0.05;
+  private static final double wristPeakOutput = /*1*/0;
+  private static final double wristZeroPercent = /*-0.05*/0;
 
   private static final FeedbackDevice telescopeSensorType = FeedbackDevice.CTRE_MagEncoder_Relative;
   private static final boolean telescopeSensorReversed = false;
@@ -79,8 +79,8 @@ public class Arm extends Subsystem {
   private static final double telescopeSchoolZoneSpeedLimit = 0.2;
   private static final double telescopeSchoolZoneLowerStart = 2;
   private static final double telescopeSchoolZoneUpperStart = telescopeMaxExtension - 2;
-  private static final double telescopePeakOutput = 1;
-  private static final double telescopeZeroPercent = -0.05;
+  private static final double telescopePeakOutput = /*1*/0;
+  private static final double telescopeZeroPercent = /*-0.05*/0;
 
   private static final double allowedFrameExtension = 30;
   private static final double bicepLength = 0;

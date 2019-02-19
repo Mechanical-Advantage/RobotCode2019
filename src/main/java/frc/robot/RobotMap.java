@@ -38,7 +38,7 @@ public class RobotMap {
   public static double robotWidth;
   public static double robotLength;
   public static final boolean tuningMode = true;
-  public static final RobotType robot = RobotType.EVERYBOT_2019;
+  public static final RobotType robot = RobotType.ROBOT_2019;
   public static int minVelocityLow; // lower values will be treated as this value, RPM
   public static int maxVelocityLow; // maximum velocity when sticks are fully forward (value of 1), RPM
   public static int maxVelocityHigh;
@@ -108,10 +108,8 @@ public class RobotMap {
         leftMaster = 12;
         leftSlave = 14;
         leftSlave2 = 13;
-        maxVelocityLow = 0;
-        minVelocityLow = 0;
-        maxVelocityHigh = 0;
-        minVelocityHigh = 0;
+        maxVelocityLow = 4800; // 5710 on blocks
+        minVelocityLow = 210;
         maxAcceleration = 0;
         armElbowLeft = 15;
         armElbowRight = 0;
@@ -119,6 +117,13 @@ public class RobotMap {
         armWrist = 11;
         vacuumMotor = 4;
         vacuumPressureSensor = 1;
+        armShoulder1Extend = 0;
+        armShoulder1Retract = 1;
+        armShoulder1PCM = 0;
+        armShoulder2Extend = 2;
+        armShoulder2Retract = 3;
+        armShoulder2PCM = 1;
+      
         break;
       default:
         break;

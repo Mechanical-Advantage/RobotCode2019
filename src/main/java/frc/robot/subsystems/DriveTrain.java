@@ -10,7 +10,9 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.StatusFrame;
+import com.ctre.phoenix.motorcontrol.can.BaseMotorController;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
@@ -71,11 +73,11 @@ public class DriveTrain extends Subsystem {
 	private static final int configTimeout = 0;
 	
 	private TalonSRX rightTalonMaster;
-	private TalonSRX rightTalonSlave;
-	private TalonSRX rightTalonSlave2;
+	private BaseMotorController rightTalonSlave;
+	private BaseMotorController rightTalonSlave2;
 	private TalonSRX leftTalonMaster;
-	private TalonSRX leftTalonSlave;
-	private TalonSRX leftTalonSlave2;
+	private BaseMotorController leftTalonSlave;
+	private BaseMotorController leftTalonSlave2;
 	private DoubleSolenoid leftGearSolenoid;
 	private DoubleSolenoid rightGearSolenoid;
 	private FeedbackDevice encoderType;
@@ -98,9 +100,9 @@ public class DriveTrain extends Subsystem {
 	
 	public DriveTrain() {
 		rightTalonMaster = new TalonSRX(RobotMap.rightMaster);
-		rightTalonSlave = new TalonSRX(RobotMap.rightSlave);
+		rightTalonSlave = new VictorSPX(RobotMap.rightSlave);
 		leftTalonMaster = new TalonSRX(RobotMap.leftMaster);
-		leftTalonSlave = new TalonSRX(RobotMap.leftSlave);
+		leftTalonSlave = new VictorSPX(RobotMap.leftSlave);
 		switch (RobotMap.robot) {
 			case ROBOT_2017:
 				sixMotorDrive = true;
@@ -171,32 +173,27 @@ public class DriveTrain extends Subsystem {
 			case ROBOT_2019:
 			case ROBOT_2019_2:
 				sixMotorDrive = true;
-				dualGear = true;
+				dualGear = false;
 				encoderType = FeedbackDevice.CTRE_MagEncoder_Relative;
 				ticksPerRotation = 4096;
-				wheelDiameter = 4.25;
-				reverseSensorRight = false;
-				reverseSensorLeft = false;
+				wheelDiameter = 4;
+				reverseSensorRight = true;
+				reverseSensorLeft = true;
 				reverseOutputLeft = true;
 				reverseOutputRight = false;
-				kPLow = 0;
+				kPLow = 0.8;
 				kILow = 0;
 				kIZoneLow = 0;
-				kDLow = 0;
-				kFLow = 0;
-				kPHigh = 0;
-				kIHigh = 0;
-				kIZoneHigh = 0;
-				kDHigh = 0;
-				kFHigh = 0;
+				kDLow = 30;
+				kFLow = 0.23; // Calculated 0.213125
 				nominalOutputVoltage = 0;
 				break;
 			default:
 				break;
 		}
 		if (sixMotorDrive) {
-			rightTalonSlave2 = new TalonSRX(RobotMap.rightSlave2);
-			leftTalonSlave2 = new TalonSRX(RobotMap.leftSlave2);
+			rightTalonSlave2 = new VictorSPX(RobotMap.rightSlave2);
+			leftTalonSlave2 = new VictorSPX(RobotMap.leftSlave2);
 		}
 		if (dualGear) {
 			leftGearSolenoid = new DoubleSolenoid(RobotMap.leftDriveGearPCM, RobotMap.leftDriveGearSolenoid1, RobotMap.leftDriveGearSolenoid2);
@@ -233,22 +230,22 @@ public class DriveTrain extends Subsystem {
 		leftTalonMaster.configPeakOutputForward(1, configTimeout);
 		leftTalonMaster.configPeakOutputReverse(-1, configTimeout);
 		resetPosition();
-		rightTalonSlave.set(ControlMode.Follower, RobotMap.rightMaster);
-		rightTalonSlave.enableCurrentLimit(enableCurrentLimit);
-		rightTalonSlave.configContinuousCurrentLimit(currentLimit, configTimeout);
+		rightTalonSlave.follow(rightTalonMaster);
+		// rightTalonSlave.enableCurrentLimit(enableCurrentLimit);
+		// rightTalonSlave.configContinuousCurrentLimit(currentLimit, configTimeout);
 		rightTalonSlave.setInverted(reverseOutputRight);
-		leftTalonSlave.set(ControlMode.Follower, RobotMap.leftMaster);
-		leftTalonSlave.enableCurrentLimit(enableCurrentLimit);
-		leftTalonSlave.configContinuousCurrentLimit(currentLimit, configTimeout);
+		leftTalonSlave.follow(leftTalonMaster);
+		// leftTalonSlave.enableCurrentLimit(enableCurrentLimit);
+		// leftTalonSlave.configContinuousCurrentLimit(currentLimit, configTimeout);
 		leftTalonSlave.setInverted(reverseOutputLeft);
 		if (sixMotorDrive){
-			rightTalonSlave2.set(ControlMode.Follower, RobotMap.rightMaster);
-			rightTalonSlave2.enableCurrentLimit(enableCurrentLimit);
-			rightTalonSlave2.configContinuousCurrentLimit(currentLimit, configTimeout);
+			rightTalonSlave2.follow(rightTalonMaster);
+			// rightTalonSlave2.enableCurrentLimit(enableCurrentLimit);
+			// rightTalonSlave2.configContinuousCurrentLimit(currentLimit, configTimeout);
 			rightTalonSlave2.setInverted(reverseOutputRight);
-			leftTalonSlave2.set(ControlMode.Follower, RobotMap.leftMaster);
-			leftTalonSlave2.enableCurrentLimit(enableCurrentLimit);
-			leftTalonSlave2.configContinuousCurrentLimit(currentLimit, configTimeout);
+			leftTalonSlave2.follow(leftTalonMaster);
+			// leftTalonSlave2.enableCurrentLimit(enableCurrentLimit);
+			// leftTalonSlave2.configContinuousCurrentLimit(currentLimit, configTimeout);
 			leftTalonSlave2.setInverted(reverseOutputLeft);
 		}
 		enableBrakeMode(true);
@@ -365,7 +362,7 @@ public class DriveTrain extends Subsystem {
 	    		left*=maxVelocity;
 	    		right*=maxVelocity;
 	    		left = calcActualVelocity(left);
-	    		right = calcActualVelocity(right);
+					right = calcActualVelocity(right);
 	    		
 	    		if (Robot.oi.getOpenLoop()) {
 	    			rightTalonMaster.set(ControlMode.PercentOutput, right/actualMaxVelocity);
@@ -466,7 +463,7 @@ public class DriveTrain extends Subsystem {
      */
     public void setPID(double p, double i, double d, double f, int iZone) {
 		int slot;
-		if (currentControlMode == DriveControlMode.STANDARD_DRIVE && currentGear == DriveGear.LOW) {
+		if (currentControlMode == DriveControlMode.STANDARD_DRIVE && (currentGear == DriveGear.LOW || !dualGear)) {
 			slot = 0;
 		} else if (currentControlMode == DriveControlMode.STANDARD_DRIVE && currentGear == DriveGear.HIGH) {
 			slot = 1;
