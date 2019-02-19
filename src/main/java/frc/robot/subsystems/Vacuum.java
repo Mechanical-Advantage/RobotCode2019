@@ -22,21 +22,19 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
  */
 public class Vacuum extends Subsystem {
 
-  private VictorSPX vacuumMotor;
-
   private static final boolean reverseVacuumMotor = false;
   private static final boolean vacMotorBrakeMode = false;
 
   private RelayChannel[] relayChannel = new RelayChannel[3];
-  AnalogInput pressureSensor;
-  private static final int PRESSURE_ANALOG_INPUT = 1;
+  private AnalogInput pressureSensor;
+  private VictorSPX vacuumMotor;
 
   public Vacuum() {
     if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
       for (int i = 0; i <= 2; i++) {
         relayChannel[i] = new RelayChannel(i);
       }
-      pressureSensor = new AnalogInput(PRESSURE_ANALOG_INPUT);
+      pressureSensor = new AnalogInput(RobotMap.vacuumPressureSensor);
       pressureSensor.setAverageBits(4);
 
       if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {

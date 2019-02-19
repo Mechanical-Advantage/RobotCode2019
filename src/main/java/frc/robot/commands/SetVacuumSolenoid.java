@@ -10,6 +10,7 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj.command.InstantCommand;
 import frc.robot.subsystems.Vacuum.VacSolenoid;
 import frc.robot.Robot;
+import frc.robot.RobotMap;
 
 /**
  * Sets each vacuum solenoid's state
@@ -31,7 +32,9 @@ public class SetVacuumSolenoid extends InstantCommand {
   @Override
   protected void initialize() {
     Robot.vacuum.setSolenoid(whichSolenoid, newState);
-    System.out.println("Solenoid " + whichSolenoid + "'s state is " + newState);
+    if (RobotMap.tuningMode) {
+      System.out.println("Solenoid " + whichSolenoid + "'s state is " + newState);
+    }
   }
 
 }

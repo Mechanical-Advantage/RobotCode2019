@@ -25,7 +25,6 @@ public class EngageTail extends Command {
     Robot.vacuum.setVacuumMotor(true);
     Robot.vacuum.setSolenoid(VacSolenoid.PUMP_TAIL, true);
     Robot.vacuum.setSolenoid(VacSolenoid.TAIL_TANK, true);
-    end();
   }
 
   // Called repeatedly when this Command is scheduled to run

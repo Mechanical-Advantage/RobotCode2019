@@ -24,7 +24,6 @@ public class EvacuateTank extends Command {
   protected void initialize() {
     Robot.vacuum.setVacuumMotor(true);
     Robot.vacuum.setSolenoid(VacSolenoid.PUMP_TANK, true);
-    end();
   }
 
   // Called repeatedly when this Command is scheduled to run

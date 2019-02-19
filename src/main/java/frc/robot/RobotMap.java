@@ -29,7 +29,6 @@ public class RobotMap {
   public static int leftMaster;
   public static int leftSlave;
   public static int leftSlave2;
-  public static int vacuumMotor;
   public static int leftDriveGearSolenoid1;
   public static int leftDriveGearSolenoid2;
   public static int leftDriveGearPCM;
@@ -56,6 +55,8 @@ public class RobotMap {
   public static int armShoulder2Extend;
   public static int armShoulder2Retract;
   public static int armShoulder2PCM;
+  public static int vacuumMotor;
+  public static int vacuumPressureSensor;
 
   public RobotMap() {
     switch (robot) {
@@ -111,6 +112,7 @@ public class RobotMap {
       maxVelocityLow = 0;
       minVelocityLow = 0;
       maxAcceleration = 0;
+      vacuumPressureSensor = 1;
       break;
     default:
       break;

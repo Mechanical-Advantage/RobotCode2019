@@ -17,12 +17,12 @@ public class VacDrop extends Command {
     // eg. requires(chassis);
     super();
     requires(Robot.vacuum);
-    Robot.vacuum.setVacuumMotor(false);
   }
 
   // Called just before this Command runs the first time
   @Override
   protected void initialize() {
+    Robot.vacuum.setVacuumMotor(false); // This shouldn't do anything but just make sure
     Robot.vacuum.setSolenoid(VacSolenoid.PICKUP, true);
     Robot.vacuum.setSolenoid(VacSolenoid.ATMOSPHERE, true);
   }
