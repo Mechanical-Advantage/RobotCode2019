@@ -171,6 +171,7 @@ public class DriveTrain extends Subsystem {
 			case ROBOT_2019:
 			case ROBOT_2019_2:
 				sixMotorDrive = true;
+				dualGear = true;
 				encoderType = FeedbackDevice.CTRE_MagEncoder_Relative;
 				ticksPerRotation = 4096;
 				wheelDiameter = 4.25;
@@ -183,6 +184,11 @@ public class DriveTrain extends Subsystem {
 				kIZoneLow = 0;
 				kDLow = 0;
 				kFLow = 0;
+				kPHigh = 0;
+				kIHigh = 0;
+				kIZoneHigh = 0;
+				kDHigh = 0;
+				kFHigh = 0;
 				nominalOutputVoltage = 0;
 				break;
 			default:
@@ -527,7 +533,7 @@ public class DriveTrain extends Subsystem {
 	}
 	
 	public void switchGear(DriveGear gear) {
-		if (RobotMap.robot == RobotType.ORIGINAL_ROBOT_2018 && (Robot.oi == null || Robot.oi.isShiftingEnabled())) {
+		if (dualGear && (Robot.oi == null || Robot.oi.isShiftingEnabled())) {
 			switch (gear) {
 			case HIGH:
 				leftGearSolenoid.set(Value.kForward);
@@ -552,11 +558,14 @@ public class DriveTrain extends Subsystem {
 		}
 	}
 	public DriveGear getCurrentGear() {
-		if (RobotMap.robot == RobotType.ORIGINAL_ROBOT_2018) {
+		if (dualGear) {
 			return currentGear;
 		} else {
 			return DriveGear.UNSUPPORTED;
 		}
+	}
+	public boolean isDualGear() {
+		return dualGear;
 	}
     
     

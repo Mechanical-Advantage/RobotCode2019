@@ -100,15 +100,21 @@ public class RobotMap {
         break;
       case ROBOT_2019:
       case ROBOT_2019_2:
-        rightMaster = 0;
-        rightSlave = 0;
-        rightSlave2 = 0;
-        leftMaster = 0;
-        leftSlave = 0;
-        leftSlave2 = 0;
+        rightMaster = 3;
+        rightSlave = 2;
+        rightSlave2 = 1;
+        leftMaster = 12;
+        leftSlave = 14;
+        leftSlave2 = 13;
         maxVelocityLow = 0;
         minVelocityLow = 0;
+        maxVelocityHigh = 0;
+        minVelocityHigh = 0;
         maxAcceleration = 0;
+        armElbowLeft = 15;
+        armElbowRight = 0;
+        armTelescope = 5;
+        armWrist = 11;
         break;
       default:
         break;

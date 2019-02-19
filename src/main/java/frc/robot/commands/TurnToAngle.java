@@ -100,7 +100,7 @@ public class TurnToAngle extends Command implements PIDOutput {
 
     // Called just before this Command runs the first time
     protected void initialize() {
-    	if (RobotMap.robot == RobotType.ORIGINAL_ROBOT_2018) {
+			if (Robot.driveSubsystem.isDualGear()) {
     		Robot.driveSubsystem.switchGear(gear);
     	}
     	turnController = new PIDControllerFixed(kP, kI, kD, kF, Robot.ahrs, this, updatePeriod);

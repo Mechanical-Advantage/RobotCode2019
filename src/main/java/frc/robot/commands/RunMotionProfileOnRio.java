@@ -210,7 +210,7 @@ public class RunMotionProfileOnRio extends Command {
     		initialProfileYaw = absHeading ? 0 : leftFollower.getSegment().heading;
     		initialPositionLeft = Robot.driveSubsystem.getDistanceLeft();
     		initialPositionRight = Robot.driveSubsystem.getDistanceRight();
-    		if (RobotMap.robot == RobotType.ORIGINAL_ROBOT_2018) {
+    		if (Robot.driveSubsystem.isDualGear()) {
     			Robot.driveSubsystem.switchGear(gear);
     		}
     		Robot.driveSubsystem.changeStatusRate(sensorFrameRate);
