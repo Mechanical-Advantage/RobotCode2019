@@ -35,6 +35,9 @@ public class RobotMap {
   public static int rightDriveGearSolenoid1;
   public static int rightDriveGearSolenoid2;
   public static int rightDriveGearPCM;
+  public static int ptoSolenoid1;
+  public static int ptoSolenoid2;
+  public static int ptoSolenoidPCM;
   public static double robotWidth;
   public static double robotLength;
   public static final boolean tuningMode = true;
@@ -118,13 +121,16 @@ public class RobotMap {
         armWrist = 11;
         vacuumMotor = 4;
         vacuumPressureSensor = 1;
-        armShoulder1Extend = 0;
-        armShoulder1Retract = 1;
-        armShoulder1PCM = 0;
-        armShoulder2Extend = 2;
-        armShoulder2Retract = 3;
+        armShoulder1Extend = 4; // Left
+        armShoulder1Retract = 6;
+        armShoulder1PCM = 1;
+        armShoulder2Extend = 5; // Right
+        armShoulder2Retract = 7;
         armShoulder2PCM = 1;
         greenLEDRing = 2;
+        ptoSolenoid1 = 3;
+        ptoSolenoid2 = 2;
+        ptoSolenoidPCM = 1;
         break;
       default:
         break;

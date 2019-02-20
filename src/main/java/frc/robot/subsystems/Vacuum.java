@@ -25,13 +25,13 @@ public class Vacuum extends Subsystem {
   private static final boolean reverseVacuumMotor = true;
   private static final boolean vacMotorBrakeMode = false;
 
-  private RelayChannel[] relayChannel = new RelayChannel[3];
+  private RelayChannel[] relayChannel = new RelayChannel[2];
   private AnalogInput pressureSensor;
   private VictorSPX vacuumMotor;
 
   public Vacuum() {
     if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
-      for (int i = 0; i <= 2; i++) {
+      for (int i = 0; i <= 1; i++) {
         relayChannel[i] = new RelayChannel(i);
       }
       pressureSensor = new AnalogInput(RobotMap.vacuumPressureSensor);

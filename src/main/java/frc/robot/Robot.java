@@ -16,6 +16,7 @@ import com.kauailabs.navx.frc.AHRS;
 
 import org.zeromq.ZMQ;
 
+import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.command.Command;
@@ -106,6 +107,7 @@ public class Robot extends TimedRobot {
       generateCommand.setRunWhenDisabled(true);
       generateCommand.start();
     }
+    Compressor c = new Compressor();
   }
 
   /**
@@ -192,6 +194,7 @@ public class Robot extends TimedRobot {
     if (autonomousCommand != null) {
       autonomousCommand.cancel();
     }
+    arm.setShoulderRaised(false);
   }
 
   /**

@@ -20,16 +20,6 @@
               "_title": "Arm"
             }
           },
-          "0,0": {
-            "size": [
-              1,
-              2
-            ],
-            "content": {
-              "_type": "PID Controller",
-              "_title": "Elbow"
-            }
-          },
           "5,1": {
             "size": [
               1,
@@ -68,6 +58,16 @@
             "content": {
               "_type": "PID Controller",
               "_title": "Arm Telescope"
+            }
+          },
+          "4,2": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Toggle Switch",
+              "_title": "Arm Shoulder High"
             }
           }
         }

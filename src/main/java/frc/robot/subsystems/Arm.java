@@ -30,17 +30,20 @@ public class Arm extends Subsystem {
 
   private static final FeedbackDevice elbowSensorType = FeedbackDevice.CTRE_MagEncoder_Relative;
   private static final int elbowTicksPerRotation = 4096;
-  private static final boolean elbowSensorLeftReversed = false;
-  private static final boolean elbowSensorRightReversed = false;
+  private static final boolean elbowSensorLeftReversed = true;
+  private static final boolean elbowSensorRightReversed = true;
   private static final boolean elbowOutputLeftReversed = false;
-  private static final boolean elbowOutputRightReversed = false;
-  private static final boolean elbowDiffPIDPolarity = false; // Swaps syncronization correction
+  private static final boolean elbowOutputRightReversed = true;
+  private static final boolean elbowDiffPIDPolarity = true; // Swaps syncronization correction
+  private static final boolean elbowUseMotionMagic = false;
+  private static final double elbowMotMagAccel = 20;
+  private static final double elbowMotMagCruiseVelocity = 50;
   private static final double elbowZeroedPosition = 0; // deg
   private static final double elbowLowerLimitLow = 0;
   private static final double elbowUpperLimitLow = 360;
   private static final double elbowLowerLimitHigh = 0;
   private static final double elbowUpperLimitHigh = 360;
-  private static final double elbowReduction = 1.5*33; // Multiplier on setpoints
+  private static final double elbowReduction = 1.5*33*2.72; // Multiplier on setpoints
   private static final double elbowOffsetLow = 0; // Elbow offset applied when shoulder is lowered
   private static final double elbowOffsetHigh = 60; // Elbow offset applied when shoulder is raised
   private static final double elbowSchoolZoneSpeedLimit = 0.2;
@@ -163,12 +166,13 @@ public class Arm extends Subsystem {
   public Arm() {
     if (RobotMap.robot == RobotType.ROBOT_2019 || 
       RobotMap.robot == RobotType.ROBOT_2019_2) {
-        kPElbow.setDefault(0);
+        // Elbow numbers still do not sync well
+        kPElbow.setDefault(1.3);
         kIElbow.setDefault(0);
-        kDElbow.setDefault(0);
-        kPElbowSync.setDefault(0);
+        kDElbow.setDefault(13);
+        kPElbowSync.setDefault(7); // Some oscillation
         kIElbowSync.setDefault(0);
-        kDElbowSync.setDefault(0);
+        kDElbowSync.setDefault(70);
         kPWrist.setDefault(0);
         kIWrist.setDefault(0);
         kDWrist.setDefault(0);
@@ -218,14 +222,26 @@ public class Arm extends Subsystem {
 
         elbowLeft.configRemoteFeedbackFilter(RobotMap.armElbowRight, 
           RemoteSensorSource.TalonSRX_SelectedSensor, 0);
-        elbowLeft.configSensorTerm(SensorTerm.Diff0, elbowSensorType);
-        elbowLeft.configSensorTerm(SensorTerm.Diff1, FeedbackDevice.RemoteSensor0);
-        elbowLeft.configSelectedFeedbackSensor(FeedbackDevice.SensorDifference, 1, configTimeout);
+        elbowLeft.configSensorTerm(SensorTerm.Sum0, elbowSensorType);
+        elbowLeft.configSensorTerm(SensorTerm.Sum1, FeedbackDevice.RemoteSensor0);
+        elbowLeft.configSelectedFeedbackSensor(FeedbackDevice.SensorSum, 1, configTimeout);
         elbowLeft.selectProfileSlot(0, 0); // Use slot 0 for main PID
         elbowLeft.selectProfileSlot(1, 1); // Use slot 1 for secondary PID
         elbowLeft.configAuxPIDPolarity(elbowDiffPIDPolarity);
         elbowLeft.configForwardSoftLimitEnable(true);
         elbowLeft.configReverseSoftLimitEnable(true);
+        elbowLeft.configMotionCruiseVelocity(convertElbowPositionToTicks(elbowMotMagCruiseVelocity, false));
+        elbowLeft.configMotionAcceleration(convertElbowPositionToTicks(elbowMotMagAccel, false));
+        elbowRight.configRemoteFeedbackFilter(RobotMap.armElbowLeft, 
+          RemoteSensorSource.TalonSRX_SelectedSensor, 0);
+        elbowRight.configSensorTerm(SensorTerm.Diff0, elbowSensorType);
+        elbowRight.configSensorTerm(SensorTerm.Diff1, FeedbackDevice.RemoteSensor0);
+        elbowRight.configSelectedFeedbackSensor(FeedbackDevice.SensorDifference, 1, configTimeout);
+        elbowRight.selectProfileSlot(0, 0); // Use slot 0 for main PID
+        elbowRight.selectProfileSlot(1, 1); // Use slot 1 for secondary PID
+        elbowRight.configAuxPIDPolarity(elbowDiffPIDPolarity);
+        elbowRight.configMotionCruiseVelocity(convertElbowPositionToTicks(elbowMotMagCruiseVelocity, false));
+        elbowRight.configMotionAcceleration(convertElbowPositionToTicks(elbowMotMagAccel, false));
         elbowRight.configForwardSoftLimitEnable(true);
         elbowRight.configReverseSoftLimitEnable(true);
         elbowLowSchoolZone.setControllerLimits(); // This sets the peak output of the controllers
@@ -317,6 +333,12 @@ public class Arm extends Subsystem {
     elbowLeft.config_kP(1, kPElbowSync.get());
     elbowLeft.config_kI(1, kIElbowSync.get());
     elbowLeft.config_kD(1, kDElbowSync.get());
+    elbowRight.config_kP(0, kPElbow.get());
+    elbowRight.config_kI(0, kIElbow.get());
+    elbowRight.config_kD(0, kDElbow.get());
+    elbowRight.config_kP(1, kPElbowSync.get());
+    elbowRight.config_kI(1, kIElbowSync.get());
+    elbowRight.config_kD(1, kDElbowSync.get());
     wrist.config_kP(0, kPWrist.get());
     wrist.config_kI(0, kIWrist.get());
     wrist.config_kD(0, kDWrist.get());
@@ -367,9 +389,9 @@ public class Arm extends Subsystem {
         elbowRight.getSelectedSensorPosition()) / 2; // Average position
       position = position / elbowReduction / elbowTicksPerRotation * 360; // Convert to degrees
       if (shoulderRaised) {
-        position = position - elbowOffsetLow;
-      } else {
         position = position - elbowOffsetHigh;
+      } else {
+        position = position - elbowOffsetLow;
       }
       return position;
     } else {
@@ -379,16 +401,29 @@ public class Arm extends Subsystem {
 
   private void updateElbowSetpoint() {
     if (elbowZeroed && (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) && elbowEnabled) {
-      double setpoint;
-      if (shoulderRaised) {
-        setpoint = targetElbowPosition + elbowOffsetHigh;
-      } else {
-        setpoint = targetElbowPosition + elbowOffsetLow;
-      }
-      setpoint = setpoint / 360 * elbowTicksPerRotation; // Convert degrees to ticks
-      setpoint *= elbowReduction;
-      elbowLeft.set(ControlMode.Position, setpoint, DemandType.AuxPID, 0); // Aux PID (encoder difference) should try to be 0
+      elbowLeft.set(elbowUseMotionMagic ? ControlMode.MotionMagic : 
+        ControlMode.Position, convertElbowPositionToTicks(
+        targetElbowPosition, true), DemandType.AuxPID, 0); // Aux PID (encoder difference) should try to be 0
+      elbowRight.set(elbowUseMotionMagic ? ControlMode.MotionMagic : 
+        ControlMode.Position, convertElbowPositionToTicks(
+        targetElbowPosition, true), DemandType.Neutral, 0); // Aux PID (encoder difference) should try to be 0
     }
+  }
+
+  private int convertElbowPositionToTicks(double position, boolean enableOffsets) {
+    double setpoint;
+    if (enableOffsets) {
+      if (shoulderRaised) {
+        setpoint = position + elbowOffsetHigh;
+      } else {
+        setpoint = position + elbowOffsetLow;
+      }
+    } else {
+      setpoint = position;
+    }
+    setpoint = setpoint / 360 * elbowTicksPerRotation; // Convert degrees to ticks
+    setpoint *= elbowReduction;
+    return (int)Math.round(setpoint);
   }
 
   private void updateElbowLimits() {
@@ -437,7 +472,9 @@ public class Arm extends Subsystem {
 
   public boolean getElbowLimitSwitch() {
     if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
-      return elbowLimitSwitch.get();
+      // TODO undo this change
+      return true;
+      // return elbowLimitSwitch.get();
     } else {
       return false;
     }
@@ -610,7 +647,7 @@ public class Arm extends Subsystem {
 
   public void enableElbow() {
     elbowEnabled = true;
-    elbowRight.follow(elbowLeft, FollowerType.AuxOutput1); // Aux PID get applied in opposite direction on right
+    // elbowRight.follow(elbowLeft, FollowerType.AuxOutput1); // Aux PID get applied in opposite direction on right
     updateElbowSetpoint();
   }  
 

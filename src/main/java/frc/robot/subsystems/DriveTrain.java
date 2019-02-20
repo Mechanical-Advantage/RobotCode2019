@@ -94,6 +94,8 @@ public class DriveTrain extends Subsystem {
 	private DriveGear currentGear;
 	private boolean sixMotorDrive = false;
 	private boolean dualGear = false;
+	private boolean hasPTO = false;
+	private DoubleSolenoid pto;
 //	private ProcessTalonMotionProfileBuffer processTalonMotionProfile = new ProcessTalonMotionProfileBuffer();
 //	private Notifier processMotionProfileNotifier = new Notifier(processTalonMotionProfile);
 //	private double motionProfileNotifierUpdateTime;
@@ -187,6 +189,7 @@ public class DriveTrain extends Subsystem {
 				kDLow = 30;
 				kFLow = 0.23; // Calculated 0.213125
 				nominalOutputVoltage = 0;
+				hasPTO = true;
 				break;
 			default:
 				break;
@@ -249,6 +252,9 @@ public class DriveTrain extends Subsystem {
 			leftTalonSlave2.setInverted(reverseOutputLeft);
 		}
 		enableBrakeMode(true);
+		if (hasPTO) {
+			pto = new DoubleSolenoid(RobotMap.ptoSolenoidPCM, RobotMap.ptoSolenoid1, RobotMap.ptoSolenoid2);
+		}
 		
 		/*rightTalonMaster.setSafetyEnabled(false);
 		rightTalonSlave.setSafetyEnabled(false);
@@ -564,6 +570,23 @@ public class DriveTrain extends Subsystem {
 	public boolean isDualGear() {
 		return dualGear;
 	}
+
+
+	public void enablePTO() {
+		currentControlMode = DriveControlMode.PTO;
+		leftTalonMaster.neutralOutput();
+		rightTalonMaster.neutralOutput();
+	}
+
+	public void runPTO(double speed) {
+		if (Robot.oi.getDriveEnabled() && currentControlMode == DriveControlMode.PTO) {
+			leftTalonMaster.set(ControlMode.PercentOutput, speed);
+			rightTalonMaster.set(ControlMode.PercentOutput, speed);
+		} else if (!Robot.oi.getDriveEnabled()) {
+			leftTalonMaster.neutralOutput();
+			rightTalonMaster.neutralOutput();	
+		}
+	}
     
     
     /**
@@ -774,7 +797,7 @@ public class DriveTrain extends Subsystem {
  
     
     private enum DriveControlMode {
-    	STANDARD_DRIVE, MOTION_PROFILE, DISTANCE_CLOSE_LOOP
+    	STANDARD_DRIVE, MOTION_PROFILE, DISTANCE_CLOSE_LOOP, PTO
     }
     
     public enum DriveGear {
