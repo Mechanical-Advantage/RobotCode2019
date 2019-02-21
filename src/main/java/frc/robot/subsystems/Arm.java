@@ -41,8 +41,8 @@ public class Arm extends Subsystem {
   private static final double elbowLowerLimitHigh = 0;
   private static final double elbowUpperLimitHigh = 360;
   private static final int elbowReduction = 1; // Multiplier on setpoints
-  private static final double elbowOffsetLow = 0; // Elbow offset applied when shoulder is lowered
-  private static final double elbowOffsetHigh = 60; // Elbow offset applied when shoulder is raised
+  public static final double elbowOffsetLow = 0; // Elbow offset applied when shoulder is lowered
+  public static final double elbowOffsetHigh = 60; // Elbow offset applied when shoulder is raised
   private static final double elbowSchoolZoneSpeedLimit = 0.2;
   private static final double elbowLowSchoolZoneLowerStart = -360;
   private static final double elbowLowSchoolZoneUpperStart = 360;
@@ -83,10 +83,10 @@ public class Arm extends Subsystem {
   private static final double telescopeZeroPercent = -0.05;
 
   private static final double allowedFrameExtension = 30;
-  private static final double bicepLength = 0;
-  private static final double forearmLength = 0; // Length of the forearm with no telescope extension
-  private static final double framePerimeterFrontFromShoulder = 6; // How far forward the front edge of the frame perimeter is from the shoulder joint
-  private static final double framePerimeterBackFromShoulder = -20; // How far forward the back edge of the frame perimeter is from the shoulder joint
+  public static final double bicepLength = 0;
+  public static final double forearmLength = 0; // Length of the forearm with no telescope extension
+  public static final double framePerimeterFrontFromShoulder = 6; // How far forward the front edge of the frame perimeter is from the shoulder joint
+  public static final double framePerimeterBackFromShoulder = -20; // How far forward the back edge of the frame perimeter is from the shoulder joint
 
   private static final TunableNumber kPElbow = new TunableNumber("Arm Elbow/p");
   private static final TunableNumber kIElbow = new TunableNumber("Arm Elbow/i");
@@ -117,9 +117,9 @@ public class Arm extends Subsystem {
   private static final int configTimeout = 10; // Method forms without timeout used where possible
 
   // Calculated constants
-  private static final double shoulderDistanceLow = -1 * 
+  public static final double shoulderDistanceLow = -1 * 
     Math.cos(Math.toRadians(elbowOffsetLow)) * bicepLength; // How far forward of the shoulder base the elbow joint is when the shoulder is lowered
-  private static final double shoulderDistanceHigh = -1 * 
+  public static final double shoulderDistanceHigh = -1 * 
     Math.cos(Math.toRadians(elbowOffsetHigh)) * bicepLength; // How far forward of the shoulder base the elbow joint is when the shoulder is raised
   private static final int telescopeMaxExtensionTicks = convertTelescopeInchesToTicks(telescopeMaxExtension);
 
@@ -691,13 +691,13 @@ public class Arm extends Subsystem {
   }
 
   public enum WristPosition {
-    UPRIGHT, FLAT, CARGO_PICKUP;
+    NOZZLE_DOWNWARD, NOZZLE_FLAT, CARGO_PICKUP;
 
     private double getAngle() {
       switch (this) {
-        case UPRIGHT:
+        case NOZZLE_DOWNWARD:
           return 0;
-        case FLAT:
+        case NOZZLE_FLAT:
           return 90;
         case CARGO_PICKUP:
           return 45;
