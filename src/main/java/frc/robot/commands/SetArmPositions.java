@@ -57,6 +57,7 @@ public class SetArmPositions extends Command {
                                                                       Map.entry(CARGOSHIP_PLATE, true),
                                                                       Map.entry(CARGOSHIP_CARGO, true),
                                                                       Map.entry(FLOOR_PLATE, false),
+                                                                      Map.entry(FLOOR_CARGO, false),
                                                                       Map.entry(LOADING_PLATE, false),
                                                                       Map.entry(LOADING_CARGO, false));
 

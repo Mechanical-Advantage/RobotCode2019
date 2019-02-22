@@ -696,9 +696,9 @@ public class Arm extends Subsystem {
     private double getAngle() {
       switch (this) {
         case NOZZLE_DOWNWARD:
-          return 0;
-        case NOZZLE_FLAT:
           return 90;
+        case NOZZLE_FLAT:
+          return 0;
         case CARGO_PICKUP:
           return 45;
       }
