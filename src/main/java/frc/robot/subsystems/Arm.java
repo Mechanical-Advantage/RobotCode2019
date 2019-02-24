@@ -147,6 +147,7 @@ public class Arm extends Subsystem {
   private DigitalInput elbowLimitSwitch;
 
   private boolean shoulderRaised = false;
+  private boolean targetShoulderRaised = false; // State requested for the shoulder
   private double targetElbowPosition;
   private boolean elbowZeroed = false;
   private SchoolZone elbowLowSchoolZone;
@@ -317,12 +318,14 @@ public class Arm extends Subsystem {
         initPID();
       }
       // Should zeroing multiple times be allowed?
+      double elbowPosition = getElbowPosition(); // Avoid duplicate calculation
+      updateShoulderSetpoint(elbowPosition);
       if (!elbowZeroed) {
         if (getElbowLimitSwitch()) {
           setElbowZeroed();
         }
       } else {
-        elbowCurrentSchoolZone.applyPosition(getElbowPosition());
+        elbowCurrentSchoolZone.applyPosition(elbowPosition);
       }
       if (!wristZeroed) {
         if (getWristLimitSwitch()) {
@@ -365,18 +368,48 @@ public class Arm extends Subsystem {
 
   public void setShoulderRaised(boolean raise) {
     if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
-      shoulderRaised = raise;
-      shoulder1.set(raise ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
-      shoulder2.set(raise ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
+      targetShoulderRaised = raise;
+      updateShoulderSetpoint();
       // May need to update setpoints for other parts here
-      updateElbowSetpoint();
       updateElbowLimits();
+      updateElbowSetpoint();
       updateWristSetpoint();
     }
   }
 
+  /**
+   * Get whether the shoulder is raised
+   * 
+   * @return Whether the shoulder is currently raised
+   */
   public boolean isShoulderRaised() {
     return shoulderRaised;
+  }
+
+  /**
+   * Get whether the requested shoulder position is raised
+   * 
+   * @return Whether the target shoulder position is raised
+   */
+  public boolean isShoulderTargetRaised() {
+    return targetShoulderRaised;
+  }
+
+  private void updateShoulderSetpoint() {
+    updateShoulderSetpoint(getElbowPosition());
+  }
+
+  private void updateShoulderSetpoint(double elbowPosition) {
+    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+      if (targetShoulderRaised != shoulderRaised) {
+        if (elbowPosition >= getElbowLowerLimit(targetShoulderRaised) && 
+        elbowPosition <= getElbowUpperLimit(targetShoulderRaised)) {
+          shoulder1.set(targetShoulderRaised ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
+          shoulder2.set(targetShoulderRaised ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
+          shoulderRaised = targetShoulderRaised;  
+        }
+      }
+    }
   }
 
   /**
@@ -423,9 +456,17 @@ public class Arm extends Subsystem {
   private void updateElbowSetpoint() {
     if (elbowZeroed && (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2)
         && elbowEnabled) {
+      double target;
+      if (targetElbowPosition < getElbowLowerLimit(targetShoulderRaised)) {
+        target = getElbowLowerLimit(targetShoulderRaised);
+      } else if (targetElbowPosition > getElbowUpperLimit(targetShoulderRaised)) {
+        target = getElbowUpperLimit(targetShoulderRaised);
+      } else {
+        target = targetElbowPosition;
+      }
       // Aux PID (encoder difference) should try to be 0
       elbowLeft.set(elbowUseMotionMagic ? ControlMode.MotionMagic : ControlMode.Position,
-          convertElbowPositionToTicks(targetElbowPosition, true), DemandType.AuxPID, 0);
+          convertElbowPositionToTicks(target, true), DemandType.AuxPID, 0);
     }
   }
 
@@ -447,27 +488,56 @@ public class Arm extends Subsystem {
 
   private void updateElbowLimits() {
     if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
-      double lowerLimit;
-      double upperLimit;
       if (shoulderRaised) {
-        lowerLimit = elbowLowerLimitHigh;
-        upperLimit = elbowUpperLimitHigh;
         elbowCurrentSchoolZone = elbowHighSchoolZone;
       } else {
-        lowerLimit = elbowLowerLimitLow;
-        upperLimit = elbowUpperLimitLow;
         elbowCurrentSchoolZone = elbowLowSchoolZone;
       }
       // Ensure school zones are applied if needed
       elbowCurrentSchoolZone.applyPosition(getElbowPosition());
       elbowCurrentSchoolZone.setControllerLimits();
-      int finalLowerLimit = (int) Math.round(lowerLimit / 360 * elbowTicksPerRotation * elbowReduction);
-      int finalUpperLimit = (int) Math.round(upperLimit / 360 * elbowTicksPerRotation * elbowReduction);
+      int finalLowerLimit = (int) Math.round(getElbowLowerLimit() / 360 * elbowTicksPerRotation * elbowReduction);
+      int finalUpperLimit = (int) Math.round(getElbowUpperLimit() / 360 * elbowTicksPerRotation * elbowReduction);
       elbowLeft.configForwardSoftLimitThreshold(finalUpperLimit);
       elbowLeft.configReverseSoftLimitThreshold(finalLowerLimit);
       elbowRight.configForwardSoftLimitThreshold(finalUpperLimit);
       elbowRight.configReverseSoftLimitThreshold(finalLowerLimit);
     }
+  }
+
+  /**
+   * Get the lower elbow limit for the current shoulder state
+   * 
+   * @return The elbow limit (degrees from floor)
+   */
+  private double getElbowLowerLimit() {
+    return getElbowLowerLimit(shoulderRaised);
+  }
+  /**
+   * Get the lower elbow limit for the passed state
+   * 
+   * @param raised The shoulder state to get the limit for
+   * @return The elbow limit (degrees from floor)
+   */
+  private double getElbowLowerLimit(boolean raised) {
+    return raised ? elbowLowerLimitHigh : elbowLowerLimitLow;
+  }
+  /**
+   * Get the upper elbow limit for the current shoulder state
+   * 
+   * @return The elbow limit (degrees from floor)
+   */
+  private double getElbowUpperLimit() {
+    return getElbowUpperLimit(shoulderRaised);
+  }
+  /**
+   * Get the upper elbow limit for the passed state
+   * 
+   * @param raised The shoulder state to get the limit for
+   * @return The elbow limit (degrees from floor)
+   */
+  private double getElbowUpperLimit(boolean raised) {
+    return raised ? elbowUpperLimitHigh : elbowUpperLimitLow;
   }
 
   /**
@@ -557,7 +627,7 @@ public class Arm extends Subsystem {
     if (fromFloor) {
       position -= elbowPosition / wristElbowRatio;
     }
-    if (shoulderRaised && fromFloor) {
+    if (targetShoulderRaised && fromFloor) {
       position += wristOffsetLow;
     } else if (fromFloor) {
       position += wristOffsetHigh;
