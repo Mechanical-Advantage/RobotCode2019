@@ -52,6 +52,10 @@ public class Arm extends Subsystem {
   private static final double elbowHighSchoolZoneLowerStart = -360;
   private static final double elbowHighSchoolZoneUpperStart = 360;
   private static final double elbowPeakOutput = 1;
+  private static final double elbowForwardNominalOutput = 0;
+  private static final double elbowReverseNominalOutput = 0;
+  private static final double elbowAllowableError = 0; // For primary PID
+  private static final double elbowAllowableErrorSync = 0;
   private static final double elbowZeroPercent = /*-0.05*/0;
 
   private static final FeedbackDevice wristSensorType = FeedbackDevice.CTRE_MagEncoder_Relative;
@@ -219,15 +223,19 @@ public class Arm extends Subsystem {
       telescopeSchoolZone = new SchoolZone(telescopeSchoolZoneSpeedLimit, telescopePeakOutput,
           telescopeSchoolZoneLowerStart, telescopeSchoolZoneUpperStart, telescope);
 
+      elbowLeft.configFactoryDefault();
       elbowLeft.configSelectedFeedbackSensor(elbowSensorType);
       elbowLeft.setSensorPhase(elbowSensorLeftReversed);
       elbowLeft.setInverted(elbowOutputLeftReversed);
+      elbowRight.configFactoryDefault();
       elbowRight.configSelectedFeedbackSensor(elbowSensorType);
       elbowRight.setSensorPhase(elbowSensorRightReversed);
       elbowRight.setInverted(elbowOutputRightReversed);
+      wrist.configFactoryDefault();
       wrist.configSelectedFeedbackSensor(wristSensorType);
       wrist.setSensorPhase(wristSensorReversed);
       wrist.setInverted(wristOutputReversed);
+      telescope.configFactoryDefault();
       telescope.configSelectedFeedbackSensor(telescopeSensorType);
       telescope.setSensorPhase(telescopeSensorReversed);
       telescope.setInverted(telescopeOutputReversed);
@@ -245,17 +253,16 @@ public class Arm extends Subsystem {
       elbowLeft.configReverseSoftLimitEnable(true);
       elbowLeft.configMotionCruiseVelocity(convertElbowPositionToTicks(elbowMotMagCruiseVelocity, false));
       elbowLeft.configMotionAcceleration(convertElbowPositionToTicks(elbowMotMagAccel, false));
-      elbowRight.configRemoteFeedbackFilter(RobotMap.armElbowLeft, RemoteSensorSource.TalonSRX_SelectedSensor, 0);
-      elbowRight.configSensorTerm(SensorTerm.Diff0, elbowSensorType);
-      elbowRight.configSensorTerm(SensorTerm.Diff1, FeedbackDevice.RemoteSensor0);
-      elbowRight.configSelectedFeedbackSensor(FeedbackDevice.SensorDifference, 1, configTimeout);
-      elbowRight.selectProfileSlot(0, 0); // Use slot 0 for main PID
-      elbowRight.selectProfileSlot(1, 1); // Use slot 1 for secondary PID
-      elbowRight.configAuxPIDPolarity(elbowDiffPIDPolarity);
-      elbowRight.configMotionCruiseVelocity(convertElbowPositionToTicks(elbowMotMagCruiseVelocity, false));
-      elbowRight.configMotionAcceleration(convertElbowPositionToTicks(elbowMotMagAccel, false));
+      elbowLeft.configNominalOutputForward(elbowForwardNominalOutput);
+      elbowLeft.configNominalOutputReverse(elbowReverseNominalOutput);
+      elbowLeft.configAllowableClosedloopError(0, convertElbowPositionToTicks(
+        elbowAllowableError, false));
+      elbowLeft.configAllowableClosedloopError(1, convertElbowPositionToTicks(
+        elbowAllowableErrorSync, false));
       elbowRight.configForwardSoftLimitEnable(true);
       elbowRight.configReverseSoftLimitEnable(true);
+      elbowLeft.configNominalOutputForward(elbowForwardNominalOutput);
+      elbowLeft.configNominalOutputReverse(elbowReverseNominalOutput);
       elbowLowSchoolZone.setControllerLimits(); // This sets the peak output of the controllers
 
       wrist.configForwardSoftLimitThreshold(convertWristRelativePositionToTicks(wristUpperLimit));
@@ -348,12 +355,6 @@ public class Arm extends Subsystem {
     elbowLeft.config_kP(1, kPElbowSync.get());
     elbowLeft.config_kI(1, kIElbowSync.get());
     elbowLeft.config_kD(1, kDElbowSync.get());
-    elbowRight.config_kP(0, kPElbow.get());
-    elbowRight.config_kI(0, kIElbow.get());
-    elbowRight.config_kD(0, kDElbow.get());
-    elbowRight.config_kP(1, kPElbowSync.get());
-    elbowRight.config_kI(1, kIElbowSync.get());
-    elbowRight.config_kD(1, kDElbowSync.get());
     wrist.config_kP(0, kPWrist.get());
     wrist.config_kI(0, kIWrist.get());
     wrist.config_kD(0, kDWrist.get());
@@ -425,8 +426,6 @@ public class Arm extends Subsystem {
       // Aux PID (encoder difference) should try to be 0
       elbowLeft.set(elbowUseMotionMagic ? ControlMode.MotionMagic : ControlMode.Position,
           convertElbowPositionToTicks(targetElbowPosition, true), DemandType.AuxPID, 0);
-      elbowRight.set(elbowUseMotionMagic ? ControlMode.MotionMagic : ControlMode.Position,
-          convertElbowPositionToTicks(targetElbowPosition, true), DemandType.Neutral, 0);
     }
   }
 
@@ -658,7 +657,7 @@ public class Arm extends Subsystem {
 
   public void enableElbow() {
     elbowEnabled = true;
-    // elbowRight.follow(elbowLeft, FollowerType.AuxOutput1); // Aux PID get applied
+    elbowRight.follow(elbowLeft, FollowerType.AuxOutput1); // Aux PID get applied
     // in opposite direction on right
     updateElbowSetpoint();
   }
