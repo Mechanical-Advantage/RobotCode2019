@@ -37,9 +37,7 @@ public class Vacuum extends Subsystem {
       pressureSensor = new AnalogInput(RobotMap.vacuumPressureSensor);
       pressureSensor.setAverageBits(4);
 
-      if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
-        vacuumMotor = new VictorSPX(RobotMap.vacuumMotor);
-      }
+      vacuumMotor = new VictorSPX(RobotMap.vacuumMotor);
 
       vacuumMotor.setInverted(reverseVacuumMotor);
       vacuumMotor.setNeutralMode(vacMotorBrakeMode ? NeutralMode.Brake : NeutralMode.Coast);
