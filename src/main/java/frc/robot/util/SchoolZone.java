@@ -5,7 +5,7 @@
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
 
-package frc.robot;
+package frc.robot.util;
 
 import com.ctre.phoenix.motorcontrol.can.BaseMotorController;
 

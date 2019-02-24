@@ -19,9 +19,9 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import frc.robot.RobotMap;
-import frc.robot.SchoolZone;
+import frc.robot.util.SchoolZone;
 import frc.robot.RobotMap.RobotType;
-import frc.robot.TunableNumber;
+import frc.robot.util.TunableNumber;
 
 /**
  * 2019 robot arm

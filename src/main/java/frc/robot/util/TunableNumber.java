@@ -1,6 +1,7 @@
-package frc.robot;
+package frc.robot.util;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.RobotMap;
 
 /**
  * Class for a tunable number. Gets value from dashboard in tuning mode, returns default if not or value not in dashboard.

@@ -1,6 +1,6 @@
 package frc.robot.commands;
 
-import frc.robot.PIDControllerFixed;
+import frc.robot.util.PIDControllerFixed;
 import frc.robot.Robot;
 import frc.robot.RobotMap;
 import frc.robot.RobotMap.RobotType;

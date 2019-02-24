@@ -12,7 +12,7 @@ import edu.wpi.first.wpilibj.PIDOutput;
 import edu.wpi.first.wpilibj.PIDSource;
 import edu.wpi.first.wpilibj.PIDSourceType;
 import edu.wpi.first.wpilibj.command.Command;
-import frc.robot.LatencyData;
+import frc.robot.util.LatencyData;
 import frc.robot.Robot;
 import frc.robot.RobotMap;
 import frc.robot.subsystems.DriveTrain.DriveGear;
