@@ -4,7 +4,6 @@ import java.io.File;
 
 import frc.robot.Robot;
 import frc.robot.RobotMap;
-import frc.robot.RobotMap.RobotType;
 import frc.robot.util.TunableNumber;
 import frc.robot.subsystems.DriveTrain.DriveGear;
 

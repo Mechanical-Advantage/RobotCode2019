@@ -3,7 +3,6 @@ package frc.robot.commands;
 import frc.robot.util.PIDControllerFixed;
 import frc.robot.Robot;
 import frc.robot.RobotMap;
-import frc.robot.RobotMap.RobotType;
 import frc.robot.subsystems.DriveTrain.DriveGear;
 
 import edu.wpi.first.wpilibj.PIDOutput;
