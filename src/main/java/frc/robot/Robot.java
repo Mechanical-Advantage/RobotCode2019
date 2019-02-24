@@ -48,7 +48,7 @@ public class Robot extends TimedRobot {
 
   public static ZMQ.Context ZMQContext = ZMQ.context(1);
 
-  public static final DriveTrain driveSubsystem = new DriveTrain();
+  public static DriveTrain driveSubsystem /* = new DriveTrain()*/;
   public static final Arm arm = new Arm();
   public static final Vacuum vacuum = new Vacuum();
   public static final VisionData visionData = new VisionData();
@@ -81,10 +81,10 @@ public class Robot extends TimedRobot {
     if (RobotMap.tuningMode) {
       tuningModeChooser.addOption("Fused Heading Test", new FusedHeadingTest());
       tuningModeChooser.addOption("Arm Tuning", new ArmTuning());
-      tuningModeChooser.addOption("Velocity PID Tuner", new VelocityPIDTuner());
-      tuningModeChooser.addOption("Turn 90 degrees", new TurnToAngle(90));
-      tuningModeChooser.addOption("Drive 5 feet", new DriveDistanceOnHeading(60));
-      tuningModeChooser.addOption("Drive 10 feet", new DriveDistanceOnHeading(120));
+      // tuningModeChooser.addOption("Velocity PID Tuner", new VelocityPIDTuner());
+      // tuningModeChooser.addOption("Turn 90 degrees", new TurnToAngle(90));
+      // tuningModeChooser.addOption("Drive 5 feet", new DriveDistanceOnHeading(60));
+      // tuningModeChooser.addOption("Drive 10 feet", new DriveDistanceOnHeading(120));
       SmartDashboard.putData("Tuning Auto Mode", tuningModeChooser);
       autoChooser.addOption("Tuning Auto", AutoMode.TUNING);
     }
@@ -135,9 +135,9 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledPeriodic() {
     Scheduler.getInstance().run();
-    if (driveSubsystem.getVelocityLeft() <= 2 && driveSubsystem.getVelocityRight() <= 2) {
+    /*if (driveSubsystem.getVelocityLeft() <= 2 && driveSubsystem.getVelocityRight() <= 2) {
       Robot.driveSubsystem.enableBrakeMode(false);
-    }
+    }*/
   }
 
   /**
@@ -154,7 +154,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    Robot.driveSubsystem.enableBrakeMode(true);
+    // Robot.driveSubsystem.enableBrakeMode(true);
     ahrs.zeroYaw();
     if (autoChooser.getSelected() != null) {
       switch (autoChooser.getSelected()) {
@@ -186,7 +186,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
-    Robot.driveSubsystem.enableBrakeMode(true);
+    // Robot.driveSubsystem.enableBrakeMode(true);
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove

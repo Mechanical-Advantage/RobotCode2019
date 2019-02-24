@@ -102,9 +102,9 @@ public class OI {
 		// joysticksBackward.whenPressed(new SetCamera(false));
 		// joysticksForward.whenPressed(new ReverseJoysticks(false));
 		// joysticksBackward.whenPressed(new ReverseJoysticks(true));
-		highGear.whenPressed(new SwitchGear(DriveGear.HIGH));
-		lowGear.whenPressed(new SwitchGear(DriveGear.LOW));
-		toggleGear.whenPressed(new ToggleGear());
+		// highGear.whenPressed(new SwitchGear(DriveGear.HIGH));
+		// lowGear.whenPressed(new SwitchGear(DriveGear.LOW));
+		// toggleGear.whenPressed(new ToggleGear());
 
 		pumpTailSolenoid.whenPressed(new SetVacuumSolenoid(VacSolenoid.PUMP_TAIL, true));
 		pumpTankSolenoid.whenPressed(new SetVacuumSolenoid(VacSolenoid.PUMP_TANK, true));
@@ -116,12 +116,12 @@ public class OI {
 		tailTankSolenoid.whenReleased(new SetVacuumSolenoid(VacSolenoid.TAIL_TANK, false));
 		pickupSolenoid.whenReleased(new SetVacuumSolenoid(VacSolenoid.PICKUP, false));
 
-		Command hatchPickupCommand = new VisionHatchPickup();
-		hatchPickup.whenPressed(hatchPickupCommand);
-		hatchPickup.whenReleased(new CancelCommand(hatchPickupCommand));
-		Command driveToTargetCommand = new DriveToVisionTarget();
-		driveToTarget.whenPressed(driveToTargetCommand);
-		driveToTarget.whenReleased(new CancelCommand(driveToTargetCommand));
+		// Command hatchPickupCommand = new VisionHatchPickup();
+		// hatchPickup.whenPressed(hatchPickupCommand);
+		// hatchPickup.whenReleased(new CancelCommand(hatchPickupCommand));
+		// Command driveToTargetCommand = new DriveToVisionTarget();
+		// driveToTarget.whenPressed(driveToTargetCommand);
+		// driveToTarget.whenReleased(new CancelCommand(driveToTargetCommand));
 		visionTest.whileHeld(new VisionRecieverTest());
 	}
 

@@ -29,10 +29,13 @@ public class ArmTuning extends Command {
     SmartDashboard.putNumber("Arm Elbow Position", Robot.arm.getElbowPosition());
     SmartDashboard.putNumber("Arm Wrist Position", Robot.arm.getWristPosition());
     SmartDashboard.putNumber("Arm Telescope Position", Robot.arm.getTelescopePosition());
-    Robot.arm.setShoulderRaised(SmartDashboard.getBoolean("Arm Shoulder High", false));
+    // Robot.arm.setShoulderRaised(SmartDashboard.getBoolean("Arm Shoulder High", false));
     
     if (SmartDashboard.getBoolean("Arm Elbow/enabled", false)) {
       Robot.arm.setElbowPosition(SmartDashboard.getNumber("Arm Elbow/setpoint", 0.0));
+      Robot.arm.enableElbow();
+    } else if (SmartDashboard.getBoolean("Arm Elbow Open Loop/enabled", false)) {
+      Robot.arm.runElbowOpenLoop(SmartDashboard.getNumber("Arm Elbow Open Loop/speed", 0.0));
       Robot.arm.enableElbow();
     } else {
       Robot.arm.disableElbow();

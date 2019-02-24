@@ -17,6 +17,7 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import frc.robot.RobotMap;
 import frc.robot.SchoolZone;
@@ -30,10 +31,10 @@ public class Arm extends Subsystem {
 
   private static final FeedbackDevice elbowSensorType = FeedbackDevice.CTRE_MagEncoder_Relative;
   private static final int elbowTicksPerRotation = 4096;
-  private static final boolean elbowSensorLeftReversed = true;
-  private static final boolean elbowSensorRightReversed = true;
-  private static final boolean elbowOutputLeftReversed = false;
-  private static final boolean elbowOutputRightReversed = true;
+  private static final boolean elbowSensorLeftReversed = false;
+  private static final boolean elbowSensorRightReversed = false;
+  private static final boolean elbowOutputLeftReversed = true;
+  private static final boolean elbowOutputRightReversed = false;
   private static final boolean elbowDiffPIDPolarity = true; // Swaps syncronization correction
   private static final boolean elbowUseMotionMagic = false;
   private static final double elbowMotMagAccel = 20;
@@ -43,7 +44,7 @@ public class Arm extends Subsystem {
   private static final double elbowUpperLimitLow = 360;
   private static final double elbowLowerLimitHigh = 0;
   private static final double elbowUpperLimitHigh = 360;
-  private static final double elbowReduction = 1.5*33*2.72; // Multiplier on setpoints
+  private static final double elbowReduction = /*1.5*33*2.72*/1; // Multiplier on setpoints
   private static final double elbowOffsetLow = 0; // Elbow offset applied when shoulder is lowered
   private static final double elbowOffsetHigh = 60; // Elbow offset applied when shoulder is raised
   private static final double elbowSchoolZoneSpeedLimit = 0.2;
@@ -127,7 +128,9 @@ public class Arm extends Subsystem {
   private static final int telescopeMaxExtensionTicks = convertTelescopeInchesToTicks(telescopeMaxExtension);
 
   private TalonSRX elbowLeft;
+  private TalonSRX elbowLeftFollower;
   private TalonSRX elbowRight;
+  private TalonSRX elbowRightFollower;
   private TalonSRX wrist;
   private TalonSRX telescope;
   private DoubleSolenoid shoulder1;
@@ -165,7 +168,7 @@ public class Arm extends Subsystem {
 
   public Arm() {
     if (RobotMap.robot == RobotType.ROBOT_2019 || 
-      RobotMap.robot == RobotType.ROBOT_2019_2) {
+      RobotMap.robot == RobotType.ROBOT_2019_2 || RobotMap.robot == RobotType.ORIGINAL_ROBOT_2018) {
         // Elbow numbers still do not sync well
         kPElbow.setDefault(1.3);
         kIElbow.setDefault(0);
@@ -180,17 +183,19 @@ public class Arm extends Subsystem {
         kITelescope.setDefault(0);
         kDTelescope.setDefault(0);
 
-        shoulder1 = new DoubleSolenoid(RobotMap.armShoulder1PCM, 
-        RobotMap.armShoulder1Extend, RobotMap.armShoulder1Retract);
-        shoulder2 = new DoubleSolenoid(RobotMap.armShoulder2PCM, 
-        RobotMap.armShoulder2Extend, RobotMap.armShoulder2Retract);
+        // shoulder1 = new DoubleSolenoid(RobotMap.armShoulder1PCM, 
+        // RobotMap.armShoulder1Extend, RobotMap.armShoulder1Retract);
+        // shoulder2 = new DoubleSolenoid(RobotMap.armShoulder2PCM, 
+        // RobotMap.armShoulder2Extend, RobotMap.armShoulder2Retract);
 
         elbowLimitSwitch = new DigitalInput(RobotMap.armElbowLimitSwitch);
 
-        elbowLeft = new TalonSRX(RobotMap.armElbowLeft);
-        elbowRight = new TalonSRX(RobotMap.armElbowRight);
-        wrist = new TalonSRX(RobotMap.armWrist);
-        telescope = new TalonSRX(RobotMap.armTelescope);
+        elbowLeft = new TalonSRX(RobotMap.leftMaster);
+        elbowLeftFollower = new TalonSRX(RobotMap.leftSlave);
+        elbowRight = new TalonSRX(RobotMap.rightMaster);
+        elbowRightFollower = new TalonSRX(RobotMap.rightSlave);
+        wrist = new TalonSRX(11);
+        telescope = new TalonSRX(4);
 
         elbowLowSchoolZone = new SchoolZone(elbowSchoolZoneSpeedLimit, 
           elbowPeakOutput, elbowLowSchoolZoneLowerStart,
@@ -208,9 +213,11 @@ public class Arm extends Subsystem {
         elbowLeft.configSelectedFeedbackSensor(elbowSensorType);
         elbowLeft.setSensorPhase(elbowSensorLeftReversed);
         elbowLeft.setInverted(elbowOutputLeftReversed);
+        elbowLeftFollower.setInverted(elbowOutputLeftReversed);
         elbowRight.configSelectedFeedbackSensor(elbowSensorType);
         elbowRight.setSensorPhase(elbowSensorRightReversed);
         elbowRight.setInverted(elbowOutputRightReversed);
+        elbowRightFollower.setInverted(elbowOutputRightReversed);
         wrist.configSelectedFeedbackSensor(wristSensorType);
         wrist.setSensorPhase(wristSensorReversed);
         wrist.setInverted(wristOutputReversed);
@@ -220,7 +227,7 @@ public class Arm extends Subsystem {
 
         initPID();
 
-        elbowLeft.configRemoteFeedbackFilter(RobotMap.armElbowRight, 
+        elbowLeft.configRemoteFeedbackFilter(RobotMap.rightMaster, 
           RemoteSensorSource.TalonSRX_SelectedSensor, 0);
         elbowLeft.configSensorTerm(SensorTerm.Sum0, elbowSensorType);
         elbowLeft.configSensorTerm(SensorTerm.Sum1, FeedbackDevice.RemoteSensor0);
@@ -232,18 +239,10 @@ public class Arm extends Subsystem {
         elbowLeft.configReverseSoftLimitEnable(true);
         elbowLeft.configMotionCruiseVelocity(convertElbowPositionToTicks(elbowMotMagCruiseVelocity, false));
         elbowLeft.configMotionAcceleration(convertElbowPositionToTicks(elbowMotMagAccel, false));
-        elbowRight.configRemoteFeedbackFilter(RobotMap.armElbowLeft, 
-          RemoteSensorSource.TalonSRX_SelectedSensor, 0);
-        elbowRight.configSensorTerm(SensorTerm.Diff0, elbowSensorType);
-        elbowRight.configSensorTerm(SensorTerm.Diff1, FeedbackDevice.RemoteSensor0);
-        elbowRight.configSelectedFeedbackSensor(FeedbackDevice.SensorDifference, 1, configTimeout);
-        elbowRight.selectProfileSlot(0, 0); // Use slot 0 for main PID
-        elbowRight.selectProfileSlot(1, 1); // Use slot 1 for secondary PID
-        elbowRight.configAuxPIDPolarity(elbowDiffPIDPolarity);
-        elbowRight.configMotionCruiseVelocity(convertElbowPositionToTicks(elbowMotMagCruiseVelocity, false));
-        elbowRight.configMotionAcceleration(convertElbowPositionToTicks(elbowMotMagAccel, false));
         elbowRight.configForwardSoftLimitEnable(true);
         elbowRight.configReverseSoftLimitEnable(true);
+        elbowLeftFollower.follow(elbowLeft);
+        elbowRightFollower.follow(elbowRight);
         elbowLowSchoolZone.setControllerLimits(); // This sets the peak output of the controllers
 
         wrist.configForwardSoftLimitThreshold(convertWristRelativePositionToTicks(
@@ -296,27 +295,41 @@ public class Arm extends Subsystem {
 
   @Override
   public void periodic() {
-    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2 || RobotMap.robot == RobotType.ORIGINAL_ROBOT_2018) {
+      // double startTime = Timer.getFPGATimestamp();
       if (RobotMap.tuningMode) {
         initPID();
       }
       // Should zeroing multiple times be allowed?
-      if (!elbowZeroed && getElbowLimitSwitch()) {
-        setElbowZeroed();
+      // double initPIDTime = Timer.getFPGATimestamp();
+      if (!elbowZeroed) {
+        if (getElbowLimitSwitch()) {
+          setElbowZeroed();
+        }
       } else {
         elbowCurrentSchoolZone.applyPosition(getElbowPosition());
       }
-      if (!wristZeroed && getWristLimitSwitch()) {
-        setWristZeroed();
+      // double elbowTime = Timer.getFPGATimestamp();
+      if (!wristZeroed) {
+        if (getWristLimitSwitch()) {
+          setWristZeroed();
+        }
       } else {
         wristSchoolZone.applyPosition(getRelativeWristPosition());
       }
-      if (!telescopeZeroed && getTelescopeLimitSensed()) {
-        setTelescopeZeroed();
+      // double wristTime = Timer.getFPGATimestamp();
+      if (!telescopeZeroed) {
+        if (getTelescopeLimitSensed()) {
+          setTelescopeZeroed();
+        }
       } else {
         updateTelescopeForwardLimit(false);
         telescopeSchoolZone.applyPosition(getTelescopePosition());
       }
+      // double telescopeTime = Timer.getFPGATimestamp();
+      // System.out.println("Start: " + startTime + " initPID: " + initPIDTime +
+      //   " elbow: " + elbowTime + " wrist: " + wristTime + " telescope: " +
+      //   telescopeTime);
     }
   }
 
@@ -333,12 +346,6 @@ public class Arm extends Subsystem {
     elbowLeft.config_kP(1, kPElbowSync.get());
     elbowLeft.config_kI(1, kIElbowSync.get());
     elbowLeft.config_kD(1, kDElbowSync.get());
-    elbowRight.config_kP(0, kPElbow.get());
-    elbowRight.config_kI(0, kIElbow.get());
-    elbowRight.config_kD(0, kDElbow.get());
-    elbowRight.config_kP(1, kPElbowSync.get());
-    elbowRight.config_kI(1, kIElbowSync.get());
-    elbowRight.config_kD(1, kDElbowSync.get());
     wrist.config_kP(0, kPWrist.get());
     wrist.config_kI(0, kIWrist.get());
     wrist.config_kD(0, kDWrist.get());
@@ -348,10 +355,10 @@ public class Arm extends Subsystem {
   }
 
   public void setShoulderRaised(boolean raise) {
-    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2 || RobotMap.robot == RobotType.ORIGINAL_ROBOT_2018) {
       shoulderRaised = raise;
-      shoulder1.set(raise ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
-      shoulder2.set(raise ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
+      // shoulder1.set(raise ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
+      // shoulder2.set(raise ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
       // May need to update setpoints for other parts here
       updateElbowSetpoint();
       updateElbowLimits();
@@ -384,7 +391,7 @@ public class Arm extends Subsystem {
    * @return The elbow position in degrees from floor
    */
   public double getElbowPosition() {
-    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2 || RobotMap.robot == RobotType.ORIGINAL_ROBOT_2018) {
       double position = (elbowLeft.getSelectedSensorPosition() + 
         elbowRight.getSelectedSensorPosition()) / 2; // Average position
       position = position / elbowReduction / elbowTicksPerRotation * 360; // Convert to degrees
@@ -400,13 +407,17 @@ public class Arm extends Subsystem {
   }
 
   private void updateElbowSetpoint() {
-    if (elbowZeroed && (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) && elbowEnabled) {
+    if (elbowZeroed && (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2 || RobotMap.robot == RobotType.ORIGINAL_ROBOT_2018) && elbowEnabled) {
       elbowLeft.set(elbowUseMotionMagic ? ControlMode.MotionMagic : 
         ControlMode.Position, convertElbowPositionToTicks(
         targetElbowPosition, true), DemandType.AuxPID, 0); // Aux PID (encoder difference) should try to be 0
-      elbowRight.set(elbowUseMotionMagic ? ControlMode.MotionMagic : 
-        ControlMode.Position, convertElbowPositionToTicks(
-        targetElbowPosition, true), DemandType.Neutral, 0); // Aux PID (encoder difference) should try to be 0
+    }
+  }
+
+  public void runElbowOpenLoop(double speed) {
+    if (elbowZeroed && (RobotMap.robot == RobotType.ROBOT_2019 || 
+    RobotMap.robot == RobotType.ROBOT_2019_2 || RobotMap.robot == RobotType.ORIGINAL_ROBOT_2018) && elbowEnabled) {
+      elbowLeft.set(ControlMode.PercentOutput, speed, DemandType.AuxPID, 0);
     }
   }
 
@@ -427,7 +438,7 @@ public class Arm extends Subsystem {
   }
 
   private void updateElbowLimits() {
-    if(RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+    if(RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2 || RobotMap.robot == RobotType.ORIGINAL_ROBOT_2018) {
       double lowerLimit;
       double upperLimit;
       if (shoulderRaised) {
@@ -457,7 +468,7 @@ public class Arm extends Subsystem {
    * Set the elbow to be zeroed
    */
   private void setElbowZeroed() {
-    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2 || RobotMap.robot == RobotType.ORIGINAL_ROBOT_2018) {
       int newPosition = (int)Math.round(elbowZeroedPosition / 360 * elbowTicksPerRotation 
         * elbowReduction);
       elbowLeft.setSelectedSensorPosition(newPosition);
@@ -471,7 +482,7 @@ public class Arm extends Subsystem {
   }
 
   public boolean getElbowLimitSwitch() {
-    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2 || RobotMap.robot == RobotType.ORIGINAL_ROBOT_2018) {
       // TODO undo this change
       return true;
       // return elbowLimitSwitch.get();
@@ -493,7 +504,7 @@ public class Arm extends Subsystem {
    * @return The wrist position in degrees
    */
   public double getWristPosition() {
-    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2 || RobotMap.robot == RobotType.ORIGINAL_ROBOT_2018) {
       return convertWristTicksToPosition(wrist.getSelectedSensorPosition(0), true, getElbowPosition());
     } else {
       return 0;
@@ -504,7 +515,7 @@ public class Arm extends Subsystem {
    * @return The wrist position in degrees
    */
   public double getRelativeWristPosition() {
-    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2 || RobotMap.robot == RobotType.ORIGINAL_ROBOT_2018) {
       // Don't apply offset here
       return convertWristTicksToRelativePosition(wrist.getSelectedSensorPosition(0));
     } else {
@@ -546,7 +557,7 @@ public class Arm extends Subsystem {
   }
 
   private void updateWristSetpoint() {
-    if (wristZeroed && (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) && wristEnabled) {
+    if (wristZeroed && (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2 || RobotMap.robot == RobotType.ORIGINAL_ROBOT_2018) && wristEnabled) {
       int setpoint = convertWristPositionToTicks(targetWristPosition.getAngle(), 
         true, getElbowTargetPosition());
       // Make sure aux PID does nothing with DemandType.Neutral
@@ -555,7 +566,7 @@ public class Arm extends Subsystem {
   }
 
   private void setWristZeroed() {
-    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2 || RobotMap.robot == RobotType.ORIGINAL_ROBOT_2018) {
       wrist.setSelectedSensorPosition(convertWristRelativePositionToTicks(
         wristZeroedPosition));
       wristZeroed = true;
@@ -571,7 +582,7 @@ public class Arm extends Subsystem {
 
   public double getTelescopeCurrent() {
     if (RobotMap.robot == RobotType.ROBOT_2019 || 
-    RobotMap.robot == RobotType.ROBOT_2019_2) {
+    RobotMap.robot == RobotType.ROBOT_2019_2 || RobotMap.robot == RobotType.ORIGINAL_ROBOT_2018) {
       return telescope.getOutputCurrent();
     }
     return 0;
@@ -579,7 +590,7 @@ public class Arm extends Subsystem {
 
   public double getTelescopePosition() {
     if (RobotMap.robot == RobotType.ROBOT_2019 || 
-    RobotMap.robot == RobotType.ROBOT_2019_2) {
+    RobotMap.robot == RobotType.ROBOT_2019_2 || RobotMap.robot == RobotType.ORIGINAL_ROBOT_2018) {
       return convertTelescopeTicksToInches(telescope.getSelectedSensorPosition());
     }
     return 0;
@@ -591,7 +602,7 @@ public class Arm extends Subsystem {
 
   public void setTelescopePosition(double position) {
     if (RobotMap.robot == RobotType.ROBOT_2019 || 
-    RobotMap.robot == RobotType.ROBOT_2019_2) {
+    RobotMap.robot == RobotType.ROBOT_2019_2 || RobotMap.robot == RobotType.ORIGINAL_ROBOT_2018) {
       targetTelescopePosition = position;
       targetTelescopePositionTicks = convertTelescopeInchesToTicks(position);
       // Passing true to updateTelescopeForwardLimit forces the setpoint to be 
@@ -612,7 +623,7 @@ public class Arm extends Subsystem {
 
   private void setTelescopeZeroed() {
     if (RobotMap.robot == RobotType.ROBOT_2019 || 
-    RobotMap.robot == RobotType.ROBOT_2019_2) {
+    RobotMap.robot == RobotType.ROBOT_2019_2 || RobotMap.robot == RobotType.ORIGINAL_ROBOT_2018) {
       telescope.setSelectedSensorPosition(convertTelescopeInchesToTicks(
         telescopeZeroedPosition));
       telescopeZeroed = true;
@@ -622,7 +633,7 @@ public class Arm extends Subsystem {
 
   private boolean getTelescopeLimitSensed() {
     if (RobotMap.robot == RobotType.ROBOT_2019 || 
-     RobotMap.robot == RobotType.ROBOT_2019_2) {
+     RobotMap.robot == RobotType.ROBOT_2019_2 || RobotMap.robot == RobotType.ORIGINAL_ROBOT_2018) {
       return telescope.getSelectedSensorVelocity() == 0 && 
         telescope.getMotorOutputPercent() < 0;
     }
@@ -647,8 +658,8 @@ public class Arm extends Subsystem {
 
   public void enableElbow() {
     elbowEnabled = true;
-    // elbowRight.follow(elbowLeft, FollowerType.AuxOutput1); // Aux PID get applied in opposite direction on right
-    updateElbowSetpoint();
+    elbowRight.follow(elbowLeft, FollowerType.AuxOutput1); // Aux PID get applied in opposite direction on right
+    // updateElbowSetpoint();
   }  
 
   public void enableWrist() {
@@ -667,12 +678,16 @@ public class Arm extends Subsystem {
    */
   private void updateTelescopeForwardLimit(boolean setpointChanged) {
     if ((RobotMap.robot == RobotType.ROBOT_2019 ||
-    RobotMap.robot == RobotType.ROBOT_2019_2) && telescopeZeroed && elbowZeroed && telescopeEnabled) {
+    RobotMap.robot == RobotType.ROBOT_2019_2 || RobotMap.robot == RobotType.ORIGINAL_ROBOT_2018) && telescopeZeroed && elbowZeroed && telescopeEnabled) {
+      // double startTime = Timer.getFPGATimestamp();
       double currentMaxExtension = getAllowedTelescopeExtension(getElbowPosition());
+      // double curMaxExtensionTime = Timer.getFPGATimestamp();
       int currentMaxExtensionTicks = convertTelescopeInchesToTicks(
         currentMaxExtension);
+      // double curMaxExtensionConversionTime = Timer.getFPGATimestamp();
       int limit = currentMaxExtensionTicks > telescopeMaxExtensionTicks ?
         telescopeMaxExtensionTicks : currentMaxExtensionTicks;
+      // double controllerUpdateTime = 0;
       if (limit != previousTelescopeLimit || setpointChanged) {
         telescope.configForwardSoftLimitThreshold(limit, 0);
         if (targetTelescopePositionTicks > limit) {
@@ -680,8 +695,12 @@ public class Arm extends Subsystem {
         } else {
           telescope.set(ControlMode.Position, targetTelescopePositionTicks);
         }
+        // controllerUpdateTime = Timer.getFPGATimestamp();
         previousTelescopeLimit = limit;
       }
+      // System.out.println("Start: " + startTime + " maxExtension: " + curMaxExtensionTime +
+      //   " max extension conversion " + curMaxExtensionConversionTime +
+      //   " controller update: " + controllerUpdateTime);
     }
   }
 
@@ -691,7 +710,7 @@ public class Arm extends Subsystem {
    */
   public double getDistanceOutsideFrame() {
     if (RobotMap.robot == RobotType.ROBOT_2019 ||
-    RobotMap.robot == RobotType.ROBOT_2019_2) {
+    RobotMap.robot == RobotType.ROBOT_2019_2 || RobotMap.robot == RobotType.ORIGINAL_ROBOT_2018) {
       double elbowPosition = getElbowPosition();
       double distanceFromElbow = Math.cos(Math.toRadians(elbowPosition)) *
         (getTelescopePosition() + forearmLength);
@@ -715,7 +734,7 @@ public class Arm extends Subsystem {
    */
   private double getAllowedTelescopeExtension(double elbowPosition) {
     if (RobotMap.robot == RobotType.ROBOT_2019 ||
-    RobotMap.robot == RobotType.ROBOT_2019_2) {
+    RobotMap.robot == RobotType.ROBOT_2019_2 || RobotMap.robot == RobotType.ORIGINAL_ROBOT_2018) {
       double allowedDistanceFromShoulder = allowedFrameExtension * 
         (elbowPosition > 90 ? -1 : 1) + (elbowPosition <= 90 ? 
         framePerimeterFrontFromShoulder : framePerimeterBackFromShoulder);
