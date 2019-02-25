@@ -23,6 +23,7 @@ import frc.robot.commands.SetArmPositions.ArmPosition;
 import frc.robot.commands.SetCamera;
 import frc.robot.commands.SwitchGear;
 import frc.robot.commands.ToggleGear;
+import frc.robot.commands.VacPickupToggle;
 import frc.robot.commands.VacTail;
 import frc.robot.subsystems.DriveTrain.DriveGear;
 import frc.robot.triggers.ButtonNotTrigger;
@@ -105,6 +106,8 @@ public class OI {
 	private Trigger armHome = new ButtonNotTrigger(armHomeBackward, armAlt);
 	private Trigger armLoadingBackward = new MultiButtonTrigger(armHomeBackward, armAlt);
 
+	private Button vacPickup = new JoystickButton(oiController2, 3);
+
 	private Button tailLock = new JoystickButton(oiController1, 12); // Is a switch
 	private Trigger releaseTail = new MultiButtonTrigger(new JoystickButton(leftController, 7),
 		new JoystickButton(rightController, 10));
@@ -142,6 +145,8 @@ public class OI {
 		armRocketHighCargo.whenActive(new SetArmPositions(ArmPosition.ROCKET_HI_CARGO));
 		armHome.whenActive(new SetArmPositions(ArmPosition.HOME));
 		armLoadingBackward.whenActive(new SetArmPositions(ArmPosition.LOADING_PICKUP_BACKWARDS));
+
+		vacPickup.whenPressed(new VacPickupToggle());
 
 		tailLock.whenPressed(new LockBeaverTail());
 		releaseTail.whenActive(new ReleaseTail());

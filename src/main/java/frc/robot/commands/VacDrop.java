@@ -7,15 +7,18 @@
 
 package frc.robot.commands;
 
-import edu.wpi.first.wpilibj.command.Command;
+import edu.wpi.first.wpilibj.command.TimedCommand;
 import frc.robot.Robot;
 import frc.robot.subsystems.Vacuum.VacSolenoid;
 
-public class VacDrop extends Command {
+public class VacDrop extends TimedCommand {
+
+  private static final double time = 5; // sec
+
   public VacDrop() {
     // Use requires() here to declare subsystem dependencies
     // eg. requires(chassis);
-    super();
+    super(time);
     requires(Robot.vacuum);
   }
 
@@ -30,12 +33,6 @@ public class VacDrop extends Command {
   // Called repeatedly when this Command is scheduled to run
   @Override
   protected void execute() {
-  }
-
-  // Make this return true when this Command no longer needs to run execute()
-  @Override
-  protected boolean isFinished() {
-    return false;
   }
 
   // Called once after isFinished returns true

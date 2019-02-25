@@ -9,6 +9,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.command.Command;
 import frc.robot.Robot;
+import frc.robot.OI.OILED;
 import frc.robot.subsystems.Vacuum.VacSolenoid;
 
 public class VacPickup extends Command {
@@ -22,6 +23,7 @@ public class VacPickup extends Command {
   // Called just before this Command runs the first time
   @Override
   protected void initialize() {
+    Robot.oi.updateLED(OILED.VAC_PICKUP, true);
     Robot.vacuum.setVacuumMotor(true);
     Robot.vacuum.setSolenoid(VacSolenoid.PICKUP, true);
   }
@@ -42,6 +44,7 @@ public class VacPickup extends Command {
   protected void end() {
     Robot.vacuum.setSolenoid(VacSolenoid.PICKUP, false);
     Robot.vacuum.setVacuumMotor(false);
+    Robot.oi.updateLED(OILED.VAC_PICKUP, false);
   }
 
   // Called when another command which requires one or more of the same
