@@ -292,7 +292,7 @@ public class DriveTrain extends Subsystem {
      */
     public void driveInchesPerSec(double left, double right) {
     		int maxVelocity;
-		if (RobotMap.robot != RobotType.ORIGINAL_ROBOT_2018 || currentGear == DriveGear.LOW) {
+		if (!dualGear || currentGear == DriveGear.LOW) {
 			maxVelocity = RobotMap.maxVelocityLow;
 		} else {
 			maxVelocity = RobotMap.maxVelocityHigh;
@@ -302,7 +302,7 @@ public class DriveTrain extends Subsystem {
     
     private double calcActualVelocity(double input) {
     		int minVelocity;
-		if (RobotMap.robot != RobotType.ORIGINAL_ROBOT_2018 || currentGear == DriveGear.LOW) {
+		if (!dualGear || currentGear == DriveGear.LOW) {
 			minVelocity = RobotMap.minVelocityLow;
 		} else {
 			minVelocity = RobotMap.minVelocityHigh;
@@ -395,20 +395,20 @@ public class DriveTrain extends Subsystem {
     }
     
     public void enableBrakeMode(boolean enable) {
-		NeutralMode mode;
-		if (enable) {
-			mode = NeutralMode.Brake;
-		} else {
-			mode = NeutralMode.Coast;
-		}
-		rightTalonMaster.setNeutralMode(mode);
-		leftTalonMaster.setNeutralMode(mode);
-		rightTalonSlave.setNeutralMode(mode);
-		leftTalonSlave.setNeutralMode(mode);
-		if (RobotMap.robot == RobotType.ROBOT_2017) {
-			rightTalonSlave2.setNeutralMode(mode);
-			leftTalonSlave2.setNeutralMode(mode);
-		}
+			NeutralMode mode;
+			if (enable) {
+				mode = NeutralMode.Brake;
+			} else {
+				mode = NeutralMode.Coast;
+			}
+			rightTalonMaster.setNeutralMode(mode);
+			leftTalonMaster.setNeutralMode(mode);
+			rightTalonSlave.setNeutralMode(mode);
+			leftTalonSlave.setNeutralMode(mode);
+			if (sixMotorDrive) {
+				rightTalonSlave2.setNeutralMode(mode);
+				leftTalonSlave2.setNeutralMode(mode);
+			}
     }
     
     public void resetPosition() {
@@ -576,6 +576,16 @@ public class DriveTrain extends Subsystem {
 		currentControlMode = DriveControlMode.PTO;
 		leftTalonMaster.neutralOutput();
 		rightTalonMaster.neutralOutput();
+		pto.set(Value.kForward);
+	}
+
+	public void disablePTO() {
+		if (currentControlMode == DriveControlMode.PTO) {
+			leftTalonMaster.neutralOutput();
+			rightTalonMaster.neutralOutput();
+			pto.set(Value.kReverse);
+			currentControlMode = DriveControlMode.STANDARD_DRIVE;
+		}
 	}
 
 	public void runPTO(double speed) {

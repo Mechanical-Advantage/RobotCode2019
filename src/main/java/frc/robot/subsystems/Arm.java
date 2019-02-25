@@ -18,6 +18,7 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.command.Subsystem;
+import frc.robot.Robot;
 import frc.robot.RobotMap;
 import frc.robot.util.SchoolZone;
 import frc.robot.RobotMap.RobotType;
@@ -400,7 +401,7 @@ public class Arm extends Subsystem {
   }
 
   private void updateShoulderSetpoint(double elbowPosition) {
-    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+    if (Robot.oi.isArmEnabled() && RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
       if (targetShoulderRaised != shoulderRaised) {
         if (elbowPosition >= getElbowLowerLimit(targetShoulderRaised) && 
         elbowPosition <= getElbowUpperLimit(targetShoulderRaised)) {
@@ -726,20 +727,26 @@ public class Arm extends Subsystem {
   }
 
   public void enableElbow() {
-    elbowEnabled = true;
-    elbowRight.follow(elbowLeft, FollowerType.AuxOutput1); // Aux PID get applied
-    // in opposite direction on right
-    updateElbowSetpoint();
+    if (Robot.oi.isArmEnabled()) {
+      elbowEnabled = true;
+      elbowRight.follow(elbowLeft, FollowerType.AuxOutput1); // Aux PID get applied
+      // in opposite direction on right
+      updateElbowSetpoint();
+    }
   }
 
   public void enableWrist() {
-    wristEnabled = true;
-    updateWristSetpoint();
+    if (Robot.oi.isArmEnabled()) {
+      wristEnabled = true;
+      updateWristSetpoint();
+    }
   }
 
   public void enableTelescope() {
-    telescopeEnabled = true;
-    updateTelescopeForwardLimit(true);
+    if (Robot.oi.isArmEnabled()) {
+      telescopeEnabled = true;
+      updateTelescopeForwardLimit(true);
+    }
   }
 
   /**

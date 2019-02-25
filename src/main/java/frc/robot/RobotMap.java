@@ -61,6 +61,9 @@ public class RobotMap {
   public static int vacuumMotor;
   public static int vacuumPressureSensor;
   public static int greenLEDRing; // Currently requires an entire relay channel
+  public static int tailReleaseSolenoid1;
+  public static int tailReleaseSolenoid2;
+  public static int tailReleasePCM;
 
   public RobotMap() {
 		switch (robot) {

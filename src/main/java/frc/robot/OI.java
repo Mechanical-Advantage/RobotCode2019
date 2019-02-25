@@ -16,12 +16,17 @@ import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.buttons.Trigger;
 import edu.wpi.first.wpilibj.command.Command;
 import frc.robot.commands.CancelCommand;
+import frc.robot.commands.DisableArm;
 import frc.robot.commands.DriveToVisionTarget;
+import frc.robot.commands.LockBeaverTail;
+import frc.robot.commands.ReleaseTail;
+import frc.robot.commands.RunPTO;
 import frc.robot.commands.SetArmPositions;
 import frc.robot.commands.SetCamera;
 import frc.robot.commands.SetVacuumSolenoid;
 import frc.robot.commands.SwitchGear;
 import frc.robot.commands.ToggleGear;
+import frc.robot.commands.VacTail;
 import frc.robot.commands.VisionHatchPickup;
 import frc.robot.commands.VisionRecieverTest;
 import frc.robot.commands.SetArmPositions.ArmPosition;
@@ -85,13 +90,15 @@ public class OI {
 	private Button highGear = new JoystickButton(leftController, 5);
 	private Button lowGear = new JoystickButton(leftController, 4);
 
+	private Button armDisable = new JoystickButton(oiController2, 8);
+
 	private Button armAlt = new JoystickButton(oiController1, 11);
-	private Button armFloor;
-	private Button armCargoShip;
-	private Button armRocketLow;
-	private Button armRocketMid;
-	private Button armRocketHigh;
-	private Button armHomeBackward;
+	private Button armFloor = new JoystickButton(oiController1, 6);
+	private Button armCargoShip = new JoystickButton(oiController1, 5);;
+	private Button armRocketLow = new JoystickButton(oiController1, 4);;
+	private Button armRocketMid = new JoystickButton(oiController1, 3);;
+	private Button armRocketHigh = new JoystickButton(oiController1, 2);;
+	private Button armHomeBackward = new JoystickButton(oiController1, 1);;
 	private Trigger armFloorPlate = new ButtonNotTrigger(armFloor, armAlt);
 	private Trigger armFloorCargo = new MultiButtonTrigger(armFloor, armAlt);
 	private Trigger armCargoShipPlate = new ButtonNotTrigger(armCargoShip, armAlt);
@@ -104,6 +111,12 @@ public class OI {
 	private Trigger armRocketHighCargo = new MultiButtonTrigger(armRocketHigh, armAlt);
 	private Trigger armHome = new ButtonNotTrigger(armHomeBackward, armAlt);
 	private Trigger armLoadingBackward = new MultiButtonTrigger(armHomeBackward, armAlt);
+
+	private Button tailLock = new JoystickButton(oiController1, 12); // Is a switch
+	private Trigger releaseTail = new MultiButtonTrigger(new JoystickButton(leftController, 7),
+		new JoystickButton(rightController, 10));
+	private Button tailVac = new JoystickButton(oiController2, 4);
+	private Button runPTO = new JoystickButton(leftController, 6);
 
 	NetworkTable ledTable;
 	NetworkTableEntry ledEntry;
@@ -122,6 +135,8 @@ public class OI {
 		lowGear.whenPressed(new SwitchGear(DriveGear.LOW));
 		toggleGear.whenPressed(new ToggleGear());
 
+		armDisable.whenPressed(new DisableArm());
+
 		armFloorPlate.whenActive(new SetArmPositions(ArmPosition.FLOOR_PLATE));
 		armFloorCargo.whenActive(new SetArmPositions(ArmPosition.FLOOR_CARGO));
 		armCargoShipPlate.whenActive(new SetArmPositions(ArmPosition.CARGOSHIP_PLATE));
@@ -134,6 +149,11 @@ public class OI {
 		armRocketHighCargo.whenActive(new SetArmPositions(ArmPosition.ROCKET_HI_CARGO));
 		armHome.whenActive(new SetArmPositions(ArmPosition.HOME));
 		armLoadingBackward.whenActive(new SetArmPositions(ArmPosition.LOADING_PICKUP_BACKWARDS));
+
+		tailLock.whenPressed(new LockBeaverTail());
+		releaseTail.whenActive(new ReleaseTail());
+		tailVac.toggleWhenPressed(new VacTail());
+		runPTO.toggleWhenPressed(new RunPTO());
 	}
 
 	public double getLeftAxis() {
@@ -192,6 +212,14 @@ public class OI {
 
 	public boolean isShiftingEnabled() {
 		return !shiftDisableSwitch.get();
+	}
+
+	public boolean isArmEnabled() {
+		return !armDisable.get();
+	}
+
+	public boolean isTailLocked() {
+		return tailLock.get();
 	}
 
 	public void updateLED(OILED led, boolean state) {
