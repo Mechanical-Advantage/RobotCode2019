@@ -13,17 +13,22 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.buttons.Button;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
+import edu.wpi.first.wpilibj.buttons.Trigger;
 import edu.wpi.first.wpilibj.command.Command;
 import frc.robot.commands.CancelCommand;
 import frc.robot.commands.DriveToVisionTarget;
+import frc.robot.commands.SetArmPositions;
 import frc.robot.commands.SetCamera;
 import frc.robot.commands.SetVacuumSolenoid;
 import frc.robot.commands.SwitchGear;
 import frc.robot.commands.ToggleGear;
 import frc.robot.commands.VisionHatchPickup;
 import frc.robot.commands.VisionRecieverTest;
+import frc.robot.commands.SetArmPositions.ArmPosition;
 import frc.robot.subsystems.DriveTrain.DriveGear;
 import frc.robot.subsystems.Vacuum.VacSolenoid;
+import frc.robot.triggers.ButtonNotTrigger;
+import frc.robot.triggers.MultiButtonTrigger;
 
 /**
  * This class is the glue that binds the controls on the physical operator
@@ -80,14 +85,25 @@ public class OI {
 	private Button highGear = new JoystickButton(leftController, 5);
 	private Button lowGear = new JoystickButton(leftController, 4);
 
-	private Button hatchPickup = new JoystickButton(oiController1, 11);
-	private Button driveToTarget = new JoystickButton(rightController, 10);
-	private Button visionTest = new JoystickButton(oiController1, 1);
-
-	private Button pumpTailSolenoid = new JoystickButton(oiController1, 2);
-	private Button pumpTankSolenoid = new JoystickButton(oiController1, 3);
-	private Button tailTankSolenoid = new JoystickButton(oiController1, 4);
-	private Button pickupSolenoid = new JoystickButton(oiController1, 5);
+	private Button armAlt = new JoystickButton(oiController1, 11);
+	private Button armFloor;
+	private Button armCargoShip;
+	private Button armRocketLow;
+	private Button armRocketMid;
+	private Button armRocketHigh;
+	private Button armHomeBackward;
+	private Trigger armFloorPlate = new ButtonNotTrigger(armFloor, armAlt);
+	private Trigger armFloorCargo = new MultiButtonTrigger(armFloor, armAlt);
+	private Trigger armCargoShipPlate = new ButtonNotTrigger(armCargoShip, armAlt);
+	private Trigger armCargoShipCargo = new MultiButtonTrigger(armCargoShip, armAlt);
+	private Trigger armRocketLowPlate = new ButtonNotTrigger(armRocketLow, armAlt);
+	private Trigger armRocketLowCargo = new MultiButtonTrigger(armRocketLow, armAlt);
+	private Trigger armRocketMidPlate = new ButtonNotTrigger(armRocketMid, armAlt);
+	private Trigger armRocketMidCargo = new MultiButtonTrigger(armRocketMid, armAlt);
+	private Trigger armRocketHighPlate = new ButtonNotTrigger(armRocketHigh, armAlt);
+	private Trigger armRocketHighCargo = new MultiButtonTrigger(armRocketHigh, armAlt);
+	private Trigger armHome = new ButtonNotTrigger(armHomeBackward, armAlt);
+	private Trigger armLoadingBackward = new MultiButtonTrigger(armHomeBackward, armAlt);
 
 	NetworkTable ledTable;
 	NetworkTableEntry ledEntry;
@@ -106,23 +122,18 @@ public class OI {
 		lowGear.whenPressed(new SwitchGear(DriveGear.LOW));
 		toggleGear.whenPressed(new ToggleGear());
 
-		pumpTailSolenoid.whenPressed(new SetVacuumSolenoid(VacSolenoid.PUMP_TAIL, true));
-		pumpTankSolenoid.whenPressed(new SetVacuumSolenoid(VacSolenoid.PUMP_TANK, true));
-		tailTankSolenoid.whenPressed(new SetVacuumSolenoid(VacSolenoid.TAIL_TANK, true));
-		pickupSolenoid.whenPressed(new SetVacuumSolenoid(VacSolenoid.PICKUP, true));
-
-		pumpTailSolenoid.whenReleased(new SetVacuumSolenoid(VacSolenoid.PUMP_TAIL, false));
-		pumpTankSolenoid.whenReleased(new SetVacuumSolenoid(VacSolenoid.PUMP_TANK, false));
-		tailTankSolenoid.whenReleased(new SetVacuumSolenoid(VacSolenoid.TAIL_TANK, false));
-		pickupSolenoid.whenReleased(new SetVacuumSolenoid(VacSolenoid.PICKUP, false));
-
-		Command hatchPickupCommand = new VisionHatchPickup();
-		hatchPickup.whenPressed(hatchPickupCommand);
-		hatchPickup.whenReleased(new CancelCommand(hatchPickupCommand));
-		Command driveToTargetCommand = new DriveToVisionTarget();
-		driveToTarget.whenPressed(driveToTargetCommand);
-		driveToTarget.whenReleased(new CancelCommand(driveToTargetCommand));
-		visionTest.whileHeld(new VisionRecieverTest());
+		armFloorPlate.whenActive(new SetArmPositions(ArmPosition.FLOOR_PLATE));
+		armFloorCargo.whenActive(new SetArmPositions(ArmPosition.FLOOR_CARGO));
+		armCargoShipPlate.whenActive(new SetArmPositions(ArmPosition.CARGOSHIP_PLATE));
+		armCargoShipCargo.whenActive(new SetArmPositions(ArmPosition.CARGOSHIP_CARGO));
+		armRocketLowPlate.whenActive(new SetArmPositions(ArmPosition.ROCKET_LO_PLATE));
+		armRocketLowCargo.whenActive(new SetArmPositions(ArmPosition.ROCKET_LO_CARGO));
+		armRocketMidPlate.whenActive(new SetArmPositions(ArmPosition.ROCKET_MID_PLATE));
+		armRocketMidCargo.whenActive(new SetArmPositions(ArmPosition.ROCKET_MID_CARGO));
+		armRocketHighPlate.whenActive(new SetArmPositions(ArmPosition.ROCKET_HI_PLATE));
+		armRocketHighCargo.whenActive(new SetArmPositions(ArmPosition.ROCKET_HI_CARGO));
+		armHome.whenActive(new SetArmPositions(ArmPosition.HOME));
+		armLoadingBackward.whenActive(new SetArmPositions(ArmPosition.LOADING_PICKUP_BACKWARDS));
 	}
 
 	public double getLeftAxis() {
@@ -191,6 +202,7 @@ public class OI {
 	}
 
 	public enum OILED {
-
+		MISC_1, MISC_2, MISC_3, INTAKE_RETRACT, INTAKE_ON_OFF, VAC_PICKUP, VAC_TAIL, TOGGLE_LOW, TOGGLE_HIGH,
+		JOYSTICK_YELLOW, ARM_ALT, ARM_FLOOR, ARM_CARGO_SHIP, ARM_ROCKET_LOW, ARM_ROCKET_MID, ARM_ROCKET_HIGH, ARM_HOME
 	}
 }
