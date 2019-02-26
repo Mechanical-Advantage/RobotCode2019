@@ -156,37 +156,37 @@ public class SetArmPositions extends Command {
                                                                   Map.entry(LOADING_CARGO, -45.0));
 
                                                             
-    public boolean lookUpShoulderPosition(ArmPosition position) {
+    public static boolean lookUpShoulderPosition(ArmPosition position) {
       return shoulderMap.get(position);
     }
 
-    public double lookUpWristPosition(ArmPosition position) {
+    public static double lookUpWristPosition(ArmPosition position) {
       return wristMap.get(position);
     }
 
-    public double lookUpElbowPosition(ArmPosition position) {
+    public static double lookUpElbowPosition(ArmPosition position) {
       return elbowMap.get(position);
     }
 
-    public double lookUpTelescopePosition(ArmPosition position) {
+    public static double lookUpTelescopePosition(ArmPosition position) {
       return telescopeMap.get(position);
     }
 
     // new methods below
     
-    public boolean lookUpTargetXFront(ArmPosition position) {
+    public static boolean lookUpTargetXFront(ArmPosition position) {
       return targetXFront.get(position);
     }
 
-    public double lookUpTargetX(ArmPosition position) {
+    public static double lookUpTargetX(ArmPosition position) {
       return targetX.get(position);
     }
 
-    public double lookUpTargetY(ArmPosition position) {
+    public static double lookUpTargetY(ArmPosition position) {
       return targetY.get(position);
     }
 
-    public double lookUpTargetNozzleAngle(ArmPosition position) {
+    public static double lookUpTargetNozzleAngle(ArmPosition position) {
       return targetNozzleAngle.get(position);
     }
 
@@ -212,20 +212,20 @@ public class SetArmPositions extends Command {
     // ** get from map the desired position of the tip of the nozzle and the shoulder position;
 
     // Option 1: read Map values
-      shoulderUp = shoulderMap.get(position);
-      targetNozzleAngle = targetNozzleAngle.get(position);
-      targetY = targetY.get(position);
-      targetX = targetX.get(position);
-      targetXFront = targetXFront.get(position);
+      shoulderUp = ArmPosition.lookUpShoulderPosition(position);
+      targetNozzleAngle = ArmPosition.targetNozzleAngle.get(position);
+      targetY = ArmPosition.targetY.get(position);
+      targetX = ArmPosition.targetX.get(position);
+      targetXFront = ArmPosition.targetXFront.get(position);
   
       // Option 2: read Map values
-      Robot.arm.setShoulderRaised(lookUpShoulderPosition(targetArmPosition)); // 0 = flat; 1 = up
+      Robot.arm.setShoulderRaised(ArmPosition.lookUpShoulderPosition(targetArmPosition)); // 0 = flat; 1 = up
       shoulderUp = Robot.arm.isShoulderRaised();  // this way plus line above ?
-      shoulderUp = lookUpShoulderPosition(targetArmPosition);  // or this way? 
-      targetXFront = lookUpTargetXFront(targetArmPosition); // lookup in map if in front of robot (else behdind)
-      targetX = lookUpTargetX(targetArmPosition) + moveXBy; // lookup physical measurement in inches in map, measured from edge of bumper
-      targetY = lookUpTargetY(targetArmPosition) + moveYBy; // lookup physical measurement in inches in map, measured up from floor
-      targetNozzleAngle = lookUpTargetNozzleAngle(targetArmPosition) ;  // assumes 0 is horizontal, 45 and 90 are angled downward from horizontal 
+      shoulderUp = ArmPosition.lookUpShoulderPosition(targetArmPosition);  // or this way? 
+      targetXFront = ArmPosition.lookUpTargetXFront(targetArmPosition); // lookup in map if in front of robot (else behdind)
+      targetX = ArmPosition.lookUpTargetX(targetArmPosition) + moveXBy; // lookup physical measurement in inches in map, measured from edge of bumper
+      targetY = ArmPosition.lookUpTargetY(targetArmPosition) + moveYBy; // lookup physical measurement in inches in map, measured up from floor
+      targetNozzleAngle = ArmPosition.lookUpTargetNozzleAngle(targetArmPosition) ;  // assumes 0 is horizontal, 45 and 90 are angled downward from horizontal 
       
       // calculate some trig values [**** MAKE REFERENCES FROM Arm.java public, or move them here?]
       shoulderAngle = shoulderUp ? 60 : 0 ; // should pull from Robot.arm.elbowOffsetHigh, but it's private now; assumes this is the angle the bicep makes with the floor when shoulder joint is raised
