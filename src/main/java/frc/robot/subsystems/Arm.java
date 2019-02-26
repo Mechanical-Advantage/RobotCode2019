@@ -74,6 +74,9 @@ public class Arm extends Subsystem {
   private static final double wristSchoolZoneLowerStart = -180;
   private static final double wristSchoolZoneUpperStart = 180;
   private static final double wristPeakOutput = /* 1 */0;
+  private static final double wristNominalOutputForward = 0;
+  private static final double wristNominalOutputReverse = 0;
+  private static final double wristAllowableError = 0;
   private static final double wristZeroPercent = /*-0.05*/0;
 
   private static final FeedbackDevice telescopeSensorType = FeedbackDevice.CTRE_MagEncoder_Relative;
@@ -88,6 +91,9 @@ public class Arm extends Subsystem {
   private static final double telescopeSchoolZoneLowerStart = 2;
   private static final double telescopeSchoolZoneUpperStart = telescopeMaxExtension - 2;
   private static final double telescopePeakOutput = /* 1 */0;
+  private static final double telescopeNominalOutputForward = 0;
+  private static final double telescopeNominalOutputReverse = 0;
+  private static final double telescopeAllowableError = 0;
   private static final double telescopeZeroPercent = /*-0.05*/0;
 
   private static final double allowedFrameExtension = 30;
@@ -269,11 +275,19 @@ public class Arm extends Subsystem {
 
       wrist.configForwardSoftLimitThreshold(convertWristRelativePositionToTicks(wristUpperLimit));
       wrist.configReverseSoftLimitThreshold(convertWristRelativePositionToTicks(wristLowerLimit));
+      wrist.configNominalOutputForward(wristNominalOutputForward);
+      wrist.configNominalOutputReverse(wristNominalOutputReverse);
+      wrist.configAllowableClosedloopError(0, 
+        convertWristRelativePositionToTicks(wristAllowableError));
       wrist.configForwardSoftLimitEnable(true);
       wrist.configReverseSoftLimitEnable(true);
       wristSchoolZone.setControllerLimits();
 
       telescope.configReverseSoftLimitThreshold(0);
+      telescope.configNominalOutputForward(telescopeNominalOutputForward);
+      telescope.configNominalOutputReverse(telescopeNominalOutputReverse);
+      telescope.configAllowableClosedloopError(0, 
+        convertTelescopeInchesToTicks(telescopeAllowableError));
       telescope.configForwardSoftLimitEnable(true);
       telescope.configReverseSoftLimitEnable(true);
       telescopeSchoolZone.setControllerLimits();
