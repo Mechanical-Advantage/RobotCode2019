@@ -134,6 +134,10 @@ public class RobotMap {
         ptoSolenoid1 = 3;
         ptoSolenoid2 = 2;
         ptoSolenoidPCM = 1;
+        // tailRelease values are fake, just to stop solenoid errors
+        tailReleaseSolenoid1 = 0;
+        tailReleaseSolenoid2 = 1;
+        tailReleasePCM = 0;
         break;
       default:
         break;

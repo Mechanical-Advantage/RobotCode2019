@@ -53,10 +53,10 @@ public class Arm extends Subsystem {
   private static final double elbowHighSchoolZoneLowerStart = -360;
   private static final double elbowHighSchoolZoneUpperStart = 360;
   private static final double elbowPeakOutput = 1;
-  private static final double elbowForwardNominalOutput = 0;
-  private static final double elbowReverseNominalOutput = 0;
+  private static final double elbowForwardNominalOutput = 0.12;
+  private static final double elbowReverseNominalOutput = -0.12;
   private static final double elbowAllowableError = 0; // For primary PID
-  private static final double elbowAllowableErrorSync = 0;
+  private static final double elbowAllowableErrorSync = 2;
   private static final double elbowZeroPercent = /*-0.05*/0;
 
   private static final FeedbackDevice wristSensorType = FeedbackDevice.CTRE_MagEncoder_Relative;
@@ -196,13 +196,13 @@ public class Arm extends Subsystem {
 
   public Arm() {
     if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
-      // Elbow numbers still do not sync well
+      // Elbow numbers sync still does not stop well
       kPElbow.setDefault(1.3);
       kIElbow.setDefault(0);
       kDElbow.setDefault(13);
-      kPElbowSync.setDefault(7); // Some oscillation
+      kPElbowSync.setDefault(0.5); // Some oscillation
       kIElbowSync.setDefault(0);
-      kDElbowSync.setDefault(70);
+      kDElbowSync.setDefault(5); // Have tried 0, 5, 15
       kPWrist.setDefault(0);
       kIWrist.setDefault(0);
       kDWrist.setDefault(0);
@@ -415,7 +415,7 @@ public class Arm extends Subsystem {
   }
 
   private void updateShoulderSetpoint(double elbowPosition) {
-    if (Robot.oi.isArmEnabled() && RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+    if ((Robot.oi == null || Robot.oi.isArmEnabled()) && RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
       if (targetShoulderRaised != shoulderRaised) {
         if (elbowPosition >= getElbowLowerLimit(targetShoulderRaised) && 
         elbowPosition <= getElbowUpperLimit(targetShoulderRaised)) {
@@ -741,7 +741,7 @@ public class Arm extends Subsystem {
   }
 
   public void enableElbow() {
-    if (Robot.oi.isArmEnabled()) {
+    if (Robot.oi == null || Robot.oi.isArmEnabled()) {
       elbowEnabled = true;
       elbowRight.follow(elbowLeft, FollowerType.AuxOutput1); // Aux PID get applied
       // in opposite direction on right
@@ -750,14 +750,14 @@ public class Arm extends Subsystem {
   }
 
   public void enableWrist() {
-    if (Robot.oi.isArmEnabled()) {
+    if (Robot.oi == null || Robot.oi.isArmEnabled()) {
       wristEnabled = true;
       updateWristSetpoint();
     }
   }
 
   public void enableTelescope() {
-    if (Robot.oi.isArmEnabled()) {
+    if (Robot.oi == null || Robot.oi.isArmEnabled()) {
       telescopeEnabled = true;
       updateTelescopeForwardLimit(true);
     }
