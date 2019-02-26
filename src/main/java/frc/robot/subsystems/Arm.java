@@ -64,9 +64,9 @@ public class Arm extends Subsystem {
   private static final boolean wristOutputReversed = false;
   private static final double wristZeroedPosition = 0; // Wrist position 0 should be same as elbow direction
   private static final int wristTicksPerRotation = 4096;
-  private static final int wristReduction = 1;
+  private static final double wristReduction = (60/22)*33*1;
   private static final double wristOffsetLow = 0;
-  private static final double wristOffsetHigh = 0;
+  private static final double wristOffsetHigh = 60;
   private static final double wristElbowRatio = 33; // How much by divide elbow pos by to determine effect on wrist
   private static final double wristLowerLimit = -180;
   private static final double wristUpperLimit = 180;
@@ -83,10 +83,10 @@ public class Arm extends Subsystem {
   private static final boolean telescopeSensorReversed = false;
   private static final boolean telescopeOutputReversed = false;
   private static final int telescopeTicksPerRotation = 4096;
-  private static final int telescopeReduction = 1;
-  private static final double telescopeInchesPerRotation = 1;
+  private static final double telescopeReduction = (60/22)*33*(36/24);
+  private static final double telescopeInchesPerRotation = 1.432*Math.PI;
   private static final double telescopeZeroedPosition = 0;
-  private static final double telescopeMaxExtension = 0; // How far the telescope can extend
+  private static final double telescopeMaxExtension = 20; // How far the telescope can extend
   private static final double telescopeSchoolZoneSpeedLimit = 0.2;
   private static final double telescopeSchoolZoneLowerStart = 2;
   private static final double telescopeSchoolZoneUpperStart = telescopeMaxExtension - 2;
@@ -97,15 +97,15 @@ public class Arm extends Subsystem {
   private static final double telescopeZeroPercent = /*-0.05*/0;
 
   private static final double allowedFrameExtension = 30;
-  private static final double bicepLength = 0;
+  private static final double bicepLength = 25;
   // Length of the forearm with no telescope extension
-  private static final double forearmLength = 0;
+  private static final double forearmLength = 30.5;
   // How far forward the front edge of the frame perimeter is from the shoulder
   // joint
-  private static final double framePerimeterFrontFromShoulder = 6;
+  private static final double framePerimeterFrontFromShoulder = 30;
   // How far forward the back edge of the frame perimeter is from the shoulder
   // joint
-  private static final double framePerimeterBackFromShoulder = -20;
+  private static final double framePerimeterBackFromShoulder = -1;
 
   private static final TunableNumber kPElbow = new TunableNumber("Arm Elbow/p");
   private static final TunableNumber kIElbow = new TunableNumber("Arm Elbow/i");
