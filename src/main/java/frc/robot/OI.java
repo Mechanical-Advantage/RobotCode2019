@@ -15,8 +15,10 @@ import edu.wpi.first.wpilibj.buttons.Button;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.buttons.Trigger;
 import frc.robot.commands.DisableArm;
+import frc.robot.commands.ExtendSimpleScorer;
 import frc.robot.commands.LockBeaverTail;
 import frc.robot.commands.ReleaseTail;
+import frc.robot.commands.RetractSimpleScorer;
 import frc.robot.commands.RunPTO;
 import frc.robot.commands.SetArmPositions;
 import frc.robot.commands.SetArmPositions.ArmPosition;
@@ -114,6 +116,9 @@ public class OI {
 	private Button tailVac = new JoystickButton(oiController2, 4);
 	private Button runPTO = new JoystickButton(leftController, 6);
 
+	private Button extendSimpleScorer = new JoystickButton(oiController2, 2);
+	private Button retractSimpleScorer = new JoystickButton(oiController2, 1);
+
 	NetworkTable ledTable;
 	NetworkTableEntry ledEntry;
 
@@ -152,6 +157,9 @@ public class OI {
 		releaseTail.whenActive(new ReleaseTail());
 		tailVac.toggleWhenPressed(new VacTail());
 		runPTO.toggleWhenPressed(new RunPTO());
+
+		extendSimpleScorer.whenPressed(new ExtendSimpleScorer());
+		retractSimpleScorer.whenPressed(new RetractSimpleScorer());
 	}
 
 	public double getLeftAxis() {
