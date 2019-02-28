@@ -313,9 +313,12 @@ public class Arm extends Subsystem {
       telescope.enableCurrentLimit(telescopeEnableCurrentLimit);
       telescope.overrideSoftLimitsEnable(false);
 
-      enableElbow();
-      enableWrist();
-      enableTelescope();
+      // enableElbow();
+      // enableWrist();
+      // enableTelescope();
+      disableElbow();
+      disableWrist();
+      disableTelescope();
       setShoulderRaised(false); // Will set elbow limits as well and ensures consistent state
 
       // Start zeroing the mechanisms

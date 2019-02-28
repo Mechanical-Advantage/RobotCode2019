@@ -40,7 +40,7 @@ public class RobotMap {
   public static int ptoSolenoidPCM;
   public static double robotWidth;
   public static double robotLength;
-  public static final boolean tuningMode = true;
+  public static final boolean tuningMode = false;
   public static final RobotType robot = RobotType.ROBOT_2019;
   public static int minVelocityLow; // lower values will be treated as this value, RPM
   public static int maxVelocityLow; // maximum velocity when sticks are fully forward (value of 1), RPM
@@ -141,6 +141,9 @@ public class RobotMap {
         tailReleaseSolenoid1 = 0;
         tailReleaseSolenoid2 = 1;
         tailReleasePCM = 0;
+        simpleScoringPCM = 0;
+        simpleScoringSolenoid1 = 2;
+        simpleScoringSolenoid2 = 3;
         break;
       default:
         break;

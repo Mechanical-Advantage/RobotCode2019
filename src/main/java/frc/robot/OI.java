@@ -114,7 +114,7 @@ public class OI {
 	private Trigger releaseTail = new MultiButtonTrigger(new JoystickButton(leftController, 7),
 		new JoystickButton(rightController, 10));
 	private Button tailVac = new JoystickButton(oiController2, 4);
-	private Button runPTO = new JoystickButton(leftController, 6);
+	private Button runPTO = new JoystickButton(rightController, 11);
 
 	private Button extendSimpleScorer = new JoystickButton(oiController2, 2);
 	private Button retractSimpleScorer = new JoystickButton(oiController2, 1);
