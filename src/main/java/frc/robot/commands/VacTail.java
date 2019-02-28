@@ -42,7 +42,7 @@ public class VacTail extends Command {
   protected void end() {
     Robot.vacuum.setSolenoid(VacSolenoid.PUMP_TAIL, false);
     Robot.vacuum.setVacuumMotor(false);
-    Robot.oi.updateLED(OILED.VAC_TAIL, true);
+    Robot.oi.updateLED(OILED.VAC_TAIL, false);
   }
 
   // Called when another command which requires one or more of the same

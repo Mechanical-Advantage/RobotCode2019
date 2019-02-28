@@ -149,11 +149,11 @@ public class Vacuum extends Subsystem {
     private static int getSubChannelID(VacSolenoid id) {
       int subChannelID;
       switch (id) {
-      case PUMP_TAIL:
+      case PICKUP:
       case PUMP_TANK:
         subChannelID = 0;
         break;
-      case PICKUP:
+      case PUMP_TAIL:
       case TAIL_TANK:
         subChannelID = 1;
         break;
