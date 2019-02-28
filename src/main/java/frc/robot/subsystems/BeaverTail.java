@@ -35,12 +35,28 @@ public class BeaverTail extends Subsystem {
   }
 
   public void lockTail() {
-    release.set(DoubleSolenoid.Value.kForward);
+    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+      release.set(DoubleSolenoid.Value.kForward);
+    }
   }
 
   public void releaseTail() {
-    if (!Robot.oi.isTailLocked()) {
+    if (!Robot.oi.isTailLocked() && RobotMap.robot == RobotType.ROBOT_2019 || 
+    RobotMap.robot == RobotType.ROBOT_2019_2) {
       release.set(DoubleSolenoid.Value.kReverse);
+    }
+  }
+
+  /**
+   * Get whether the tail is locked
+   * 
+   * @return true if tail locked else false
+   */
+  public boolean getTailLocked() {
+    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+      return release.get() != DoubleSolenoid.Value.kReverse; // Makes engaged the default state
+    } else {
+      return true;
     }
   }
 }

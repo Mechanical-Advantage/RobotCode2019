@@ -17,6 +17,8 @@ public class RunPTO extends Command {
   // Whether to disable brake mode while running this command
   private static final boolean disableBrakeMode = true;
 
+  private boolean canRun;
+
   public RunPTO() {
     super();
     requires(Robot.driveSubsystem);
@@ -25,23 +27,30 @@ public class RunPTO extends Command {
   // Called just before this Command runs the first time
   @Override
   protected void initialize() {
-    Robot.driveSubsystem.enablePTO();
-    if (disableBrakeMode) {
-      Robot.driveSubsystem.enableBrakeMode(false);
+    if (Robot.beaverTail.getTailLocked()) {
+      canRun = false;
+    } else {
+      Robot.driveSubsystem.enablePTO();
+      if (disableBrakeMode) {
+        Robot.driveSubsystem.enableBrakeMode(false);
+      }
+      canRun = true;
     }
   }
 
   // Called repeatedly when this Command is scheduled to run
   @Override
   protected void execute() {
-    // Joysticks are flipped in DriveWIthJoystick to inverting works backwards to be consistent
-    Robot.driveSubsystem.runPTO(Robot.oi.getSingleDriveAxis() * (invert ? 1 : -1));
+    if (canRun) {
+      // Joysticks are flipped in DriveWIthJoystick so inverting works backwards to be consistent
+      Robot.driveSubsystem.runPTO(Robot.oi.getSingleDriveAxis() * (invert ? 1 : -1));
+    }
   }
 
   // Make this return true when this Command no longer needs to run execute()
   @Override
   protected boolean isFinished() {
-    return false;
+    return !canRun;
   }
 
   // Called once after isFinished returns true
