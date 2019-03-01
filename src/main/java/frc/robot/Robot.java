@@ -77,8 +77,8 @@ public class Robot extends TimedRobot {
     joystickModeChooser = new SendableChooser<JoystickMode>();
     // chooser.setDefaultOption("Default Auto", new ExampleCommand());
     // chooser.addOption("My Auto", new MyAutoCommand());
-    joystickModeChooser.setDefaultOption("Tank", JoystickMode.Tank);
-    joystickModeChooser.addOption("Split Arcade", JoystickMode.SplitArcade);
+    joystickModeChooser.addOption("Tank", JoystickMode.Tank);
+    joystickModeChooser.setDefaultOption("Split Arcade", JoystickMode.SplitArcade);
 
     autoChooser.addOption("None", null);
 
