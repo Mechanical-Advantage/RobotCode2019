@@ -160,6 +160,9 @@ public class OI {
 
 		extendSimpleScorer.whenPressed(new ExtendSimpleScorer());
 		retractSimpleScorer.whenPressed(new RetractSimpleScorer());
+
+		ledEntry.setBooleanArray(new boolean[] { false, false, false, false,
+			false, false, false, false, false, false, false, false, false, false, false, false, false });
 	}
 
 	public double getLeftAxis() {

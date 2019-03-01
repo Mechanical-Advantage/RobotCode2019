@@ -254,6 +254,7 @@ public class DriveTrain extends Subsystem {
 		enableBrakeMode(true);
 		if (hasPTO) {
 			pto = new DoubleSolenoid(RobotMap.ptoSolenoidPCM, RobotMap.ptoSolenoid1, RobotMap.ptoSolenoid2);
+			disablePTO();
 		}
 		
 		/*rightTalonMaster.setSafetyEnabled(false);
