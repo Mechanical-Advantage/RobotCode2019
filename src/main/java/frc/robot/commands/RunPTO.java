@@ -22,6 +22,7 @@ public class RunPTO extends Command {
   public RunPTO() {
     super();
     requires(Robot.driveSubsystem);
+    requires(Robot.simpleScorer);
   }
 
   // Called just before this Command runs the first time
@@ -30,6 +31,7 @@ public class RunPTO extends Command {
     if (Robot.beaverTail.getTailLocked()) {
       canRun = false;
     } else {
+      Robot.simpleScorer.retract();
       Robot.driveSubsystem.enablePTO();
       if (disableBrakeMode) {
         Robot.driveSubsystem.enableBrakeMode(false);

@@ -14,6 +14,7 @@ import com.ctre.phoenix.motorcontrol.FollowerType;
 import com.ctre.phoenix.motorcontrol.RemoteSensorSource;
 import com.ctre.phoenix.motorcontrol.SensorTerm;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
@@ -146,7 +147,7 @@ public class Arm extends Subsystem {
   private static final int telescopeMaxExtensionTicks = convertTelescopeInchesToTicks(telescopeMaxExtension);
 
   private TalonSRX elbowLeft;
-  private TalonSRX elbowRight;
+  private VictorSPX elbowRight;
   private TalonSRX wrist;
   private TalonSRX telescope;
   private DoubleSolenoid shoulder1;
@@ -218,7 +219,7 @@ public class Arm extends Subsystem {
       elbowLimitSwitch = new DigitalInput(RobotMap.armElbowLimitSwitch);
 
       elbowLeft = new TalonSRX(RobotMap.armElbowLeft);
-      elbowRight = new TalonSRX(RobotMap.armElbowRight);
+      elbowRight = new VictorSPX(RobotMap.armElbowRight);
       wrist = new TalonSRX(RobotMap.armWrist);
       telescope = new TalonSRX(RobotMap.armTelescope);
 
@@ -297,10 +298,10 @@ public class Arm extends Subsystem {
       elbowLeft.configPeakCurrentDuration(elbowPeakCurrentLimitDuration);
       elbowLeft.enableCurrentLimit(elbowEnableCurrentLimit);
       elbowLeft.overrideSoftLimitsEnable(false); // Before zeroing this does not work
-      elbowRight.configContinuousCurrentLimit(elbowContinousCurrentLimit);
-      elbowRight.configPeakCurrentLimit(elbowPeakCurrentLimit);
-      elbowRight.configPeakCurrentDuration(elbowPeakCurrentLimitDuration);
-      elbowRight.enableCurrentLimit(elbowEnableCurrentLimit);
+      // elbowRight.configContinuousCurrentLimit(elbowContinousCurrentLimit);
+      // elbowRight.configPeakCurrentLimit(elbowPeakCurrentLimit);
+      // elbowRight.configPeakCurrentDuration(elbowPeakCurrentLimitDuration);
+      // elbowRight.enableCurrentLimit(elbowEnableCurrentLimit);
       elbowRight.overrideSoftLimitsEnable(false);
       wrist.configContinuousCurrentLimit(wristContinousCurrentLimit);
       wrist.configPeakCurrentLimit(wristPeakCurrentLimit);
