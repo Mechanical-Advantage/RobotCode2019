@@ -13,6 +13,11 @@ import frc.robot.OI.OILED;
 import frc.robot.subsystems.Vacuum.VacSolenoid;
 
 public class VacPickup extends Command {
+
+  private static final double suctionGoodThreshold = 0.5;
+
+  private boolean LEDOnLast;
+
   public VacPickup() {
     // Use requires() here to declare subsystem dependencies
     // eg. requires(chassis);
@@ -31,6 +36,17 @@ public class VacPickup extends Command {
   // Called repeatedly when this Command is scheduled to run
   @Override
   protected void execute() {
+    if (Robot.vacuum.getPressureSensorVoltage() > suctionGoodThreshold) {
+      if (!LEDOnLast) {
+        Robot.oi.updateLED(OILED.MISC_3, true);
+        LEDOnLast = true;
+      }
+    } else {
+      if (LEDOnLast) {
+        Robot.oi.updateLED(OILED.MISC_3, false);
+        LEDOnLast = false;
+      }
+    }
   }
 
   // Make this return true when this Command no longer needs to run execute()
@@ -45,6 +61,7 @@ public class VacPickup extends Command {
     Robot.vacuum.setSolenoid(VacSolenoid.PICKUP, false);
     Robot.vacuum.setVacuumMotor(false);
     Robot.oi.updateLED(OILED.VAC_PICKUP, false);
+    Robot.oi.updateLED(OILED.MISC_3, false);
   }
 
   // Called when another command which requires one or more of the same

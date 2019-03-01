@@ -9,6 +9,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.command.Command;
 import frc.robot.Robot;
+import frc.robot.OI.OILED;
 
 public class RunPTO extends Command {
 
@@ -37,6 +38,7 @@ public class RunPTO extends Command {
         Robot.driveSubsystem.enableBrakeMode(false);
       }
       canRun = true;
+      Robot.oi.updateLED(OILED.MISC_1, true);
     }
   }
 
@@ -62,6 +64,7 @@ public class RunPTO extends Command {
     if (disableBrakeMode) {
       Robot.driveSubsystem.enableBrakeMode(true);
     }
+    Robot.oi.updateLED(OILED.MISC_1, false);
   }
 
   // Called when another command which requires one or more of the same
