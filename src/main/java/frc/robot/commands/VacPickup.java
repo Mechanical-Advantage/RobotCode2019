@@ -14,7 +14,7 @@ import frc.robot.subsystems.Vacuum.VacSolenoid;
 
 public class VacPickup extends Command {
 
-  private static final double suctionGoodThreshold = 0.5;
+  private static final double suctionGoodThreshold = 0.55;
 
   private boolean LEDOnLast;
 

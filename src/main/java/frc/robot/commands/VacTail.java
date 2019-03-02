@@ -14,7 +14,7 @@ import frc.robot.subsystems.Vacuum.VacSolenoid;
 
 public class VacTail extends Command {
 
-  private static final double suctionGoodThreshold = 0.45;
+  private static final double suctionGoodThreshold = 0.55;
 
   private boolean LEDOnLast;
 

@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.PowerDistributionPanel;
 import edu.wpi.first.wpilibj.Relay;
 import edu.wpi.first.wpilibj.Relay.Value;
 import edu.wpi.first.wpilibj.command.Subsystem;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.RobotMap;
 import frc.robot.RobotMap.RobotType;
 
@@ -48,10 +49,13 @@ public class Vacuum extends Subsystem {
     }
   }
 
-  // @Override
-  // public void periodic() {
-  //   System.out.println(pdp.getCurrent(RobotMap.vacuumMotor));
-  // }
+  @Override
+  public void periodic() {
+    // System.out.println(pdp.getCurrent(RobotMap.vacuumMotor));
+    if (RobotMap.tuningMode) {
+      SmartDashboard.putNumber("Vacuum Voltage", getPressureSensorVoltage());
+    }
+  }
 
   public void setVacuumMotor(boolean state) {
     if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
