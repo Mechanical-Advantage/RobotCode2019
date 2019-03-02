@@ -29,6 +29,7 @@ import frc.robot.commands.DriveDistanceOnHeading;
 import frc.robot.commands.FusedHeadingTest;
 import frc.robot.commands.GenerateMotionProfiles;
 import frc.robot.commands.TurnToAngle;
+import frc.robot.commands.VacPickup;
 import frc.robot.commands.VelocityPIDTuner;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.BeaverTail;
@@ -66,6 +67,7 @@ public class Robot extends TimedRobot {
   SendableChooser<Command> tuningModeChooser = new SendableChooser<>();
   SendableChooser<AutoMode> autoChooser = new SendableChooser<>();
   public static SendableChooser<JoystickMode> joystickModeChooser;
+  private static final Command vacPickupCommand = new VacPickup();
 
   /**
    * This function is run when the robot is first started up and should be used
@@ -81,6 +83,7 @@ public class Robot extends TimedRobot {
     joystickModeChooser.setDefaultOption("Split Arcade", JoystickMode.SplitArcade);
 
     autoChooser.addOption("None", null);
+    autoChooser.addOption("Hold Panel", AutoMode.VAC_PICKUP);
 
     if (RobotMap.tuningMode) {
       tuningModeChooser.addOption("Fused Heading Test", new FusedHeadingTest());
@@ -125,7 +128,6 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-    // System.out.println(vacuum.getPressureSensorVoltage());
   }
 
   /**
@@ -165,6 +167,9 @@ public class Robot extends TimedRobot {
       switch (autoChooser.getSelected()) {
         case TUNING:
           autonomousCommand = tuningModeChooser.getSelected();
+          break;
+        case VAC_PICKUP:
+          autonomousCommand = vacPickupCommand;
       }
     }
 
@@ -218,7 +223,7 @@ public class Robot extends TimedRobot {
   }
 
   private enum AutoMode {
-    TUNING;
+    TUNING, VAC_PICKUP;
   }
 
   // Utility functions
