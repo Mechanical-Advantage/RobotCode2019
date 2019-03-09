@@ -14,15 +14,14 @@ import com.ctre.phoenix.motorcontrol.FollowerType;
 import com.ctre.phoenix.motorcontrol.RemoteSensorSource;
 import com.ctre.phoenix.motorcontrol.SensorTerm;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import frc.robot.Robot;
 import frc.robot.RobotMap;
-import frc.robot.util.SchoolZone;
 import frc.robot.RobotMap.RobotType;
+import frc.robot.util.SchoolZone;
 import frc.robot.util.TunableNumber;
 
 /**
@@ -37,9 +36,9 @@ public class Arm extends Subsystem {
   private static final boolean elbowOutputLeftReversed = false;
   private static final boolean elbowOutputRightReversed = true;
   private static final boolean elbowDiffPIDPolarity = true; // Swaps syncronization correction
-  private static final boolean elbowUseMotionMagic = false;
+  private static final boolean elbowUseMotionMagic = true;
   private static final double elbowMotMagAccel = 20;
-  private static final double elbowMotMagCruiseVelocity = 50;
+  private static final double elbowMotMagCruiseVelocity = 70;
   private static final double elbowZeroedPosition = 0; // deg
   private static final double elbowLowerLimitLow = 0;
   private static final double elbowUpperLimitLow = 360;
@@ -147,7 +146,7 @@ public class Arm extends Subsystem {
   private static final int telescopeMaxExtensionTicks = convertTelescopeInchesToTicks(telescopeMaxExtension);
 
   private TalonSRX elbowLeft;
-  private VictorSPX elbowRight;
+  private TalonSRX elbowRight;
   private TalonSRX wrist;
   private TalonSRX telescope;
   private DoubleSolenoid shoulder1;
@@ -219,7 +218,7 @@ public class Arm extends Subsystem {
       elbowLimitSwitch = new DigitalInput(RobotMap.armElbowLimitSwitch);
 
       elbowLeft = new TalonSRX(RobotMap.armElbowLeft);
-      elbowRight = new VictorSPX(RobotMap.armElbowRight);
+      elbowRight = new TalonSRX(RobotMap.armElbowRight);
       wrist = new TalonSRX(RobotMap.armWrist);
       telescope = new TalonSRX(RobotMap.armTelescope);
 
@@ -298,10 +297,10 @@ public class Arm extends Subsystem {
       elbowLeft.configPeakCurrentDuration(elbowPeakCurrentLimitDuration);
       elbowLeft.enableCurrentLimit(elbowEnableCurrentLimit);
       elbowLeft.overrideSoftLimitsEnable(false); // Before zeroing this does not work
-      // elbowRight.configContinuousCurrentLimit(elbowContinousCurrentLimit);
-      // elbowRight.configPeakCurrentLimit(elbowPeakCurrentLimit);
-      // elbowRight.configPeakCurrentDuration(elbowPeakCurrentLimitDuration);
-      // elbowRight.enableCurrentLimit(elbowEnableCurrentLimit);
+      elbowRight.configContinuousCurrentLimit(elbowContinousCurrentLimit);
+      elbowRight.configPeakCurrentLimit(elbowPeakCurrentLimit);
+      elbowRight.configPeakCurrentDuration(elbowPeakCurrentLimitDuration);
+      elbowRight.enableCurrentLimit(elbowEnableCurrentLimit);
       elbowRight.overrideSoftLimitsEnable(false);
       wrist.configContinuousCurrentLimit(wristContinousCurrentLimit);
       wrist.configPeakCurrentLimit(wristPeakCurrentLimit);

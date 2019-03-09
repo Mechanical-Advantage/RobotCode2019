@@ -122,10 +122,10 @@ public class RobotMap {
         minVelocityLow = 210;
         maxAcceleration = 0;
         armElbowLeft = 15;
-        armElbowRight = 4;
+        armElbowRight = 0;
         armTelescope = 5;
         armWrist = 11;
-        vacuumMotor = 0;
+        vacuumMotor = 4;
         vacuumPressureSensor = 1;
         armShoulder1Extend = 4; // Left
         armShoulder1Retract = 6;

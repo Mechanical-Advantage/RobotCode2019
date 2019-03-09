@@ -8,7 +8,6 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.AnalogInput;
-import edu.wpi.first.wpilibj.PowerDistributionPanel;
 import edu.wpi.first.wpilibj.Relay;
 import edu.wpi.first.wpilibj.Relay.Value;
 import edu.wpi.first.wpilibj.command.Subsystem;
@@ -16,7 +15,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.RobotMap;
 import frc.robot.RobotMap.RobotType;
 
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
@@ -31,7 +29,7 @@ public class Vacuum extends Subsystem {
 
   private RelayChannel[] relayChannel = new RelayChannel[2];
   private AnalogInput pressureSensor;
-  private TalonSRX vacuumMotor;
+  private VictorSPX vacuumMotor;
   // private PowerDistributionPanel pdp = new PowerDistributionPanel();
 
   public Vacuum() {
@@ -42,7 +40,7 @@ public class Vacuum extends Subsystem {
       pressureSensor = new AnalogInput(RobotMap.vacuumPressureSensor);
       pressureSensor.setAverageBits(4);
 
-      vacuumMotor = new TalonSRX(RobotMap.vacuumMotor);
+      vacuumMotor = new VictorSPX(RobotMap.vacuumMotor);
 
       vacuumMotor.setInverted(reverseVacuumMotor);
       vacuumMotor.setNeutralMode(vacMotorBrakeMode ? NeutralMode.Brake : NeutralMode.Coast);
