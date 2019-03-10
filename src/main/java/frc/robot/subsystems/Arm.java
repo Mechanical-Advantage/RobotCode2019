@@ -67,6 +67,9 @@ public class Arm extends Subsystem {
   private static final double wristReduction = (60/22)*33*1;
   private static final double wristOffsetLow = 0;
   private static final double wristOffsetHigh = 60;
+  private static final boolean wristUseMotMag = false;
+  private static final double wristMotMagAccel = 0;
+  private static final double wristMotMagCruiseVelocity = 0;
   private static final double wristElbowRatio = 33; // How much by divide elbow pos by to determine effect on wrist
   private static final double wristLowerLimit = -180;
   private static final double wristUpperLimit = 180;
@@ -86,6 +89,9 @@ public class Arm extends Subsystem {
   private static final double telescopeReduction = (60/22)*33*(36/24);
   private static final double telescopeInchesPerRotation = 1.432*Math.PI;
   private static final double telescopeZeroedPosition = 0;
+  private static final boolean telescopeUseMotMag = false;
+  private static final double telescopeMotMagAccel = 0;
+  private static final double telescopeMotMagCruiseVelocity = 0;
   private static final double telescopeMaxExtension = 20; // How far the telescope can extend
   private static final double telescopeSchoolZoneSpeedLimit = 0.2;
   private static final double telescopeSchoolZoneLowerStart = 2;
@@ -275,6 +281,8 @@ public class Arm extends Subsystem {
 
       wrist.configForwardSoftLimitThreshold(convertWristRelativePositionToTicks(wristUpperLimit));
       wrist.configReverseSoftLimitThreshold(convertWristRelativePositionToTicks(wristLowerLimit));
+      wrist.configMotionAcceleration(convertWristRelativePositionToTicks(wristMotMagAccel));
+      wrist.configMotionCruiseVelocity(convertWristRelativePositionToTicks(wristMotMagCruiseVelocity));
       wrist.configNominalOutputForward(wristNominalOutputForward);
       wrist.configNominalOutputReverse(wristNominalOutputReverse);
       wrist.configAllowableClosedloopError(0, 
@@ -284,6 +292,8 @@ public class Arm extends Subsystem {
       wristSchoolZone.setControllerLimits();
 
       telescope.configReverseSoftLimitThreshold(0);
+      telescope.configMotionAcceleration(convertTelescopeInchesToTicks(telescopeMotMagAccel));
+      telescope.configMotionCruiseVelocity(convertTelescopeInchesToTicks(telescopeMotMagCruiseVelocity));
       telescope.configNominalOutputForward(telescopeNominalOutputForward);
       telescope.configNominalOutputReverse(telescopeNominalOutputReverse);
       telescope.configAllowableClosedloopError(0, 
@@ -658,7 +668,7 @@ public class Arm extends Subsystem {
         && wristEnabled) {
       int setpoint = convertWristPositionToTicks(targetWristPosition.getAngle(), true, getElbowTargetPosition());
       // Make sure aux PID does nothing with DemandType.Neutral
-      wrist.set(ControlMode.Position, setpoint, DemandType.Neutral, 0);
+      wrist.set(wristUseMotMag ? ControlMode.MotionMagic : ControlMode.Position, setpoint, DemandType.Neutral, 0);
     }
   }
 
@@ -782,10 +792,11 @@ public class Arm extends Subsystem {
           : currentMaxExtensionTicks;
       if (limit != previousTelescopeLimit || setpointChanged) {
         telescope.configForwardSoftLimitThreshold(limit, 0);
+        ControlMode controlMode = telescopeUseMotMag ? ControlMode.MotionMagic : ControlMode.Position;
         if (targetTelescopePositionTicks > limit) {
-          telescope.set(ControlMode.Position, limit);
+          telescope.set(controlMode, limit);
         } else {
-          telescope.set(ControlMode.Position, targetTelescopePositionTicks);
+          telescope.set(controlMode, targetTelescopePositionTicks);
         }
         previousTelescopeLimit = limit;
       }
