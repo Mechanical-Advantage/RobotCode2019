@@ -7,6 +7,8 @@
 
 package frc.robot;
 
+import badlog.lib.BadLog;
+import badlog.lib.DataInferMode;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;

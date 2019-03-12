@@ -63,6 +63,8 @@ public class Robot extends TimedRobot {
 
   public static final CameraSystem cameraSubsystem = new CameraSystem();
 
+  public boolean runBotlog = true;//set to false to disable Botlog
+
   Command autonomousCommand;
   SendableChooser<Command> tuningModeChooser = new SendableChooser<>();
   SendableChooser<AutoMode> autoChooser = new SendableChooser<>();
@@ -114,6 +116,8 @@ public class Robot extends TimedRobot {
       generateCommand.setRunWhenDisabled(true);
       generateCommand.start();
     }
+    Botlog.createBadlog(runBotlog);
+    //initiates BadLog (and helpful time measurements), the tracking code that provides data from matches based on driver input. Must be called last.
     Compressor c = new Compressor();
   }
 
@@ -128,6 +132,8 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+    if(runBotlog)
+      Botlog.runPeriodic();
   }
 
   /**

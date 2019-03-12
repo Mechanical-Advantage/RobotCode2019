@@ -24,27 +24,29 @@ public class RobotMap {
   // public static int rangefinderPort = 1;
   // public static int rangefinderModule = 1;
   public static int rightMaster;
-  public static int rightSlave;
-  public static int rightSlave2;
-  public static int leftMaster;
-  public static int leftSlave;
-  public static int leftSlave2;
-  public static int leftDriveGearSolenoid1;
-  public static int leftDriveGearSolenoid2;
-  public static int leftDriveGearPCM;
-  public static int rightDriveGearSolenoid1;
-  public static int rightDriveGearSolenoid2;
+
+	public static int rightSlave;
+	public static int rightSlave2;
+	public static int leftMaster;
+	public static int leftSlave;
+	public static int leftSlave2;
+	public static int leftDriveGearSolenoid1;
+	public static int leftDriveGearSolenoid2;
+	public static int leftDriveGearPCM;
+	public static int rightDriveGearSolenoid1;
+	public static int rightDriveGearSolenoid2;
   public static int rightDriveGearPCM;
   public static int ptoSolenoid1;
   public static int ptoSolenoid2;
   public static int ptoSolenoidPCM;
-  public static double robotWidth;
-  public static double robotLength;
-  public static final boolean tuningMode = true;
-  public static final RobotType robot = RobotType.ROBOT_2019;
-  public static int minVelocityLow; // lower values will be treated as this value, RPM
-  public static int maxVelocityLow; // maximum velocity when sticks are fully forward (value of 1), RPM
-  public static int maxVelocityHigh;
+	public static double robotWidth;
+	public static double robotLength;
+	public static final boolean tuningMode = true;
+	public static final RobotType robot = RobotType.ROBOT_2019;
+	public static int minVelocityLow; // lower values will be treated as this value, RPM
+	public static int maxVelocityLow; // maximum velocity when sticks are fully forward (value of 1), RPM
+	public static int maxVelocityHigh;
+
   public static int minVelocityHigh;
   public static int maxAcceleration;
   public static int armElbowLeft;
