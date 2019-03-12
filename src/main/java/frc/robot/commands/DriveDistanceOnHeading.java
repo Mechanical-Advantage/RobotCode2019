@@ -1,9 +1,8 @@
 package frc.robot.commands;
 
-import frc.robot.PIDControllerFixed;
+import frc.robot.util.PIDControllerFixed;
 import frc.robot.Robot;
 import frc.robot.RobotMap;
-import frc.robot.RobotMap.RobotType;
 import frc.robot.subsystems.DriveTrain.DriveGear;
 
 import edu.wpi.first.wpilibj.PIDOutput;
@@ -164,16 +163,16 @@ public class DriveDistanceOnHeading extends Command {
 				break;
 			case ROBOT_2019:
 			case ROBOT_2019_2:
-				kPDistance = 0.;
+				kPDistance = 0.014;
 				kIDistance = 0.000000;
 				kDDistance = 0;
 				kFDistance = 0;
-				kToleranceInches = 0;
-				kPAngle = 0;
+				kToleranceInches = 0.5;
+				kPAngle = 0.05;
 				kIAngle = 0;
 				kDAngle = 0;
 				kFAngle = 0;
-				kToleranceDegrees = 0;
+				kToleranceDegrees = 1;
 				break;
 			default:
 				break;
@@ -182,7 +181,7 @@ public class DriveDistanceOnHeading extends Command {
 
 	// Called just before this Command runs the first time
     protected void initialize() {
-    	if (RobotMap.robot == RobotType.ORIGINAL_ROBOT_2018) {
+    	if (Robot.driveSubsystem.isDualGear()) {
     		Robot.driveSubsystem.switchGear(gear);
     	}
     	if (useStartingYaw) {

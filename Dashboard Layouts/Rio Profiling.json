@@ -1,0 +1,193 @@
+{
+  "dividerPosition": 0.1835883171070932,
+  "tabPane": [
+    {
+      "title": "Motion Profile Tuning",
+      "autoPopulate": false,
+      "autoPopulatePrefix": "SmartDashboard/",
+      "widgetPane": {
+        "gridSize": 128.0,
+        "showGrid": true,
+        "hgap": 16.0,
+        "vgap": 16.0,
+        "tiles": {
+          "6,0": {
+            "size": [
+              1,
+              5
+            ],
+            "content": {
+              "_type": "List Layout",
+              "_title": "Error",
+              "_children": [
+                {
+                  "_type": "Text View",
+                  "_source0": "network_table:///SmartDashboard/Profile Error Left Positive",
+                  "_title": "Left Positive"
+                },
+                {
+                  "_type": "Text View",
+                  "_source0": "network_table:///SmartDashboard/Profile Error Left Negative",
+                  "_title": "Left Negative"
+                },
+                {
+                  "_type": "Text View",
+                  "_source0": "network_table:///SmartDashboard/Profile Error Right Positive",
+                  "_title": "Right Positive"
+                },
+                {
+                  "_type": "Text View",
+                  "_source0": "network_table:///SmartDashboard/Profile Error Right Negative",
+                  "_title": "Right Neg."
+                },
+                {
+                  "_type": "Text View",
+                  "_source0": "network_table:///SmartDashboard/Profile Error Yaw Positive",
+                  "_title": "Yaw Positive"
+                },
+                {
+                  "_type": "Text View",
+                  "_source0": "network_table:///SmartDashboard/Profile Error Yaw Negative",
+                  "_title": "Yaw Negative"
+                },
+                {
+                  "_type": "Text View",
+                  "_source0": "network_table:///SmartDashboard/Profile Final Error Left",
+                  "_title": "Left Final"
+                },
+                {
+                  "_type": "Text View",
+                  "_source0": "network_table:///SmartDashboard/Profile Final Error Right",
+                  "_title": "Right Final"
+                },
+                {
+                  "_type": "Text View",
+                  "_source0": "network_table:///SmartDashboard/Profile Final Error Yaw",
+                  "_title": "Yaw Final"
+                }
+              ]
+            }
+          },
+          "0,0": {
+            "size": [
+              1,
+              5
+            ],
+            "content": {
+              "_type": "List Layout",
+              "_title": "Parameters",
+              "_children": [
+                {
+                  "_type": "Text View",
+                  "_source0": "network_table:///SmartDashboard/Profile P",
+                  "_title": "P"
+                },
+                {
+                  "_type": "Text View",
+                  "_source0": "network_table:///SmartDashboard/Profile D",
+                  "_title": "D"
+                },
+                {
+                  "_type": "Text View",
+                  "_source0": "network_table:///SmartDashboard/Profile V",
+                  "_title": "V"
+                },
+                {
+                  "_type": "Text View",
+                  "_source0": "network_table:///SmartDashboard/Profile A",
+                  "_title": "A"
+                },
+                {
+                  "_type": "Text View",
+                  "_source0": "network_table:///SmartDashboard/Profile Angle P",
+                  "_title": "Angle P"
+                },
+                {
+                  "_type": "Text View",
+                  "_source0": "network_table:///SmartDashboard/Profile Angle Adjust P",
+                  "_title": "Angle Adj. P"
+                },
+                {
+                  "_type": "Text View",
+                  "_source0": "network_table:///SmartDashboard/Profile Angle Error Threshold",
+                  "_title": "Angle Toleran."
+                },
+                {
+                  "_type": "Text View",
+                  "_source0": "network_table:///SmartDashboard/Wheelbase",
+                  "_title": "Wheelbase"
+                }
+              ]
+            }
+          },
+          "1,0": {
+            "size": [
+              5,
+              3
+            ],
+            "content": {
+              "_type": "Graph",
+              "_source0": "network_table:///SmartDashboard/Profile Target Position Left",
+              "_source1": "network_table:///SmartDashboard/Profile Target Position Right",
+              "_source2": "network_table:///SmartDashboard/Profile Current Position Left",
+              "_source3": "network_table:///SmartDashboard/Profile Current Position Right",
+              "_title": "Graph (4 sources)",
+              "Visible time": 8.0,
+              "SmartDashboard/Profile Current Position Left visible": true,
+              "SmartDashboard/Profile Current Position Right visible": true,
+              "SmartDashboard/Profile Target Position Left visible": true,
+              "SmartDashboard/Profile Target Position Right visible": true
+            }
+          },
+          "1,3": {
+            "size": [
+              5,
+              2
+            ],
+            "content": {
+              "_type": "Graph",
+              "_source0": "network_table:///SmartDashboard/Profile Target Heading",
+              "_source1": "network_table:///SmartDashboard/Profile Current Heading",
+              "_title": "Graph (2 sources)",
+              "Visible time": 8.0,
+              "SmartDashboard/Profile Current Heading visible": true,
+              "SmartDashboard/Profile Target Heading visible": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "title": "Error \u0026 Parameter Output",
+      "autoPopulate": false,
+      "autoPopulatePrefix": "",
+      "widgetPane": {
+        "gridSize": 128.0,
+        "showGrid": true,
+        "hgap": 16.0,
+        "vgap": 16.0,
+        "tiles": {
+          "0,0": {
+            "size": [
+              6,
+              5
+            ],
+            "content": {
+              "_type": "Graph",
+              "_source0": "network_table:///SmartDashboard/Profile P output",
+              "_source1": "network_table:///SmartDashboard/Profile V output",
+              "_source2": "network_table:///SmartDashboard/Profile A output",
+              "_source3": "network_table:///SmartDashboard/Profile Error",
+              "_title": "Graph (4 sources)",
+              "Visible time": 8.0,
+              "SmartDashboard/Profile A output visible": true,
+              "SmartDashboard/Profile Error visible": true,
+              "SmartDashboard/Profile P output visible": true,
+              "SmartDashboard/Profile V output visible": true
+            }
+          }
+        }
+      }
+    }
+  ]
+}

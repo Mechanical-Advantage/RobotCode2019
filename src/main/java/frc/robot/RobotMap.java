@@ -24,6 +24,7 @@ public class RobotMap {
   // public static int rangefinderPort = 1;
   // public static int rangefinderModule = 1;
   public static int rightMaster;
+
 	public static int rightSlave;
 	public static int rightSlave2;
 	public static int leftMaster;
@@ -34,17 +35,41 @@ public class RobotMap {
 	public static int leftDriveGearPCM;
 	public static int rightDriveGearSolenoid1;
 	public static int rightDriveGearSolenoid2;
-	public static int rightDriveGearPCM;
+  public static int rightDriveGearPCM;
+  public static int ptoSolenoid1;
+  public static int ptoSolenoid2;
+  public static int ptoSolenoidPCM;
 	public static double robotWidth;
 	public static double robotLength;
-	public static final boolean tuningMode = false;
-	public static final RobotType robot = RobotType.ORIGINAL_ROBOT_2018;
+	public static final boolean tuningMode = true;
+	public static final RobotType robot = RobotType.ROBOT_2019;
 	public static int minVelocityLow; // lower values will be treated as this value, RPM
 	public static int maxVelocityLow; // maximum velocity when sticks are fully forward (value of 1), RPM
 	public static int maxVelocityHigh;
+
   public static int minVelocityHigh;
   public static int maxAcceleration;
-  
+  public static int armElbowLeft;
+  public static int armElbowRight;
+  public static int armElbowLimitSwitch;
+  public static int armWrist;
+  public static int armTelescope;
+  public static int armShoulder1Extend;
+  public static int armShoulder1Retract;
+  public static int armShoulder1PCM;
+  public static int armShoulder2Extend;
+  public static int armShoulder2Retract;
+  public static int armShoulder2PCM;
+  public static int vacuumMotor;
+  public static int vacuumPressureSensor;
+  public static int greenLEDRing; // Currently requires an entire relay channel
+  public static int tailReleaseSolenoid1;
+  public static int tailReleaseSolenoid2;
+  public static int tailReleasePCM;
+  public static int simpleScoringSolenoid1;
+  public static int simpleScoringSolenoid2;
+  public static int simpleScoringPCM;
+
   public RobotMap() {
 		switch (robot) {
       case ROBOT_2017:
@@ -89,15 +114,37 @@ public class RobotMap {
         break;
       case ROBOT_2019:
       case ROBOT_2019_2:
-        rightMaster = 0;
-        rightSlave = 0;
-        rightSlave2 = 0;
-        leftMaster = 0;
-        leftSlave = 0;
-        leftSlave2 = 0;
-        maxVelocityLow = 0;
-        minVelocityLow = 0;
+        rightMaster = 3;
+        rightSlave = 2;
+        rightSlave2 = 1;
+        leftMaster = 12;
+        leftSlave = 14;
+        leftSlave2 = 13;
+        maxVelocityLow = 4800; // 5710 on blocks
+        minVelocityLow = 210;
         maxAcceleration = 0;
+        armElbowLeft = 15;
+        armElbowRight = 0;
+        armTelescope = 5;
+        armWrist = 11;
+        vacuumMotor = 4;
+        vacuumPressureSensor = 1;
+        armShoulder1Extend = 4; // Left
+        armShoulder1Retract = 6;
+        armShoulder1PCM = 1;
+        armShoulder2Extend = 5; // Right
+        armShoulder2Retract = 7;
+        armShoulder2PCM = 1;
+        greenLEDRing = 2;
+        ptoSolenoid1 = 3;
+        ptoSolenoid2 = 2;
+        ptoSolenoidPCM = 1;
+        tailReleaseSolenoid1 = 0;
+        tailReleaseSolenoid2 = 1;
+        tailReleasePCM = 1;
+        simpleScoringPCM = 0;
+        simpleScoringSolenoid1 = 7;
+        simpleScoringSolenoid2 = 5;
         break;
       default:
         break;
@@ -105,10 +152,6 @@ public class RobotMap {
 	}
 
   public enum RobotType {
-    ROBOT_2019,
-    ROBOT_2019_2,
-		ORIGINAL_ROBOT_2018,
-		EVERYBOT_2019,
-		ROBOT_2017
-	}
+    ROBOT_2019, ROBOT_2019_2, ORIGINAL_ROBOT_2018, EVERYBOT_2019, ROBOT_2017
+  }
 }

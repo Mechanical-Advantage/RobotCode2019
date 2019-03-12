@@ -1,0 +1,31 @@
+README for driver video - 2019
+==============================
+
+2019 rules restrict bandwidth to 4M instead of 7M.  This necessitates a change 
+in driver camera strategy, as previously the MJPG stream through the Rio consumed 
+nearly 4M itself (for wide viewing angle cameras).
+
+The general approach is to use H.264 compressed video, processed on the Raspberry 
+Pi using hardware assisted encoding, and view on the driver station using the 
+gstreamer application.
+
+The basic approach is described here: 
+https://www.reddit.com/r/FRC/comments/5vjvmi/camera_feed/
+
+That link also provided the precompiled binaries for hardware assisted ffmpeg 
+(with a bugfix to allow the client and server to start in either order).  
+It must be built with OpenMAX support.  Here is a reference for a DIY build:
+https://johnathan.org/originals/2016/07/live-streaming-with-hardware-acceleration-using-a-raspberry-pi-and-rtmp-hls.html
+
+A script was written to launch ffmpeg on the Raspberry pi; see startDriverCamera 
+in this directory.  This is installed in the pi's 'pi' home directory alongside 
+the frcvision content, and launched from /etc/rc.local.  Be cautious as to camera 
+device names, particularly if multiple cameras are in use.  The script uses a 
+Video4Linux "by-id" path to identify the camera by name, and converts this to 
+a /dev/videoX device as needed by ffmpeg.
+
+A shortcut is used on the driver station to launch the viewer:
+C:\gstreamer\1.0\x86_64\bin\gst-launch-1.0.exe udpsrc port=5800 ! application/x-rtp,payload=96 ! rtph264depay ! avdec_h264 ! autovideosink
+
+A standard gstreamer download can be used, but it must be a 'custom' install that 
+includes the "GStreamer 1.0 libav wrapper".

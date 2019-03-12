@@ -1,9 +1,8 @@
 package frc.robot.commands;
 
-import frc.robot.PIDControllerFixed;
+import frc.robot.util.PIDControllerFixed;
 import frc.robot.Robot;
 import frc.robot.RobotMap;
-import frc.robot.RobotMap.RobotType;
 import frc.robot.subsystems.DriveTrain.DriveGear;
 
 import edu.wpi.first.wpilibj.PIDOutput;
@@ -30,8 +29,8 @@ public class TurnToAngle extends Command implements PIDOutput {
     private double rotateToAngleRate;
     
     public TurnToAngle(double angle, boolean absoluteAngle, double tolerance) {
-		this(angle, absoluteAngle);
-		kToleranceDegrees = tolerance;
+				this(angle, absoluteAngle);
+				kToleranceDegrees = tolerance;
     }
     
     public TurnToAngle(double angle, double tolerance) {
@@ -72,35 +71,35 @@ public class TurnToAngle extends Command implements PIDOutput {
         		updatePeriod = 0.02;
         		gear = DriveGear.LOW;
         		break;
-			case EVERYBOT_2019:
-				// Tested on everybot 2018
-				kP = 0.01;
-				kI = 0;
-				kD = 0.003;
-				kF = 0;
-				kToleranceDegrees = 1.0;
-				kToleranceBufSamples = 10;
-				updatePeriod = 0.05;
-				break;
-			case ROBOT_2019:
-			case ROBOT_2019_2:
-				kP = 0;
-				kI = 0;
-				kD = 0;
-				kF = 0;
-				kToleranceDegrees = 0;
-				kToleranceBufSamples = 0;
-				updatePeriod = 0;
-				break;
-			default:
-				break;
+					case EVERYBOT_2019:
+						// Tested on everybot 2018
+						kP = 0.01;
+						kI = 0;
+						kD = 0.003;
+						kF = 0;
+						kToleranceDegrees = 1.0;
+						kToleranceBufSamples = 10;
+						updatePeriod = 0.05;
+						break;
+					case ROBOT_2019:
+					case ROBOT_2019_2:
+						kP = 0.007;
+						kI = 0;
+						kD = 0.015;
+						kF = 0;
+						kToleranceDegrees = 1;
+						kToleranceBufSamples = 3;
+						updatePeriod = 0.02;
+						break;
+					default:
+						break;
         }
         this.absoluteAngle = absoluteAngle;
     }
 
     // Called just before this Command runs the first time
     protected void initialize() {
-    	if (RobotMap.robot == RobotType.ORIGINAL_ROBOT_2018) {
+			if (Robot.driveSubsystem.isDualGear()) {
     		Robot.driveSubsystem.switchGear(gear);
     	}
     	turnController = new PIDControllerFixed(kP, kI, kD, kF, Robot.ahrs, this, updatePeriod);

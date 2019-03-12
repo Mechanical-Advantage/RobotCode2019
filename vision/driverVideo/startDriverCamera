@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# Full path to specific video camera by name through /dev/v4l/by-id
+V4LDEVICE=/dev/v4l/by-id/usb-Sonix_Technology_Co.__Ltd._USB_2.0_Camera_SN0001-video-index0
+# Strip off just the last part (../../video<num>)
+#REALDEVICE=`ls -l ${V4LDEVICE} | sed -e 's!^.*\.\./\.\./!!'`
+DEVICELINK=`readlink ${V4LDEVICE}`
+BASEDEVICE=`basename ${DEVICELINK}`
+# Build the normal path - ffmpeg requires this
+DEVICE=/dev/${BASEDEVICE}
+
+RESOLUTIONX=640
+RESOLUTIONY=480
+FRAMERATE=30
+BITRATE=1536k
+# Pixelformat can be YUYV or MJPEG, but v4l2-ctl and ffmpeg describe them differently
+#PIXELFORMAT_V4L=mjpg
+#PIXELFORMAT_FFMPEG=mjpeg
+PIXELFORMAT_V4L=yuyv
+PIXELFORMAT_FFMPEG=yuyv422
+
+DSHOST=frc-6328-ds.local
+PORT=5800
+
+# Reset camera to auto exposure mode
+v4l2-ctl -d ${DEVICE} -c exposure_auto=3
+
+#v4l2-ctl -d ${DEVICE} -v width=${RESOLUTIONX},height=${RESOLUTIONY},pixelformat=${PIXELFORMAT}
+v4l2-ctl -d ${DEVICE} -v width=${RESOLUTIONX},height=${RESOLUTIONY},pixelformat=${PIXELFORMAT_V4L}
+
+
+#./ffmpeg -i ${DEVICE} -framerate ${FRAMERATE} -video_size ${RESOLUTIONX}x${RESOLUTIONY} -vcodec h264_omx -g 60 -b:v ${BITRATE} -vf "format=yuv420p" -an -f rtp rtp://${DSHOST}:${PORT}
+/home/pi/ffmpeg -input_format ${PIXELFORMAT_FFMPEG} -i ${DEVICE} -framerate ${FRAMERATE} -video_size ${RESOLUTIONX}x${RESOLUTIONY} -vcodec h264_omx -g 60 -b:v ${BITRATE} -an -f rtp rtp://${DSHOST}:${PORT} > /dev/null 2>&1 &
+

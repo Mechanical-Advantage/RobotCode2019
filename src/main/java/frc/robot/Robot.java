@@ -16,6 +16,7 @@ import com.kauailabs.navx.frc.AHRS;
 
 import org.zeromq.ZMQ;
 
+import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.command.Command;
@@ -23,9 +24,21 @@ import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.commands.DriveWithJoystick.JoystickMode;
+import frc.robot.commands.ArmTuning;
+import frc.robot.commands.DriveDistanceOnHeading;
+import frc.robot.commands.FusedHeadingTest;
 import frc.robot.commands.GenerateMotionProfiles;
+import frc.robot.commands.TurnToAngle;
+import frc.robot.commands.VacPickup;
+import frc.robot.commands.VelocityPIDTuner;
+import frc.robot.subsystems.Arm;
+import frc.robot.subsystems.BeaverTail;
 import frc.robot.subsystems.CameraSystem;
 import frc.robot.subsystems.DriveTrain;
+import frc.robot.subsystems.SimpleScorer;
+import frc.robot.subsystems.VisionData;
+import frc.robot.subsystems.Vacuum;
+
 /**
  * The VM is configured to automatically run this class, and to call the
  * functions corresponding to each mode, as described in the TimedRobot
@@ -36,7 +49,14 @@ import frc.robot.subsystems.DriveTrain;
 public class Robot extends TimedRobot {
   public static final RobotMap robotMap = new RobotMap();
 
-	public static final DriveTrain driveSubsystem = new DriveTrain();
+  public static ZMQ.Context ZMQContext = ZMQ.context(1);
+
+  public static final DriveTrain driveSubsystem = new DriveTrain();
+  public static final Arm arm = new Arm();
+  public static final Vacuum vacuum = new Vacuum();
+  public static final BeaverTail beaverTail = new BeaverTail();
+  public static final SimpleScorer simpleScorer = new SimpleScorer();
+  public static final VisionData visionData = new VisionData();
 
   public static OI oi;
   public static final AHRS ahrs = new AHRS(SPI.Port.kMXP);
@@ -47,14 +67,13 @@ public class Robot extends TimedRobot {
 
   Command autonomousCommand;
   SendableChooser<Command> tuningModeChooser = new SendableChooser<>();
-  SendableChooser<Command> autoChooser = new SendableChooser<>();
+  SendableChooser<AutoMode> autoChooser = new SendableChooser<>();
   public static SendableChooser<JoystickMode> joystickModeChooser;
-
-  public static ZMQ.Context ZMQContext = ZMQ.context(1);
+  private static final Command vacPickupCommand = new VacPickup();
 
   /**
-   * This function is run when the robot is first started up and should be
-   * used for any initialization code.
+   * This function is run when the robot is first started up and should be used
+   * for any initialization code.
    */
   @Override
   public void robotInit() {
@@ -62,11 +81,21 @@ public class Robot extends TimedRobot {
     joystickModeChooser = new SendableChooser<JoystickMode>();
     // chooser.setDefaultOption("Default Auto", new ExampleCommand());
     // chooser.addOption("My Auto", new MyAutoCommand());
-    joystickModeChooser.setDefaultOption("Tank", JoystickMode.Tank);
-    joystickModeChooser.addOption("Split Arcade", JoystickMode.SplitArcade);
+    joystickModeChooser.addOption("Tank", JoystickMode.Tank);
+    joystickModeChooser.setDefaultOption("Split Arcade", JoystickMode.SplitArcade);
+
+    autoChooser.addOption("None", null);
+    autoChooser.addOption("Hold Panel", AutoMode.VAC_PICKUP);
 
     if (RobotMap.tuningMode) {
+      tuningModeChooser.addOption("Fused Heading Test", new FusedHeadingTest());
+      tuningModeChooser.addOption("Arm Tuning", new ArmTuning());
+      tuningModeChooser.addOption("Velocity PID Tuner", new VelocityPIDTuner());
+      tuningModeChooser.addOption("Turn 90 degrees", new TurnToAngle(90));
+      tuningModeChooser.addOption("Drive 5 feet", new DriveDistanceOnHeading(60));
+      tuningModeChooser.addOption("Drive 10 feet", new DriveDistanceOnHeading(120));
       SmartDashboard.putData("Tuning Auto Mode", tuningModeChooser);
+      autoChooser.addOption("Tuning Auto", AutoMode.TUNING);
     }
 
     SmartDashboard.putData("Auto mode", autoChooser);
@@ -89,15 +118,17 @@ public class Robot extends TimedRobot {
     }
     Botlog.createBadlog(runBotlog);
     //initiates BadLog (and helpful time measurements), the tracking code that provides data from matches based on driver input. Must be called last.
+    Compressor c = new Compressor();
   }
 
   /**
-   * This function is called every robot packet, no matter the mode. Use
-   * this for items like diagnostics that you want ran during disabled,
-   * autonomous, teleoperated and test.
+   * This function is called every robot packet, no matter the mode. Use this for
+   * items like diagnostics that you want ran during disabled, autonomous,
+   * teleoperated and test.
    *
-   * <p>This runs after the mode specific periodic functions, but before
-   * LiveWindow and SmartDashboard integrated updating.
+   * <p>
+   * This runs after the mode specific periodic functions, but before LiveWindow
+   * and SmartDashboard integrated updating.
    */
   @Override
   public void robotPeriodic() {
@@ -106,9 +137,9 @@ public class Robot extends TimedRobot {
   }
 
   /**
-   * This function is called once each time the robot enters Disabled mode.
-   * You can use it to reset any subsystem information you want to clear when
-   * the robot is disabled.
+   * This function is called once each time the robot enters Disabled mode. You
+   * can use it to reset any subsystem information you want to clear when the
+   * robot is disabled.
    */
   @Override
   public void disabledInit() {
@@ -118,31 +149,41 @@ public class Robot extends TimedRobot {
   public void disabledPeriodic() {
     Scheduler.getInstance().run();
     if (driveSubsystem.getVelocityLeft() <= 2 && driveSubsystem.getVelocityRight() <= 2) {
-			Robot.driveSubsystem.enableBrakeMode(false);
-		}
+      Robot.driveSubsystem.enableBrakeMode(false);
+    }
   }
 
   /**
    * This autonomous (along with the chooser code above) shows how to select
-   * between different autonomous modes using the dashboard. The sendable
-   * chooser code works with the Java SmartDashboard. If you prefer the
-   * LabVIEW Dashboard, remove all of the chooser code and uncomment the
-   * getString code to get the auto name from the text box below the Gyro
+   * between different autonomous modes using the dashboard. The sendable chooser
+   * code works with the Java SmartDashboard. If you prefer the LabVIEW Dashboard,
+   * remove all of the chooser code and uncomment the getString code to get the
+   * auto name from the text box below the Gyro
    *
-   * <p>You can add additional auto modes by adding additional commands to the
-   * chooser code above (like the commented example) or additional comparisons
-   * to the switch structure below with additional strings & commands.
+   * <p>
+   * You can add additional auto modes by adding additional commands to the
+   * chooser code above (like the commented example) or additional comparisons to
+   * the switch structure below with additional strings & commands.
    */
   @Override
   public void autonomousInit() {
     Robot.driveSubsystem.enableBrakeMode(true);
-    autonomousCommand = autoChooser.getSelected();
+    ahrs.zeroYaw();
+    if (autoChooser.getSelected() != null) {
+      switch (autoChooser.getSelected()) {
+        case TUNING:
+          autonomousCommand = tuningModeChooser.getSelected();
+          break;
+        case VAC_PICKUP:
+          autonomousCommand = vacPickupCommand;
+      }
+    }
 
     /*
-     * String autoSelected = SmartDashboard.getString("Auto Selector",
-     * "Default"); switch(autoSelected) { case "My Auto": autonomousCommand
-     * = new MyAutoCommand(); break; case "Default Auto": default:
-     * autonomousCommand = new ExampleCommand(); break; }
+     * String autoSelected = SmartDashboard.getString("Auto Selector", "Default");
+     * switch(autoSelected) { case "My Auto": autonomousCommand = new
+     * MyAutoCommand(); break; case "Default Auto": default: autonomousCommand = new
+     * ExampleCommand(); break; }
      */
 
     // schedule the autonomous command (example)
@@ -169,6 +210,7 @@ public class Robot extends TimedRobot {
     if (autonomousCommand != null) {
       autonomousCommand.cancel();
     }
+    arm.setShoulderRaised(false);
   }
 
   /**
@@ -186,18 +228,20 @@ public class Robot extends TimedRobot {
   public void testPeriodic() {
   }
 
-  // Utility functions
-	public static String genGraphStr(double...data) {
-		StringJoiner sj = new StringJoiner(":");
-		for (double item : data) {
-			sj.add(String.valueOf(item));
-		}
-		return sj.toString();
-	}
-	
-	public static double map(double x, double in_min, double in_max, double out_min, double out_max)
-	{
-	  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+  private enum AutoMode {
+    TUNING, VAC_PICKUP;
   }
-  
+
+  // Utility functions
+  public static String genGraphStr(double... data) {
+    StringJoiner sj = new StringJoiner(":");
+    for (double item : data) {
+      sj.add(String.valueOf(item));
+    }
+    return sj.toString();
+  }
+
+  public static double map(double x, double in_min, double in_max, double out_min, double out_max) {
+    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+  }
 }

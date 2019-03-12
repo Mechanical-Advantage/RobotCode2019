@@ -4,8 +4,7 @@ import java.io.File;
 
 import frc.robot.Robot;
 import frc.robot.RobotMap;
-import frc.robot.RobotMap.RobotType;
-import frc.robot.TunableNumber;
+import frc.robot.util.TunableNumber;
 import frc.robot.subsystems.DriveTrain.DriveGear;
 
 import edu.wpi.first.wpilibj.command.Command;
@@ -210,7 +209,7 @@ public class RunMotionProfileOnRio extends Command {
     		initialProfileYaw = absHeading ? 0 : leftFollower.getSegment().heading;
     		initialPositionLeft = Robot.driveSubsystem.getDistanceLeft();
     		initialPositionRight = Robot.driveSubsystem.getDistanceRight();
-    		if (RobotMap.robot == RobotType.ORIGINAL_ROBOT_2018) {
+    		if (Robot.driveSubsystem.isDualGear()) {
     			Robot.driveSubsystem.switchGear(gear);
     		}
     		Robot.driveSubsystem.changeStatusRate(sensorFrameRate);
