@@ -132,20 +132,20 @@ public class Botlog{// Wrapper Class to do all things Badlog. If this creates er
 
     public static void publishSubs(double milis){//publishes ALL the topic subscribers.
       for (int x = 0; x < topSubs.size(); x++) {
-        if(topSubs.get(x).pubTime >= milis && !DriverStation.getInstance().isDisabled()){//controls when the sub will publish based on time and wheter pr not the robot is enabled. If you want a topic sub to update outside dissables, define it inside Botlog itself.
-          if(topSubs.get(x).getDouble()){
-            if(topSubs.get(x).greater){
+        if(topSubs.get(x).pubTime >= milis && !DriverStation.getInstance().isDisabled()){//controls when the sub will publish based on the update time set (should be less than default update speed. if this number is greater than the dus, it will not publish inside auto) and wheter or not the robot is enabled. If you want a topic sub to update outside of dissabled, define it inside Botlog itself.
+          if(topSubs.get(x).getDouble()){//publishes doubles
+            if(topSubs.get(x).greater){//when true, will only update that topic when the source is greater than a required input
               if(topSubs.get(x).pubWhen > (double) topSubs.get(x).getSource().get()){//only publishes when the value is above the requirement
                 BadLog.publish(topSubs.get(x).getName(), "" + topSubs.get(x).getSource().get());
               }
-            } else if(topSubs.get(x).lesser){
+            } else if(topSubs.get(x).lesser){//when true, does what greater does but instead when lower than the threshhold.
               if(topSubs.get(x).pubWhen < (double) topSubs.get(x).getSource().get()){//only publishes when the value is below the requirement
                 BadLog.publish(topSubs.get(x).getName(), "" + topSubs.get(x).getSource().get());
               }
-            } else {
+            } else {//no requirement to publish
               BadLog.publish(topSubs.get(x).getName(), "" + topSubs.get(x).getSource().get());
             }
-          } else {
+          } else {//takes boolean cases
             double isTrue;
             if(Robot.oi.getDriveEnabled()){
               isTrue = 1.0;
