@@ -162,6 +162,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     Robot.driveSubsystem.enableBrakeMode(true);
+    arm.setToStartingPosition();
     ahrs.zeroYaw();
     if (autoChooser.getSelected() != null) {
       switch (autoChooser.getSelected()) {

@@ -58,6 +58,7 @@ public class Arm extends Subsystem {
   private static final double elbowAllowableError = 0; // For primary PID
   private static final double elbowAllowableErrorSync = 2;
   private static final double elbowZeroPercent = /*-0.05*/0;
+  private static final double elbowStartingPosition = 0;
 
   private static final FeedbackDevice wristSensorType = FeedbackDevice.CTRE_MagEncoder_Relative;
   private static final boolean wristSensorReversed = false;
@@ -81,6 +82,7 @@ public class Arm extends Subsystem {
   private static final double wristNominalOutputReverse = 0;
   private static final double wristAllowableError = 0;
   private static final double wristZeroPercent = /*-0.05*/0;
+  private static final double wristStartingPosition = 0;
 
   private static final FeedbackDevice telescopeSensorType = FeedbackDevice.CTRE_MagEncoder_Relative;
   private static final boolean telescopeSensorReversed = false;
@@ -101,6 +103,7 @@ public class Arm extends Subsystem {
   private static final double telescopeNominalOutputReverse = 0;
   private static final double telescopeAllowableError = 0;
   private static final double telescopeZeroPercent = /*-0.05*/0;
+  private static final double telescopeStartingPosition = 0;
 
   private static final double allowedFrameExtension = 30;
   private static final double bicepLength = 25;
@@ -112,6 +115,7 @@ public class Arm extends Subsystem {
   // How far forward the back edge of the frame perimeter is from the shoulder
   // joint
   private static final double framePerimeterBackFromShoulder = -1;
+  private static final boolean driveToZeroStartup = false;
 
   private static final TunableNumber kPElbow = new TunableNumber("Arm Elbow/p");
   private static final TunableNumber kIElbow = new TunableNumber("Arm Elbow/i");
@@ -333,9 +337,11 @@ public class Arm extends Subsystem {
 
       // Start zeroing the mechanisms
       // Normal control will not work until this is complete (see periodic())
-      elbowLeft.set(ControlMode.PercentOutput, elbowZeroPercent, DemandType.Neutral, 0);
-      wrist.set(ControlMode.PercentOutput, wristZeroPercent);
-      telescope.set(ControlMode.PercentOutput, telescopeZeroPercent);
+      if (driveToZeroStartup) {
+        elbowLeft.set(ControlMode.PercentOutput, elbowZeroPercent, DemandType.Neutral, 0);
+        wrist.set(ControlMode.PercentOutput, wristZeroPercent);
+        telescope.set(ControlMode.PercentOutput, telescopeZeroPercent);
+      }
     }
   }
 
@@ -392,6 +398,21 @@ public class Arm extends Subsystem {
     telescope.config_kP(0, kPTelescope.get());
     telescope.config_kI(0, kITelescope.get());
     telescope.config_kD(0, kDTelescope.get());
+  }
+
+  /**
+   * Sets the encoder tick counts on the talons to the starting positions
+   */
+  public void setToStartingPosition() {
+    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+      elbowLeft.setSelectedSensorPosition(convertElbowPositionToTicks(elbowStartingPosition, false));
+      elbowRight.setSelectedSensorPosition(convertElbowPositionToTicks(elbowStartingPosition, false));
+      wrist.setSelectedSensorPosition(convertWristRelativePositionToTicks(wristStartingPosition));
+      telescope.setSelectedSensorPosition(convertTelescopeInchesToTicks(telescopeStartingPosition));
+      elbowZeroed = true;
+      wristZeroed = true;
+      telescopeZeroed = true;
+    }
   }
 
   public void setShoulderRaised(boolean raise) {
