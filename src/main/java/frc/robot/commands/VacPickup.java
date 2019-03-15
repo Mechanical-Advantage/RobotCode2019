@@ -8,13 +8,15 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.command.Command;
-import frc.robot.Robot;
 import frc.robot.OI.OILED;
+import frc.robot.Robot;
 import frc.robot.subsystems.Vacuum.VacSolenoid;
+import frc.robot.subsystems.Vacuum.VacuumLevel;
 
 public class VacPickup extends Command {
 
-  private static final double suctionGoodThreshold = 0.55;
+  private static final double suctionGoodThreshold = 0.55; // For LED indicator
+  private static final double suctionHiLoThreshold = 0.70; // For pump Hi/Lo control
 
   private boolean LEDOnLast;
 
@@ -29,14 +31,16 @@ public class VacPickup extends Command {
   @Override
   protected void initialize() {
     Robot.oi.updateLED(OILED.VAC_PICKUP, true);
-    Robot.vacuum.setVacuumMotor(true);
+    Robot.vacuum.setVacuumMotor(VacuumLevel.HIGH);
     Robot.vacuum.setSolenoid(VacSolenoid.PICKUP, true);
   }
 
   // Called repeatedly when this Command is scheduled to run
   @Override
   protected void execute() {
-    if (Robot.vacuum.getPressureSensorVoltage() > suctionGoodThreshold) {
+    double pressureSensorVoltage = Robot.vacuum.getPressureSensorVoltage();
+    // LED control
+    if (pressureSensorVoltage > suctionGoodThreshold) {
       if (!LEDOnLast) {
         Robot.oi.updateLED(OILED.MISC_3, true);
         LEDOnLast = true;
@@ -47,6 +51,8 @@ public class VacPickup extends Command {
         LEDOnLast = false;
       }
     }
+    // Pump speed control
+    Robot.vacuum.setVacuumMotor((pressureSensorVoltage > suctionHiLoThreshold) ? VacuumLevel.LOW : VacuumLevel.HIGH);
   }
 
   // Make this return true when this Command no longer needs to run execute()
@@ -59,7 +65,7 @@ public class VacPickup extends Command {
   @Override
   protected void end() {
     Robot.vacuum.setSolenoid(VacSolenoid.PICKUP, false);
-    Robot.vacuum.setVacuumMotor(false);
+    Robot.vacuum.setVacuumMotor(VacuumLevel.OFF);
     Robot.oi.updateLED(OILED.VAC_PICKUP, false);
     Robot.oi.updateLED(OILED.MISC_3, false);
   }

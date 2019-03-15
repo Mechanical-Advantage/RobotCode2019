@@ -10,6 +10,7 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj.command.TimedCommand;
 import frc.robot.Robot;
 import frc.robot.subsystems.Vacuum.VacSolenoid;
+import frc.robot.subsystems.Vacuum.VacuumLevel;
 
 public class VacDrop extends TimedCommand {
 
@@ -25,7 +26,7 @@ public class VacDrop extends TimedCommand {
   // Called just before this Command runs the first time
   @Override
   protected void initialize() {
-    Robot.vacuum.setVacuumMotor(false); // This shouldn't do anything but just make sure
+    Robot.vacuum.setVacuumMotor(VacuumLevel.OFF); // This shouldn't do anything but just make sure
     Robot.vacuum.setSolenoid(VacSolenoid.PICKUP, true);
     Robot.vacuum.setSolenoid(VacSolenoid.PUMP_TAIL, true);
   }
