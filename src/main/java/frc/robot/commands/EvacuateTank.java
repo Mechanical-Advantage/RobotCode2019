@@ -10,6 +10,7 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj.command.Command;
 import frc.robot.Robot;
 import frc.robot.subsystems.Vacuum.VacSolenoid;
+import frc.robot.subsystems.Vacuum.VacuumLevel;
 
 public class EvacuateTank extends Command {
   public EvacuateTank() {
@@ -22,7 +23,7 @@ public class EvacuateTank extends Command {
   // Called just before this Command runs the first time
   @Override
   protected void initialize() {
-    Robot.vacuum.setVacuumMotor(true);
+    Robot.vacuum.setVacuumMotor(VacuumLevel.HIGH);
     Robot.vacuum.setSolenoid(VacSolenoid.PUMP_TANK, true);
   }
 
@@ -41,7 +42,7 @@ public class EvacuateTank extends Command {
   @Override
   protected void end() {
     Robot.vacuum.setSolenoid(VacSolenoid.PUMP_TANK, false);
-    Robot.vacuum.setVacuumMotor(false);
+    Robot.vacuum.setVacuumMotor(VacuumLevel.OFF);
   }
 
   // Called when another command which requires one or more of the same

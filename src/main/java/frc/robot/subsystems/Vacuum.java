@@ -26,6 +26,14 @@ public class Vacuum extends Subsystem {
 
   private static final boolean reverseVacuumMotor = true;
   private static final boolean vacMotorBrakeMode = false;
+  private static final double vacMotorMaxVoltage = 12.0; // Max pump operating voltage
+  private static final boolean vacMotorEnableVoltageCompensation = true;
+  private static final double vacMotorOutputLOW = .4; // % output to "hold"
+  private static final double vacMotorOutputHIGH = .9; // % output to draw initial vacuum
+
+  public enum VacuumLevel {
+    OFF, LOW, HIGH;
+  }
 
   private RelayChannel[] relayChannel = new RelayChannel[2];
   private AnalogInput pressureSensor;
@@ -44,23 +52,30 @@ public class Vacuum extends Subsystem {
 
       vacuumMotor.setInverted(reverseVacuumMotor);
       vacuumMotor.setNeutralMode(vacMotorBrakeMode ? NeutralMode.Brake : NeutralMode.Coast);
+      vacuumMotor.configVoltageCompSaturation(vacMotorMaxVoltage);
+      vacuumMotor.enableVoltageCompensation(vacMotorEnableVoltageCompensation);
     }
   }
 
   @Override
   public void periodic() {
-    // System.out.println(pdp.getCurrent(RobotMap.vacuumMotor));
     if (RobotMap.tuningMode) {
       SmartDashboard.putNumber("Vacuum Voltage", getPressureSensorVoltage());
     }
   }
 
-  public void setVacuumMotor(boolean state) {
+  public void setVacuumMotor(VacuumLevel state) {
     if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
-      if (state) {
-        vacuumMotor.set(ControlMode.PercentOutput, 1);
-      } else {
+      switch (state) {
+      case OFF:
         vacuumMotor.set(ControlMode.PercentOutput, 0);
+        break;
+      case LOW:
+        vacuumMotor.set(ControlMode.PercentOutput, vacMotorOutputLOW);
+        break;
+      case HIGH:
+        vacuumMotor.set(ControlMode.PercentOutput, vacMotorOutputHIGH);
+        break;
       }
     }
   }
