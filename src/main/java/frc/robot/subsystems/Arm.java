@@ -116,6 +116,7 @@ public class Arm extends Subsystem {
   // joint
   private static final double framePerimeterBackFromShoulder = -1;
   private static final boolean driveToZeroStartup = false;
+  private static final int limitSenseCycles = 15; // How many cycles the limit sense must occur for to register
 
   private static final TunableNumber kPElbow = new TunableNumber("Arm Elbow/p");
   private static final TunableNumber kIElbow = new TunableNumber("Arm Elbow/i");
@@ -172,16 +173,19 @@ public class Arm extends Subsystem {
   private SchoolZone elbowCurrentSchoolZone;
   private boolean elbowEnabled;
   private boolean elbowLimitsEnabled = true;
+  private boolean elbowDownEnabledLast = true;
   private boolean wristZeroed = false;
   private WristPosition targetWristPosition;
   private SchoolZone wristSchoolZone;
   private boolean wristEnabled;
+  private int wristLimitSenseCount;
   private boolean telescopeZeroed = false;
   private int previousTelescopeLimit;
   private double targetTelescopePosition;
   private int targetTelescopePositionTicks;
   private SchoolZone telescopeSchoolZone;
   private boolean telescopeEnabled;
+  private int telescopeLimitSenseCount;
 
   /*
    * Note: We decided wrist should not use remote elbow sensor and setpoint should
@@ -351,15 +355,24 @@ public class Arm extends Subsystem {
       // Should zeroing multiple times be allowed?
       double elbowPosition = getElbowPosition(); // Avoid duplicate calculation
       updateShoulderSetpoint(elbowPosition);
-      if (!elbowZeroed) {
-        if (getElbowLimitSwitch()) {
-          setElbowZeroed();
+      if (getElbowLimitSwitch()) {
+        setElbowZeroed();
+        if (elbowDownEnabledLast) {
+          elbowDownEnabledLast = false;
+          elbowLeft.configPeakOutputReverse(0);
+          elbowRight.configPeakOutputReverse(0);
         }
-      } else {
-        elbowCurrentSchoolZone.applyPosition(elbowPosition);
+      } else if (!elbowDownEnabledLast) {
+        elbowDownEnabledLast = true;
+        // Reset peak outputs to normal values
+        elbowCurrentSchoolZone.setControllerLimits();
+      }
+      if (elbowZeroed) {
+        // Disable applying of reverse limits if elbow down disabled because that also uses peak output
+        elbowCurrentSchoolZone.applyPosition(elbowPosition, true, elbowDownEnabledLast);
       }
       if (!wristZeroed) {
-        if (getWristLimitSwitch()) {
+        if (getWristLimitSensed()) {
           setWristZeroed();
         }
       } else {
@@ -736,8 +749,15 @@ public class Arm extends Subsystem {
     }
   }
 
-  public boolean getWristLimitSwitch() {
-    // TODO add this
+  public boolean getWristLimitSensed() {
+    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+      if (wrist.getSelectedSensorVelocity() == 0 && wrist.getMotorOutputPercent() < 0) {
+        wristLimitSenseCount++;
+      } else {
+        wristLimitSenseCount = 0;
+      }
+      return wristLimitSenseCount >= limitSenseCycles;
+    }
     return false;
   }
 
@@ -799,7 +819,12 @@ public class Arm extends Subsystem {
 
   private boolean getTelescopeLimitSensed() {
     if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
-      return telescope.getSelectedSensorVelocity() == 0 && telescope.getMotorOutputPercent() < 0;
+      if (telescope.getSelectedSensorVelocity() == 0 && telescope.getMotorOutputPercent() < 0) {
+        telescopeLimitSenseCount++;
+      } else {
+        telescopeLimitSenseCount = 0;
+      }
+      return telescopeLimitSenseCount >= limitSenseCycles;
     }
     return false;
   }

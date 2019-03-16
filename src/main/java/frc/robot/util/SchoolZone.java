@@ -50,13 +50,14 @@ public class SchoolZone {
     /**
      * Apply the speed limit to motor controllers if needed.
      */
-    private void applyToControllers(RequiredSpeedLimitChanges neededChanges) {
-        if (neededChanges.includesForwardChange()) {
+    private void applyToControllers(RequiredSpeedLimitChanges neededChanges,
+    boolean applyForwardLimit, boolean applyReverseLimit) {
+        if (neededChanges.includesForwardChange() && applyForwardLimit) {
             for (BaseMotorController controller : motorControllers) {
                 controller.configPeakOutputForward(getForwardSpeedLimit());
             }
         }
-        if (neededChanges.includesReverseChange()) {
+        if (neededChanges.includesReverseChange() && applyReverseLimit) {
             for (BaseMotorController controller : motorControllers) {
                 controller.configPeakOutputReverse(getReverseSpeedLimit());
             }
@@ -77,9 +78,24 @@ public class SchoolZone {
 
     /**
      * Evaluate the given position to determine if it is in a school zone
+     * 
+     * @param position The position to evaluate
      * @return Which speed limits need to be or were changed
      */
     public RequiredSpeedLimitChanges applyPosition(double position) {
+        return applyPosition(position, true, true);
+    }
+
+    /**
+     * Evaluate the given position to determine if it is in a school zone
+     * 
+     * @param position The position to evaluate
+     * @param applyForwardLimit Whether to apply the forward limit to controllers
+     * @param applyReverseLimit Whether to apply the reverse limit to controllers
+     * @return Which speed limits need to be or were changed
+     */
+    public RequiredSpeedLimitChanges applyPosition(double position,
+    boolean applyForwardLimit, boolean applyReverseLimit) {
         boolean outsideForwardLimit = false;
         boolean outsideReverseLimit = false;
         RequiredSpeedLimitChanges neededChanges;
@@ -104,21 +120,21 @@ public class SchoolZone {
             neededChanges = RequiredSpeedLimitChanges.NONE;
         }
         if (motorControllers.length > 0) {
-            applyToControllers(neededChanges);
+            applyToControllers(neededChanges, applyForwardLimit, applyReverseLimit);
         }
         return neededChanges;
     }
 
     /**
      * Get the speed limit that should be in effect based on the last applied position.
-     * Will be 1 (100%) if not in school zone.
+     * Will be normal output (or 100%) if not in school zone.
      */
     public double getForwardSpeedLimit() {
         return previouslyLimitedForward ? limit : normalPercent;
     }
     /**
      * Get the speed limit that should be in effect based on the last applied position.
-     * Will be -1 (-100%) if not in school zone and will always be negative.
+     * Will be normal output (or -100%) if not in school zone and will always be negative.
      */
     public double getReverseSpeedLimit() {
         return -1 * (previouslyLimitedReverse ? limit : normalPercent);
