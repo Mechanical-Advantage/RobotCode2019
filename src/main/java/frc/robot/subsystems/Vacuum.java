@@ -29,7 +29,7 @@ public class Vacuum extends Subsystem {
   private static final double vacMotorMaxVoltage = 12.0; // Max pump operating voltage
   private static final boolean vacMotorEnableVoltageCompensation = true;
   private static final double vacMotorOutputLOW = .4; // % output to "hold"
-  private static final double vacMotorOutputHIGH = .9; // % output to draw initial vacuum
+  private static final double vacMotorOutputHIGH = .6; // % output to draw initial vacuum
 
   public enum VacuumLevel {
     OFF, LOW, HIGH;
