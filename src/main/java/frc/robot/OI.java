@@ -14,9 +14,12 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.buttons.Button;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.buttons.Trigger;
+import edu.wpi.first.wpilibj.command.Command;
+import frc.robot.commands.CancelCommand;
 import frc.robot.commands.DisableArm;
 import frc.robot.commands.ExtendSimpleScorer;
 import frc.robot.commands.LockBeaverTail;
+import frc.robot.commands.MoveElbow;
 import frc.robot.commands.ReleaseTail;
 import frc.robot.commands.RetractSimpleScorer;
 import frc.robot.commands.RunPTO;
@@ -27,6 +30,8 @@ import frc.robot.commands.SwitchGear;
 import frc.robot.commands.ToggleGear;
 import frc.robot.commands.VacPickupToggle;
 import frc.robot.commands.VacTail;
+import frc.robot.commands.ZeroArmFinal;
+import frc.robot.commands.ZeroArmInitial;
 import frc.robot.subsystems.DriveTrain.DriveGear;
 import frc.robot.triggers.ButtonNotTrigger;
 import frc.robot.triggers.MultiButtonTrigger;
@@ -64,6 +69,8 @@ public class OI {
 	// until it is finished as determined by it's isFinished method.
 	// button.whenReleased(new ExampleCommand());
 
+	private static final double elbowMoveAmount = 2;
+
 	private boolean joysticksReversed = false;
 
 	// map left stick to ID 0 and right to ID 1 in driver station
@@ -87,6 +94,8 @@ public class OI {
 	private Button lowGear = new JoystickButton(leftController, 4);
 
 	private Button armDisable = new JoystickButton(oiController2, 8);
+	private Button armZeroInitial = new JoystickButton(oiController2, 7);
+	private Button armZeroFinal = new JoystickButton(oiController2, 6);
 
 	private Button armAlt = new JoystickButton(oiController1, 11);
 	private Button armFloor = new JoystickButton(oiController1, 6);
@@ -107,6 +116,9 @@ public class OI {
 	private Trigger armRocketHighCargo = new MultiButtonTrigger(armRocketHigh, armAlt);
 	private Trigger armHome = new ButtonNotTrigger(armHomeBackward, armAlt);
 	private Trigger armLoadingBackward = new MultiButtonTrigger(armHomeBackward, armAlt);
+
+	private Button elbowUp = new JoystickButton(oiController1, 9);
+	private Button elbowDown = new JoystickButton(oiController1, 10);
 
 	private Button vacPickup = new JoystickButton(oiController2, 3);
 
@@ -137,6 +149,12 @@ public class OI {
 		toggleGear.whenPressed(new ToggleGear());
 
 		armDisable.whenPressed(new DisableArm());
+		Command armZeroInitialCommand = new ZeroArmInitial();
+		armZeroInitial.whenPressed(armZeroInitialCommand);
+		armZeroInitial.whenReleased(new CancelCommand(armZeroInitialCommand));
+		Command armZeroFinalCommand = new ZeroArmFinal();
+		armZeroFinal.whenPressed(armZeroFinalCommand);
+		armZeroFinal.whenReleased(new CancelCommand(armZeroFinalCommand));
 
 		armFloorPlate.whenActive(new SetArmPositions(ArmPosition.FLOOR_PLATE));
 		armFloorCargo.whenActive(new SetArmPositions(ArmPosition.FLOOR_CARGO));
@@ -150,6 +168,13 @@ public class OI {
 		armRocketHighCargo.whenActive(new SetArmPositions(ArmPosition.ROCKET_HI_CARGO));
 		armHome.whenActive(new SetArmPositions(ArmPosition.HOME));
 		armLoadingBackward.whenActive(new SetArmPositions(ArmPosition.LOADING_PICKUP_BACKWARDS));
+
+		Command elbowUpCommand = new MoveElbow(elbowMoveAmount);
+		Command elbowDownCommand = new MoveElbow(elbowMoveAmount*-1);
+		elbowUp.whenPressed(elbowUpCommand);
+		elbowUp.whenReleased(new CancelCommand(elbowUpCommand));
+		elbowDown.whenPressed(elbowDownCommand);
+		elbowDown.whenReleased(new CancelCommand(elbowDownCommand));
 
 		vacPickup.whenPressed(new VacPickupToggle());
 

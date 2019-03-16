@@ -171,6 +171,7 @@ public class Arm extends Subsystem {
   private SchoolZone elbowHighSchoolZone;
   private SchoolZone elbowCurrentSchoolZone;
   private boolean elbowEnabled;
+  private boolean elbowLimitsEnabled = true;
   private boolean wristZeroed = false;
   private WristPosition targetWristPosition;
   private SchoolZone wristSchoolZone;
@@ -310,22 +311,18 @@ public class Arm extends Subsystem {
       elbowLeft.configPeakCurrentLimit(elbowPeakCurrentLimit);
       elbowLeft.configPeakCurrentDuration(elbowPeakCurrentLimitDuration);
       elbowLeft.enableCurrentLimit(elbowEnableCurrentLimit);
-      elbowLeft.overrideSoftLimitsEnable(false); // Before zeroing this does not work
       elbowRight.configContinuousCurrentLimit(elbowContinousCurrentLimit);
       elbowRight.configPeakCurrentLimit(elbowPeakCurrentLimit);
       elbowRight.configPeakCurrentDuration(elbowPeakCurrentLimitDuration);
       elbowRight.enableCurrentLimit(elbowEnableCurrentLimit);
-      elbowRight.overrideSoftLimitsEnable(false);
       wrist.configContinuousCurrentLimit(wristContinousCurrentLimit);
       wrist.configPeakCurrentLimit(wristPeakCurrentLimit);
       wrist.configPeakCurrentDuration(wristPeakCurrentLimitDuration);
       wrist.enableCurrentLimit(wristEnableCurrentLimit);
-      wrist.overrideSoftLimitsEnable(false);
       telescope.configContinuousCurrentLimit(telescopeContinousCurrentLimit);
       telescope.configPeakCurrentLimit(telescopePeakCurrentLimit);
       telescope.configPeakCurrentDuration(telescopePeakCurrentLimitDuration);
       telescope.enableCurrentLimit(telescopeEnableCurrentLimit);
-      telescope.overrideSoftLimitsEnable(false);
 
       // enableElbow();
       // enableWrist();
@@ -338,9 +335,9 @@ public class Arm extends Subsystem {
       // Start zeroing the mechanisms
       // Normal control will not work until this is complete (see periodic())
       if (driveToZeroStartup) {
-        elbowLeft.set(ControlMode.PercentOutput, elbowZeroPercent, DemandType.Neutral, 0);
-        wrist.set(ControlMode.PercentOutput, wristZeroPercent);
-        telescope.set(ControlMode.PercentOutput, telescopeZeroPercent);
+        zeroElbow();
+        zeroWrist();
+        zeroTelescope();
       }
     }
   }
@@ -503,12 +500,12 @@ public class Arm extends Subsystem {
   }
 
   private void updateElbowSetpoint() {
-    if (elbowZeroed && (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2)
+    if ((elbowZeroed || !elbowLimitsEnabled) && (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2)
         && elbowEnabled) {
       double target;
-      if (targetElbowPosition < getElbowLowerLimit(targetShoulderRaised)) {
+      if (elbowLimitsEnabled && targetElbowPosition < getElbowLowerLimit(targetShoulderRaised)) {
         target = getElbowLowerLimit(targetShoulderRaised);
-      } else if (targetElbowPosition > getElbowUpperLimit(targetShoulderRaised)) {
+      } else if (elbowLimitsEnabled && targetElbowPosition > getElbowUpperLimit(targetShoulderRaised)) {
         target = getElbowUpperLimit(targetShoulderRaised);
       } else {
         target = targetElbowPosition;
@@ -598,6 +595,7 @@ public class Arm extends Subsystem {
       elbowLeft.setSelectedSensorPosition(newPosition);
       elbowRight.setSelectedSensorPosition(newPosition);
       elbowZeroed = true;
+      enableElbowLimits();
       elbowLeft.overrideSoftLimitsEnable(true);
       elbowRight.overrideSoftLimitsEnable(true);
       updateElbowSetpoint();
@@ -605,13 +603,41 @@ public class Arm extends Subsystem {
     }
   }
 
+  public void zeroElbow() {
+    if (elbowEnabled && (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2)) {
+      elbowZeroed = false;
+      disableElbowLimits();
+      elbowLeft.set(ControlMode.PercentOutput, elbowZeroPercent, DemandType.Neutral, 0);
+    }
+  }
+
+  private void disableElbowLimits() {
+    elbowLimitsEnabled = false;
+    elbowLeft.overrideSoftLimitsEnable(false);
+    elbowRight.overrideSoftLimitsEnable(false);
+  }
+  private void enableElbowLimits() {
+    elbowLimitsEnabled = true;
+    elbowLeft.overrideSoftLimitsEnable(true);
+    elbowRight.overrideSoftLimitsEnable(true);
+  }
+
   public boolean getElbowLimitSwitch() {
     if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
-      // TODO undo this change
-      return true;
-      // return elbowLimitSwitch.get();
+      return elbowLimitSwitch.get();
     } else {
       return false;
+    }
+  }
+
+  public boolean isElbowZeroed() {
+    return elbowZeroed;
+  }
+
+  public void beginElbowZeroSequence() {
+    if (elbowEnabled && (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2)) {
+      disableElbowLimits();
+      elbowLimitsEnabled = false;
     }
   }
 
@@ -702,9 +728,21 @@ public class Arm extends Subsystem {
     }
   }
 
+  public void zeroWrist() {
+    if (wristEnabled && (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2)) {
+      wristZeroed = false;
+      wrist.overrideSoftLimitsEnable(false);
+      wrist.set(ControlMode.PercentOutput, wristZeroPercent);
+    }
+  }
+
   public boolean getWristLimitSwitch() {
     // TODO add this
     return false;
+  }
+
+  public boolean isWristZeroed() {
+    return wristZeroed;
   }
 
   public double getTelescopeCurrent() {
@@ -751,11 +789,23 @@ public class Arm extends Subsystem {
     }
   }
 
+  public void zeroTelescope() {
+    if (telescopeEnabled && (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2)) {
+      telescopeZeroed = false;
+      telescope.overrideSoftLimitsEnable(false);
+      telescope.set(ControlMode.PercentOutput, telescopeZeroPercent);
+    }
+  }
+
   private boolean getTelescopeLimitSensed() {
     if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
       return telescope.getSelectedSensorVelocity() == 0 && telescope.getMotorOutputPercent() < 0;
     }
     return false;
+  }
+
+  public boolean isTelescopeZeroed() {
+    return telescopeZeroed;
   }
 
   public void disableElbow() {
