@@ -67,6 +67,7 @@ public class RobotMap {
   public static int simpleScoringSolenoid1;
   public static int simpleScoringSolenoid2;
   public static int simpleScoringPCM;
+  public static int armLightIntake;
 
   public RobotMap() {
 		switch (robot) {

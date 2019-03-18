@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.commands.DriveWithJoystick.JoystickMode;
+import frc.robot.commands.ArmLightTuning;
 import frc.robot.commands.ArmTuning;
 import frc.robot.commands.DriveDistanceOnHeading;
 import frc.robot.commands.FusedHeadingTest;
@@ -32,6 +33,8 @@ import frc.robot.commands.TurnToAngle;
 import frc.robot.commands.VacPickup;
 import frc.robot.commands.VelocityPIDTuner;
 import frc.robot.subsystems.Arm;
+import frc.robot.subsystems.ArmLight;
+import frc.robot.subsystems.ArmLightIntake;
 import frc.robot.subsystems.BeaverTail;
 import frc.robot.subsystems.CameraSystem;
 import frc.robot.subsystems.DriveTrain;
@@ -53,6 +56,8 @@ public class Robot extends TimedRobot {
 
   public static final DriveTrain driveSubsystem = new DriveTrain();
   public static final Arm arm = new Arm();
+  public static final ArmLight armLight = new ArmLight();
+  public static final ArmLightIntake intake = new ArmLightIntake();
   public static final Vacuum vacuum = new Vacuum();
   public static final BeaverTail beaverTail = new BeaverTail();
   public static final SimpleScorer simpleScorer = new SimpleScorer();
@@ -88,6 +93,7 @@ public class Robot extends TimedRobot {
     if (RobotMap.tuningMode) {
       tuningModeChooser.addOption("Fused Heading Test", new FusedHeadingTest());
       tuningModeChooser.addOption("Arm Tuning", new ArmTuning());
+      tuningModeChooser.addOption("Arm Light Tuning", new ArmLightTuning());
       tuningModeChooser.addOption("Velocity PID Tuner", new VelocityPIDTuner());
       tuningModeChooser.addOption("Turn 90 degrees", new TurnToAngle(90));
       tuningModeChooser.addOption("Drive 5 feet", new DriveDistanceOnHeading(60));
@@ -163,6 +169,7 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     Robot.driveSubsystem.enableBrakeMode(true);
     arm.setToStartingPosition();
+    armLight.setToStartingPosition();
     ahrs.zeroYaw();
     if (autoChooser.getSelected() != null) {
       switch (autoChooser.getSelected()) {

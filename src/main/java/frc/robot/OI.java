@@ -22,6 +22,7 @@ import frc.robot.commands.LockBeaverTail;
 import frc.robot.commands.MoveElbow;
 import frc.robot.commands.ReleaseTail;
 import frc.robot.commands.RetractSimpleScorer;
+import frc.robot.commands.RunArmLightIntake;
 import frc.robot.commands.RunPTO;
 import frc.robot.commands.SetArmPositions;
 import frc.robot.commands.SetArmPositions.ArmPosition;
@@ -70,6 +71,7 @@ public class OI {
 	// button.whenReleased(new ExampleCommand());
 
 	private static final double elbowMoveAmount = 2;
+	private static final double sliderMin = 0.3;
 
 	private boolean joysticksReversed = false;
 
@@ -131,6 +133,8 @@ public class OI {
 	private Button extendSimpleScorer = new JoystickButton(oiController2, 2);
 	private Button retractSimpleScorer = new JoystickButton(oiController2, 1);
 
+	private Button intakeCargo = new JoystickButton(oiController2, 5);
+
 	NetworkTable ledTable;
 	NetworkTableEntry ledEntry;
 
@@ -185,6 +189,8 @@ public class OI {
 
 		extendSimpleScorer.whenPressed(new ExtendSimpleScorer());
 		retractSimpleScorer.whenPressed(new RetractSimpleScorer());
+
+		intakeCargo.whileHeld(new RunArmLightIntake(false));
 
 		ledEntry.setBooleanArray(new boolean[] { false, false, false, false,
 			false, false, false, false, false, false, false, false, false, false, false, false, false });
@@ -254,6 +260,10 @@ public class OI {
 
 	public boolean isTailLocked() {
 		return tailLock.get();
+	}
+
+	public double getSliderLevel() {
+		return Robot.map(oiController2.getRawAxis(1), -1, 1, sliderMin, 1);
 	}
 
 	public void updateLED(OILED led, boolean state) {
