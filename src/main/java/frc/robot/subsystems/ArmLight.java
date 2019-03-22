@@ -66,7 +66,7 @@ public class ArmLight extends Subsystem {
   private static final int elbowPeakCurrentLimit = 50;
   private static final int elbowPeakCurrentLimitDuration = 3000; // ms
 
-  private TalonSRX elbowLeft;
+  private TalonSRX elbow;
   private DoubleSolenoid shoulder1;
   private DoubleSolenoid shoulder2;
   private DigitalInput elbowLimitSwitch;
@@ -81,6 +81,7 @@ public class ArmLight extends Subsystem {
   private boolean elbowEnabled;
   private boolean elbowLimitsEnabled = true;
   private boolean elbowDownEnabledLast = true;
+  private boolean elbowOpenLoop = false;
 
   public ArmLight() {
     if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
@@ -95,36 +96,36 @@ public class ArmLight extends Subsystem {
 
       elbowLimitSwitch = new DigitalInput(RobotMap.armElbowLimitSwitch);
 
-      elbowLeft = new TalonSRX(RobotMap.armElbowLeft);
+      elbow = new TalonSRX(RobotMap.armElbowLeft);
 
       elbowLowSchoolZone = new SchoolZone(elbowSchoolZoneSpeedLimit, elbowPeakOutput, elbowLowSchoolZoneLowerStart,
-          elbowLowSchoolZoneUpperStart, elbowLeft);
+          elbowLowSchoolZoneUpperStart, elbow);
       elbowHighSchoolZone = new SchoolZone(elbowSchoolZoneSpeedLimit, elbowPeakOutput, elbowHighSchoolZoneLowerStart,
-          elbowHighSchoolZoneUpperStart, elbowLeft);
+          elbowHighSchoolZoneUpperStart, elbow);
 
-      elbowLeft.configFactoryDefault();
-      elbowLeft.configSelectedFeedbackSensor(elbowSensorType);
-      elbowLeft.setSensorPhase(elbowSensorLeftReversed);
-      elbowLeft.setInverted(elbowOutputLeftReversed);
-      elbowLeft.setNeutralMode(elbowNeutralMode);
+      elbow.configFactoryDefault();
+      elbow.configSelectedFeedbackSensor(elbowSensorType);
+      elbow.setSensorPhase(elbowSensorLeftReversed);
+      elbow.setInverted(elbowOutputLeftReversed);
+      elbow.setNeutralMode(elbowNeutralMode);
 
       initPID();
 
-      elbowLeft.selectProfileSlot(0, 0); // Use slot 0 for main PID
-      elbowLeft.configForwardSoftLimitEnable(true);
-      elbowLeft.configReverseSoftLimitEnable(true);
-      elbowLeft.configMotionCruiseVelocity(convertElbowPositionToTicks(elbowMotMagCruiseVelocity, false));
-      elbowLeft.configMotionAcceleration(convertElbowPositionToTicks(elbowMotMagAccel, false));
-      elbowLeft.configNominalOutputForward(elbowForwardNominalOutput);
-      elbowLeft.configNominalOutputReverse(elbowReverseNominalOutput);
-      elbowLeft.configAllowableClosedloopError(0, convertElbowPositionToTicks(
+      elbow.selectProfileSlot(0, 0); // Use slot 0 for main PID
+      elbow.configForwardSoftLimitEnable(true);
+      elbow.configReverseSoftLimitEnable(true);
+      elbow.configMotionCruiseVelocity(convertElbowPositionToTicks(elbowMotMagCruiseVelocity, false));
+      elbow.configMotionAcceleration(convertElbowPositionToTicks(elbowMotMagAccel, false));
+      elbow.configNominalOutputForward(elbowForwardNominalOutput);
+      elbow.configNominalOutputReverse(elbowReverseNominalOutput);
+      elbow.configAllowableClosedloopError(0, convertElbowPositionToTicks(
         elbowAllowableError, false));
       elbowLowSchoolZone.setControllerLimits(); // This sets the peak output of the controllers
 
-      elbowLeft.configContinuousCurrentLimit(elbowContinousCurrentLimit);
-      elbowLeft.configPeakCurrentLimit(elbowPeakCurrentLimit);
-      elbowLeft.configPeakCurrentDuration(elbowPeakCurrentLimitDuration);
-      elbowLeft.enableCurrentLimit(elbowEnableCurrentLimit);
+      elbow.configContinuousCurrentLimit(elbowContinousCurrentLimit);
+      elbow.configPeakCurrentLimit(elbowPeakCurrentLimit);
+      elbow.configPeakCurrentDuration(elbowPeakCurrentLimitDuration);
+      elbow.enableCurrentLimit(elbowEnableCurrentLimit);
 
       // enableElbow();
       disableElbow();
@@ -151,7 +152,7 @@ public class ArmLight extends Subsystem {
         setElbowZeroed();
         if (elbowDownEnabledLast) {
           elbowDownEnabledLast = false;
-          elbowLeft.configPeakOutputReverse(0);
+          elbow.configPeakOutputReverse(0);
         }
       } else if (!elbowDownEnabledLast) {
         elbowDownEnabledLast = true;
@@ -172,9 +173,9 @@ public class ArmLight extends Subsystem {
   }
 
   private void initPID() {
-    elbowLeft.config_kP(0, kPElbow.get());
-    elbowLeft.config_kI(0, kIElbow.get());
-    elbowLeft.config_kD(0, kDElbow.get());
+    elbow.config_kP(0, kPElbow.get());
+    elbow.config_kI(0, kIElbow.get());
+    elbow.config_kD(0, kDElbow.get());
   }
 
   /**
@@ -182,7 +183,7 @@ public class ArmLight extends Subsystem {
    */
   public void setToStartingPosition() {
     if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
-      elbowLeft.setSelectedSensorPosition(convertElbowPositionToTicks(elbowStartingPosition, false));
+      elbow.setSelectedSensorPosition(convertElbowPositionToTicks(elbowStartingPosition, false));
       elbowZeroed = true;
     }
   }
@@ -193,7 +194,9 @@ public class ArmLight extends Subsystem {
       updateShoulderSetpoint();
       // May need to update setpoints for other parts here
       updateElbowLimits();
-      updateElbowSetpoint();
+      if (!elbowOpenLoop) {
+        updateElbowSetpoint();
+      }
     }
   }
 
@@ -239,6 +242,7 @@ public class ArmLight extends Subsystem {
    */
   public void setElbowPosition(double position) {
     targetElbowPosition = position;
+    elbowOpenLoop = false;
     updateElbowSetpoint();
   }
 
@@ -247,8 +251,18 @@ public class ArmLight extends Subsystem {
    * 
    * @return The target elbow position in degrees from floor
    */
-  public double getElbowTargetPosition() {
-    return targetElbowPosition;
+  public Double getElbowTargetPosition() {
+    return elbowOpenLoop ? null : targetElbowPosition;
+  }
+
+  /**
+   * Drive the elbow at a percentage instead of position PID
+   */
+  public void driveElbow(double speed) {
+    elbowOpenLoop = true;
+    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+      elbow.set(ControlMode.PercentOutput, speed);
+    }
   }
 
   /**
@@ -259,7 +273,7 @@ public class ArmLight extends Subsystem {
   public double getElbowPosition() {
     if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
       // Average position
-      double position = elbowLeft.getSelectedSensorPosition();
+      double position = elbow.getSelectedSensorPosition();
       position = position / elbowReduction / elbowTicksPerRotation * 360; // Convert to degrees
       if (shoulderRaised) {
         position = position - elbowOffsetHigh;
@@ -283,7 +297,7 @@ public class ArmLight extends Subsystem {
       } else {
         target = targetElbowPosition;
       }
-      elbowLeft.set(elbowUseMotionMagic ? ControlMode.MotionMagic : ControlMode.Position,
+      elbow.set(elbowUseMotionMagic ? ControlMode.MotionMagic : ControlMode.Position,
           convertElbowPositionToTicks(target, true), DemandType.Neutral, 0);
     }
   }
@@ -316,8 +330,8 @@ public class ArmLight extends Subsystem {
       elbowCurrentSchoolZone.setControllerLimits();
       int finalLowerLimit = (int) Math.round(getElbowLowerLimit() / 360 * elbowTicksPerRotation * elbowReduction);
       int finalUpperLimit = (int) Math.round(getElbowUpperLimit() / 360 * elbowTicksPerRotation * elbowReduction);
-      elbowLeft.configForwardSoftLimitThreshold(finalUpperLimit);
-      elbowLeft.configReverseSoftLimitThreshold(finalLowerLimit);
+      elbow.configForwardSoftLimitThreshold(finalUpperLimit);
+      elbow.configReverseSoftLimitThreshold(finalLowerLimit);
     }
   }
 
@@ -362,11 +376,13 @@ public class ArmLight extends Subsystem {
   private void setElbowZeroed() {
     if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
       int newPosition = (int) Math.round(elbowZeroedPosition / 360 * elbowTicksPerRotation * elbowReduction);
-      elbowLeft.setSelectedSensorPosition(newPosition);
+      elbow.setSelectedSensorPosition(newPosition);
       elbowZeroed = true;
       enableElbowLimits();
-      elbowLeft.overrideSoftLimitsEnable(true);
-      updateElbowSetpoint();
+      elbow.overrideSoftLimitsEnable(true);
+      if (!elbowOpenLoop) {
+        updateElbowSetpoint();
+      }
     }
   }
 
@@ -374,17 +390,17 @@ public class ArmLight extends Subsystem {
     if (elbowEnabled && (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2)) {
       elbowZeroed = false;
       disableElbowLimits();
-      elbowLeft.set(ControlMode.PercentOutput, elbowZeroPercent, DemandType.Neutral, 0);
+      elbow.set(ControlMode.PercentOutput, elbowZeroPercent, DemandType.Neutral, 0);
     }
   }
 
   private void disableElbowLimits() {
     elbowLimitsEnabled = false;
-    elbowLeft.overrideSoftLimitsEnable(false);
+    elbow.overrideSoftLimitsEnable(false);
   }
   private void enableElbowLimits() {
     elbowLimitsEnabled = true;
-    elbowLeft.overrideSoftLimitsEnable(true);
+    elbow.overrideSoftLimitsEnable(true);
   }
 
   public boolean getElbowLimitSwitch() {
@@ -409,7 +425,7 @@ public class ArmLight extends Subsystem {
   public void disableElbow() {
     if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
       elbowEnabled = false;
-      elbowLeft.set(ControlMode.Disabled, 0);
+      elbow.set(ControlMode.Disabled, 0);
     }
   }
 
@@ -417,7 +433,9 @@ public class ArmLight extends Subsystem {
     if ((RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) && 
     (Robot.oi == null || Robot.oi.isArmEnabled())) {
       elbowEnabled = true;
-      updateElbowSetpoint();
+      if (!elbowOpenLoop) {
+        updateElbowSetpoint();
+      }
     }
   }
 }
