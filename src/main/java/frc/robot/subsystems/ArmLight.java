@@ -96,7 +96,7 @@ public class ArmLight extends Subsystem {
 
       elbowLimitSwitch = new DigitalInput(RobotMap.armElbowLimitSwitch);
 
-      elbow = new TalonSRX(RobotMap.armElbowLeft);
+      elbow = new TalonSRX(RobotMap.armTelescope);
 
       elbowLowSchoolZone = new SchoolZone(elbowSchoolZoneSpeedLimit, elbowPeakOutput, elbowLowSchoolZoneLowerStart,
           elbowLowSchoolZoneUpperStart, elbow);
