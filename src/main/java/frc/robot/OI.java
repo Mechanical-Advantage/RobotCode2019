@@ -11,6 +11,7 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.Joystick.AxisType;
 import edu.wpi.first.wpilibj.buttons.Button;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.buttons.Trigger;
@@ -19,7 +20,8 @@ import frc.robot.commands.CancelCommand;
 import frc.robot.commands.DisableArm;
 import frc.robot.commands.ExtendSimpleScorer;
 import frc.robot.commands.LockBeaverTail;
-import frc.robot.commands.MoveElbow;
+import frc.robot.commands.ManualArmLightControl;
+import frc.robot.commands.MoveElbowLight;
 import frc.robot.commands.ReleaseTail;
 import frc.robot.commands.RetractSimpleScorer;
 import frc.robot.commands.RunArmLightIntake;
@@ -35,6 +37,7 @@ import frc.robot.commands.ZeroArmFinal;
 import frc.robot.commands.ZeroArmInitial;
 import frc.robot.subsystems.DriveTrain.DriveGear;
 import frc.robot.triggers.ButtonNotTrigger;
+import frc.robot.triggers.JoystickNotCenteredTrigger;
 import frc.robot.triggers.MultiButtonTrigger;
 
 /**
@@ -98,6 +101,7 @@ public class OI {
 	private Button armDisable = new JoystickButton(oiController2, 8);
 	private Button armZeroInitial = new JoystickButton(oiController2, 7);
 	private Button armZeroFinal = new JoystickButton(oiController2, 6);
+	private Trigger armManualTrigger = new JoystickNotCenteredTrigger(oiController1, AxisType.kY, 0.05);
 
 	private Button armAlt = new JoystickButton(oiController1, 11);
 	private Button armFloor = new JoystickButton(oiController1, 6);
@@ -159,6 +163,7 @@ public class OI {
 		Command armZeroFinalCommand = new ZeroArmFinal();
 		armZeroFinal.whenPressed(armZeroFinalCommand);
 		armZeroFinal.whenReleased(new CancelCommand(armZeroFinalCommand));
+		armManualTrigger.whenActive(new ManualArmLightControl());
 
 		armFloorPlate.whenActive(new SetArmPositions(ArmPosition.FLOOR_PLATE));
 		armFloorCargo.whenActive(new SetArmPositions(ArmPosition.FLOOR_CARGO));
@@ -173,8 +178,8 @@ public class OI {
 		armHome.whenActive(new SetArmPositions(ArmPosition.HOME));
 		armLoadingBackward.whenActive(new SetArmPositions(ArmPosition.LOADING_PICKUP_BACKWARDS));
 
-		Command elbowUpCommand = new MoveElbow(elbowMoveAmount);
-		Command elbowDownCommand = new MoveElbow(elbowMoveAmount*-1);
+		Command elbowUpCommand = new MoveElbowLight(elbowMoveAmount);
+		Command elbowDownCommand = new MoveElbowLight(elbowMoveAmount*-1);
 		elbowUp.whenPressed(elbowUpCommand);
 		elbowUp.whenReleased(new CancelCommand(elbowUpCommand));
 		elbowDown.whenPressed(elbowDownCommand);
@@ -264,6 +269,10 @@ public class OI {
 
 	public double getSliderLevel() {
 		return Robot.map(oiController2.getRawAxis(1), -1, 1, sliderMin, 1);
+	}
+
+	public double getOperatorStickY() {
+		return oiController1.getY();
 	}
 
 	public void updateLED(OILED led, boolean state) {

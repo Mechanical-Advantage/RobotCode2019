@@ -257,6 +257,7 @@ public class ArmLight extends Subsystem {
 
   /**
    * Drive the elbow at a percentage instead of position PID
+   * @param speed The percent speed to drive at
    */
   public void driveElbow(double speed) {
     elbowOpenLoop = true;
