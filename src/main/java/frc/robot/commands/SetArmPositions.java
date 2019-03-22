@@ -16,22 +16,22 @@ import frc.robot.subsystems.Arm;
 public class SetArmPositions extends Command {
 
   private static ArmPosition targetArmPosition; // to recieve the next-arm-location instructions (which ultimately comes from operator station)
-  public static double targetTelescope; // how far to extend telescope
-  public static double targetElbow; // angle to set elbow to
-  public static double targetWrist; // angle to set wrist to
+  public static Double targetTelescope; // how far to extend telescope
+  public static Double targetElbow; // angle to set elbow to
+  public static Double targetWrist; // angle to set wrist to
 
   // values for live small-movements (target adjustments)
-  public double moveXBy = 0.0; // this value could be sent from the operator station to move the target location forward by x inches (negative for backward)
-  public double moveYBy = 0.0; // this value could be sent from the operator station to move the target location up by y inches
+  public static double moveXBy = 0.0; // this value could be sent from the operator station to move the target location forward by x inches (negative for backward)
+  public static double moveYBy = 0.0; // this value could be sent from the operator station to move the target location up by y inches
   // should add SET and GET methods to these two variables above so operator can adjust position live
 
   // declare variables to hold the mapped values, initialized with sample values
-  public static boolean targetXFront; // lookup in map if in front of robot (else behind)
-  public static double targetX; // lookup physical measurement in inches in map, measured from edge of bumper
-  public static double targetY; // lookup physical measurement in inches in map, measured up from floor
-  public static double targetNozzleAngle;  // assumes 0 is horizontal, 45 and 90 are angled downward from horizontal 
-  public static double targetXFromElbow;  // x distance from elbow to wrist
-  public static double targetYFromElbow;  // y distance from elbow to wrist 
+  public static boolean targetXFrontValue; // lookup in map if in front of robot (else behind)
+  public static double targetXValue; // lookup physical measurement in inches in map, measured from edge of bumper
+  public static double targetYValue; // lookup physical measurement in inches in map, measured up from floor
+  public static double targetNozzleAngleValue;  // assumes 0 is horizontal, 45 and 90 are angled downward from horizontal 
+  public static double targetXFromElbowValue;  // x distance from elbow to wrist
+  public static double targetYFromElbowValue;  // y distance from elbow to wrist 
   public static boolean shoulderUp; //  is the sholder raised?
   public static double shoulderAngle; // holds shoulder joint angle of rotation
   public static double bicepX; // x component length of bicep [Arm.java makes this NEGATIVE!]
@@ -41,8 +41,8 @@ public class SetArmPositions extends Command {
   private static double arctanElbow;
 
   // Constants in inches
-  public static final double nozzleLength = 5.0;  //nozzle is vacuum piece to suck up games pieces, connected to wrist
-  public static final double shoulderMountHeight = 18.0; //above ground
+  public static final double nozzleLength = 5.0;  //nozzle is vacuum piece to suck up games pieces, connected to wrist  THIS IS AN ESTIMATE NEEDS TO BE MEASURED!
+  public static final double shoulderMountHeight = 18.0; //above ground THIS IS AN ESTIMATE NEEDS TO BE MEASURED!
 
   public enum ArmPosition {
     ROCKET_HI_PLATE, ROCKET_HI_CARGO, ROCKET_MID_PLATE, ROCKET_MID_CARGO, ROCKET_LO_PLATE, ROCKET_LO_CARGO, CARGOSHIP_PLATE, CARGOSHIP_CARGO, FLOOR_PLATE, FLOOR_CARGO, LOADING_PLATE, LOADING_CARGO;
@@ -160,111 +160,111 @@ public class SetArmPositions extends Command {
       return shoulderMap.get(position);
     }
 
-    public static double lookUpWristPosition(ArmPosition position) {
-      return wristMap.get(position);
-    }
-
-    public static double lookUpElbowPosition(ArmPosition position) {
-      return elbowMap.get(position);
-    }
-
-    public static double lookUpTelescopePosition(ArmPosition position) {
-      return telescopeMap.get(position);
-    }
-
-    // new methods below
-    
-    public static boolean lookUpTargetXFront(ArmPosition position) {
-      return targetXFront.get(position);
-    }
-
-    public static double lookUpTargetX(ArmPosition position) {
-      return targetX.get(position);
+    public static double lookUpTargetNozzleAngle(ArmPosition position) {
+      return targetNozzleAngle.get(position);
     }
 
     public static double lookUpTargetY(ArmPosition position) {
       return targetY.get(position);
     }
 
-    public static double lookUpTargetNozzleAngle(ArmPosition position) {
-      return targetNozzleAngle.get(position);
+    public static double lookUpTargetX(ArmPosition position) {
+      return targetX.get(position);
+    }
+
+    public static Boolean lookUpTargetXFront(ArmPosition position) {
+      return targetXFront.get(position);
+    }
+
+    public static double lookUpWristPosition() {
+      // return wristMap.get(position);
+      return targetWrist;
+    }
+
+    public static double lookUpElbowPosition() {
+      // return elbowMap.get(position);
+      return targetElbow;
+    }
+
+    public static double lookUpTelescopePosition() {
+      // return telescopeMap.get(position);
+      return targetTelescope;
+    }
+
+    public static void calculateArmPositions(ArmPosition position) {
+
+      // requires(Robot.arm);
+
+      targetArmPosition = position;
+      
+      // NEW APPROACH:
+        // get the armPosition data here, and use to calculate
+        // put calculations here, and set the correct variables
+        // just read those variables in the lookUp methods
+    
+  
+      //  **** angles are in degrees
+      // positive angles are moving in the counterclockwise direction when viewer is facing the right side of robot; except shoulder angle, which is measured counterclockwise facing the left side of the robot      
+      // ** get from map the desired position of the tip of the nozzle and the shoulder position;
+  
+      // Option 1: read Map values
+        shoulderUp = ArmPosition.shoulderMap.get(targetArmPosition);
+        targetNozzleAngleValue = ArmPosition.targetNozzleAngle.get(position);
+        targetYValue = ArmPosition.targetY.get(position);
+        targetXValue = ArmPosition.targetX.get(position);
+        targetXFrontValue = ArmPosition.targetXFront.get(position);
+    
+        // // Option 2: read Map values via methods
+        Robot.arm.setShoulderRaised(ArmPosition.lookUpShoulderPosition(targetArmPosition)); // 0 = flat; 1 = up
+        shoulderUp = Robot.arm.isShoulderRaised();  // this way plus line above ?
+        shoulderUp = ArmPosition.lookUpShoulderPosition(targetArmPosition);  // or this way? 
+        targetXFrontValue = ArmPosition.lookUpTargetXFront(targetArmPosition); // lookup in map if in front of robot (else behdind)
+        targetXValue = ArmPosition.lookUpTargetX(targetArmPosition) + moveXBy; // lookup physical measurement in inches in map, measured from edge of bumper
+        targetYValue = ArmPosition.lookUpTargetY(targetArmPosition) + moveYBy; // lookup physical measurement in inches in map, measured up from floor
+        targetNozzleAngleValue = ArmPosition.lookUpTargetNozzleAngle(targetArmPosition) ;  // assumes 0 is horizontal, 45 and 90 are angled downward from horizontal 
+        
+        // calculate some trig values [**** MAKE REFERENCES FROM Arm.java public, or move them here?]
+        shoulderAngle = shoulderUp ? 60 : 0 ; // should pull from Robot.arm.elbowOffsetHigh, but it's private now; assumes this is the angle the bicep makes with the floor when shoulder joint is raised
+        bicepX = shoulderUp ? Arm.shoulderDistanceHigh : Arm.shoulderDistanceLow; // NEGATIVE x component of bicep
+        bicepY = shoulderUp ? Math.sin(Math.toRadians(Arm.elbowOffsetHigh)) * Arm.bicepLength : Math.sin(Math.toRadians(Arm.elbowOffsetLow)) * Arm.bicepLength; // y component of bicep
+        nozzleX = Math.cos(targetNozzleAngleValue) * nozzleLength;
+        nozzleY = Math.sin(targetNozzleAngleValue) * nozzleLength;
+        
+        // compute target distance, as measured from elbow point; positive x is toward front of robot; negative x is toward back of robot 
+        if (targetXFrontValue) {
+            targetXFromElbowValue = targetXValue + Arm.framePerimeterFrontFromShoulder - bicepX - nozzleX ;  // x distance from elbow to wrist
+        } else {
+            targetXFromElbowValue = -1 * (targetXValue + Arm.framePerimeterBackFromShoulder + bicepX - nozzleX) ; // negative x for behind robot
+        };
+        targetYFromElbowValue = targetYValue - shoulderMountHeight - bicepY + nozzleY;  // y distance from elbow to wrist
+        
+        arctanElbow = Math.toDegrees(Math.atan(targetYFromElbowValue/targetXFromElbowValue));
+        
+        // compute joint and telescope settings
+        targetTelescope = Math.sqrt(targetYFromElbowValue * targetYFromElbowValue + targetXFromElbowValue * targetXFromElbowValue) - Arm.forearmLength; // how far to extend telescope in inches
+        
+        if (targetXFrontValue) {    // target in front of robot
+            targetElbow = arctanElbow + shoulderAngle ; // in degrees, where 0 = pointing horizontal toward front of robot; if this is wrong, change elbowZeroedPosition in Arm.java
+            targetWrist = 0 - arctanElbow - targetNozzleAngleValue; 
+        } else {    // target behind robot
+            targetElbow = 180  + shoulderAngle - arctanElbow ; // in degrees, where 0 = horizontal in front of robot    
+            targetWrist = arctanElbow + targetNozzleAngleValue;
+        }
+        // ** targetWrist assumes 0 degrees for the wrist is when nozzle is pointed in same direction as forearm -- if that's wrong, adjust WristZeroedPosition in Arm.java !!
+// **** targetWrist:: Eliott will need to change the type in this method to accept an angle value, or we need to change how the wrist position is stored and read
+// **** I don't think we need to call updateWristSetpoint anymore in the function setElbowPosition
+
+ 
+      // if shoulder was not already set above, use this
+      Robot.arm.setShoulderRaised(shoulderUp); // 0 = flat; 1 = up
+  
     }
 
   }
 
 
   public SetArmPositions(ArmPosition position) {
-    super("SetArmPositions");
-		// Use requires() here to declare subsystem dependencies
-		// eg. requires(chassis);
-    requires(Robot.arm);
-
-    targetArmPosition = position;
-    
-    // NEW APPROACH:
-      // get the armPosition data here, and use to calculate
-      // put calculations here, and set the correct variables
-      // just read those variables in the lookUp methods
-  
-
-    //  **** angles are in degrees
-    // positive angles are moving in the counterclockwise direction when viewer is facing the right side of robot; except shoulder angle, which is measured counterclockwise facing the left side of the robot      
-    // ** get from map the desired position of the tip of the nozzle and the shoulder position;
-
-    // Option 1: read Map values
-      shoulderUp = ArmPosition.lookUpShoulderPosition(position);
-      targetNozzleAngle = ArmPosition.targetNozzleAngle.get(position);
-      targetY = ArmPosition.targetY.get(position);
-      targetX = ArmPosition.targetX.get(position);
-      targetXFront = ArmPosition.targetXFront.get(position);
-  
-      // Option 2: read Map values
-      Robot.arm.setShoulderRaised(ArmPosition.lookUpShoulderPosition(targetArmPosition)); // 0 = flat; 1 = up
-      shoulderUp = Robot.arm.isShoulderRaised();  // this way plus line above ?
-      shoulderUp = ArmPosition.lookUpShoulderPosition(targetArmPosition);  // or this way? 
-      targetXFront = ArmPosition.lookUpTargetXFront(targetArmPosition); // lookup in map if in front of robot (else behdind)
-      targetX = ArmPosition.lookUpTargetX(targetArmPosition) + moveXBy; // lookup physical measurement in inches in map, measured from edge of bumper
-      targetY = ArmPosition.lookUpTargetY(targetArmPosition) + moveYBy; // lookup physical measurement in inches in map, measured up from floor
-      targetNozzleAngle = ArmPosition.lookUpTargetNozzleAngle(targetArmPosition) ;  // assumes 0 is horizontal, 45 and 90 are angled downward from horizontal 
-      
-      // calculate some trig values [**** MAKE REFERENCES FROM Arm.java public, or move them here?]
-      shoulderAngle = shoulderUp ? 60 : 0 ; // should pull from Robot.arm.elbowOffsetHigh, but it's private now; assumes this is the angle the bicep makes with the floor when shoulder joint is raised
-      bicepX = shoulderUp ? Arm.shoulderDistanceHigh : Arm.shoulderDistanceLow; // NEGATIVE x component of bicep
-      bicepY = shoulderUp ? Math.sin(Math.toRadians(Arm.elbowOffsetHigh)) * Arm.bicepLength : Math.sin(Math.toRadians(Arm.elbowOffsetLow)) * Arm.bicepLength; // y component of bicep
-      nozzleX = Math.cos(targetNozzleAngle) * nozzleLength;
-      nozzleY = Math.sin(targetNozzleAngle) * nozzleLength;
-      
-      // compute target distance, as measured from elbow point; positive x is toward front of robot; negative x is toward back of robot 
-      if (targetXFront) {
-          targetXFromElbow = targetX + Arm.framePerimeterFrontFromShoulder - bicepX - nozzleX ;  // x distance from elbow to wrist
-      } else {
-          targetXFromElbow = -1 * (targetX + Arm.framePerimeterBackFromShoulder + bicepX - nozzleX) ; // negative x for behind robot
-      };
-      targetYFromElbow = targetY - shoulderMountHeight - bicepY + nozzleY;  // y distance from elbow to wrist
-      
-      arctanElbow = Math.toDegrees(Math.atan(targetYFromElbow/targetXFromElbow));
-      
-      // compute joint and telescope settings
-      targetTelescope = Math.sqrt(targetYFromElbow * targetYFromElbow + targetXFromElbow * targetXFromElbow) - Arm.forearmLength; // how far to extend telescope
-      
-      if (targetXFront) {    // target in front of robot
-          targetElbow = arctanElbow + shoulderAngle ; // in degrees, where 0 = pointing horizontal toward front of robot; if this is wrong, change elbowZeroedPosition in Arm.java
-          targetWrist = 0 - arctanElbow - targetNozzleAngle ; 
-      } else {    // target behind robot
-          targetElbow = 180  + shoulderAngle - arctanElbow ; // in degrees, where 0 = horizontal in front of robot    
-          targetWrist = arctanElbow + targetNozzleAngle ;
-      }
-      // ** targetWrist assumes 0 degrees for the wrist is when nozzle is pointed in same direction as forearm -- if that's wrong, adjust WristZeroedPosition in Arm.java !!
-      
-    // if shoulder was not already set above, use this
-    Robot.arm.setShoulderRaised(shoulderUp); // 0 = flat; 1 = up
-
-    // set other joints and telescope   
-    Robot.arm.setElbowPosition(targetElbow);  // **** I don't think we need to call updateWristSetpoint anymore in this function
-    Robot.arm.setWristPosition(targetWrist); // **** Eliott will need to change the type in this method to accept an angle value, or we need to change how the wrist position is stored and read
-    Robot.arm.setTelescopePosition(targetTelescope); // passes inches of extension into Arm.java
-
-  }
+   }
 
   // Called just before this Command runs the first time
   @Override
