@@ -10,7 +10,9 @@ package frc.robot.commands;
 import java.util.Map;
 
 import edu.wpi.first.wpilibj.command.Command;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
+import frc.robot.RobotMap;
 
 public class SetArmLightPosition extends Command {
 
@@ -34,6 +36,9 @@ public class SetArmLightPosition extends Command {
   // Called repeatedly when this Command is scheduled to run
   @Override
   protected void execute() {
+    if (RobotMap.tuningMode) {
+      SmartDashboard.putNumber("Arm Light Current", Robot.armLight.getElbowCurrent());
+    }
   }
 
   // Make this return true when this Command no longer needs to run execute()

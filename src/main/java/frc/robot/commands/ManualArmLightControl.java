@@ -8,7 +8,9 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.command.Command;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
+import frc.robot.RobotMap;
 
 public class ManualArmLightControl extends Command {
   public ManualArmLightControl() {
@@ -25,6 +27,9 @@ public class ManualArmLightControl extends Command {
   @Override
   protected void execute() {
     Robot.armLight.driveElbow(Robot.oi.getOperatorStickY());
+    if (RobotMap.tuningMode) {
+      SmartDashboard.putNumber("Arm Light Current", Robot.armLight.getElbowCurrent());
+    }
   }
 
   // Make this return true when this Command no longer needs to run execute()

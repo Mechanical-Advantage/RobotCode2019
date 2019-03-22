@@ -423,6 +423,10 @@ public class ArmLight extends Subsystem {
     }
   }
 
+  public double getElbowCurrent() {
+    return elbow.getOutputCurrent();
+  }
+
   public void disableElbow() {
     if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
       elbowEnabled = false;
