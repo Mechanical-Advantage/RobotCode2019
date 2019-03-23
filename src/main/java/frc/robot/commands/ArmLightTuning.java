@@ -10,6 +10,7 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
+import frc.robot.RobotMap;
 
 public class ArmLightTuning extends Command {
   public ArmLightTuning() {
@@ -33,6 +34,9 @@ public class ArmLightTuning extends Command {
       Robot.armLight.enableElbow();
     } else {
       Robot.armLight.disableElbow();
+    }
+    if (RobotMap.tuningMode) {
+      SmartDashboard.putNumber("Arm Light Current", Robot.armLight.getElbowCurrent());
     }
    }
 

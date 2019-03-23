@@ -28,6 +28,6 @@ public class JoystickNotCenteredTrigger extends Trigger {
 
   @Override
   public boolean get() {
-    return Math.abs(stick.getAxis(axis)) <= deadband;
+    return Math.abs(stick.getAxis(axis)) >= deadband;
   }
 }

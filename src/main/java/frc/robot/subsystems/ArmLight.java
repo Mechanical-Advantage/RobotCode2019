@@ -32,14 +32,14 @@ public class ArmLight extends Subsystem {
   private static final boolean elbowSensorLeftReversed = true;
   private static final boolean elbowOutputLeftReversed = false;
   private static final boolean elbowUseMotionMagic = true;
-  private static final double elbowMotMagAccel = 20;
-  private static final double elbowMotMagCruiseVelocity = 70;
-  private static final double elbowZeroedPosition = 0; // deg
+  private static final double elbowMotMagAccel = 1;
+  private static final double elbowMotMagCruiseVelocity = 30;
+  private static final double elbowZeroedPosition = -6; // deg
   private static final double elbowLowerLimitLow = 0;
   private static final double elbowUpperLimitLow = 360;
   private static final double elbowLowerLimitHigh = 0;
   private static final double elbowUpperLimitHigh = 360;
-  private static final double elbowReduction = 1.5 * 33 * 2.72; // Multiplier on setpoints
+  private static final double elbowReduction = 0.5*(60.0/22.0)*(32.0/18.0)*(36.0/24.0)/*cycloidal: 1.5 * 33 * 2.72*/; // Multiplier on setpoints
   private static final double elbowOffsetLow = 0; // Elbow offset applied when shoulder is lowered
   private static final double elbowOffsetHigh = 60; // Elbow offset applied when shoulder is raised
   private static final double elbowSchoolZoneSpeedLimit = 0.2;
@@ -47,13 +47,14 @@ public class ArmLight extends Subsystem {
   private static final double elbowLowSchoolZoneUpperStart = 360;
   private static final double elbowHighSchoolZoneLowerStart = -360;
   private static final double elbowHighSchoolZoneUpperStart = 360;
-  private static final double elbowPeakOutput = 1;
+  private static final double elbowPeakOutput = 0.5;
   private static final double elbowForwardNominalOutput = 0.12;
   private static final double elbowReverseNominalOutput = -0.12;
   private static final double elbowAllowableError = 0; // For primary PID
   private static final double elbowZeroPercent = -0.05;
-  private static final double elbowStartingPosition = 0;
+  private static final double elbowStartingPosition = 39;
   private static final NeutralMode elbowNeutralMode = NeutralMode.Brake;
+  private static final double elbowRampRate = 0; // Seconds from 0 to full
 
   private static final boolean driveToZeroStartup = false;
 
@@ -120,6 +121,7 @@ public class ArmLight extends Subsystem {
       elbow.configNominalOutputReverse(elbowReverseNominalOutput);
       elbow.configAllowableClosedloopError(0, convertElbowPositionToTicks(
         elbowAllowableError, false));
+      elbow.configClosedloopRamp(elbowRampRate);
       elbowLowSchoolZone.setControllerLimits(); // This sets the peak output of the controllers
 
       elbow.configContinuousCurrentLimit(elbowContinousCurrentLimit);
