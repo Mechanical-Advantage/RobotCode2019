@@ -34,8 +34,8 @@ public class ArmLight extends Subsystem {
   private static final boolean elbowUseMotionMagic = true;
   private static final double elbowMotMagAccel = 1;
   private static final double elbowMotMagCruiseVelocity = 30;
-  private static final double elbowZeroedPosition = -6; // deg
-  private static final double elbowLowerLimitLow = -6;
+  private static final double elbowZeroedPosition = -3; // deg
+  private static final double elbowLowerLimitLow = -3;
   private static final double elbowUpperLimitLow = 217;
   private static final double elbowLowerLimitHigh = 0;
   private static final double elbowUpperLimitHigh = 360;
@@ -50,9 +50,9 @@ public class ArmLight extends Subsystem {
   private static final double elbowPeakOutput = 0.5;
   private static final double elbowForwardNominalOutput = 0.12;
   private static final double elbowReverseNominalOutput = -0.12;
-  private static final double elbowAllowableError = 0; // For primary PID
+  private static final double elbowAllowableError = 0.5; // For primary PID
   private static final double elbowZeroPercent = -0.05;
-  public static final double elbowStartingPosition = 39;
+  public static final double elbowStartingPosition = -3;
   private static final NeutralMode elbowNeutralMode = NeutralMode.Brake;
   private static final double elbowRampRate = 0; // Seconds from 0 to full
 
@@ -86,9 +86,9 @@ public class ArmLight extends Subsystem {
 
   public ArmLight() {
     if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
-      kPElbow.setDefault(1.3);
+      kPElbow.setDefault(1.5);
       kIElbow.setDefault(0);
-      kDElbow.setDefault(13);
+      kDElbow.setDefault(0);
 
       shoulder1 = new DoubleSolenoid(RobotMap.armShoulder1PCM, RobotMap.armShoulder1Extend,
           RobotMap.armShoulder1Retract);

@@ -31,6 +31,7 @@ public class SetArmLightPosition extends Command {
   @Override
   protected void initialize() {
     Robot.armLight.setShoulderRaised(position.isShoulderRaised());
+    Robot.armLight.enableElbow();
     Robot.armLight.setElbowPosition(position.getElbowPosition());
   }
 
@@ -71,8 +72,8 @@ public class SetArmLightPosition extends Command {
                                                                                    Map.entry(ROCKET_MID_CARGO, false),
                                                                                    Map.entry(ROCKET_LO_PLATE, false),  
                                                                                    Map.entry(ROCKET_LO_CARGO, false),
-                                                                                   Map.entry(CARGOSHIP_PLATE, true),
-                                                                                   Map.entry(CARGOSHIP_CARGO, true),
+                                                                                   Map.entry(CARGOSHIP_PLATE, false),
+                                                                                   Map.entry(CARGOSHIP_CARGO, false),
                                                                                    Map.entry(FLOOR_CARGO, false),
                                                                                    Map.entry(LOADING_CARGO, false),
                                                                                    Map.entry(LOADING_PLATE, false),
@@ -80,13 +81,13 @@ public class SetArmLightPosition extends Command {
 
     private static final Map<ArmLightPosition,Double> elbowMap = Map.ofEntries(Map.entry(ROCKET_MID_PLATE, 110.0),
                                                                                Map.entry(ROCKET_MID_CARGO, 105.0),
-                                                                               Map.entry(ROCKET_LO_PLATE, 170.0),
-                                                                               Map.entry(ROCKET_LO_CARGO, 170.0),
-                                                                               Map.entry(CARGOSHIP_PLATE, 125.0),
-                                                                               Map.entry(CARGOSHIP_CARGO, 125.0),
+                                                                               Map.entry(ROCKET_LO_PLATE, 155.0), // good
+                                                                               Map.entry(ROCKET_LO_CARGO, 150.0), // good
+                                                                               Map.entry(CARGOSHIP_PLATE, 155.0), // good
+                                                                               Map.entry(CARGOSHIP_CARGO, 105.0),
                                                                                Map.entry(FLOOR_CARGO, -60.0),
-                                                                               Map.entry(LOADING_CARGO, -45.0),
-                                                                               Map.entry(LOADING_PLATE, -45.0),
+                                                                               Map.entry(LOADING_CARGO, 126.0), // good
+                                                                               Map.entry(LOADING_PLATE, 163.0), // good
                                                                                Map.entry(HOME, ArmLight.elbowStartingPosition));
 
     public Boolean isShoulderRaised() {
