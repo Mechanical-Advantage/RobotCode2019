@@ -35,16 +35,16 @@ public class ArmLight extends Subsystem {
   private static final double elbowMotMagAccel = 1;
   private static final double elbowMotMagCruiseVelocity = 30;
   private static final double elbowZeroedPosition = -6; // deg
-  private static final double elbowLowerLimitLow = 0;
-  private static final double elbowUpperLimitLow = 360;
+  private static final double elbowLowerLimitLow = -6;
+  private static final double elbowUpperLimitLow = 217;
   private static final double elbowLowerLimitHigh = 0;
   private static final double elbowUpperLimitHigh = 360;
-  private static final double elbowReduction = 0.5*(60.0/22.0)*(32.0/18.0)*(36.0/24.0)/*cycloidal: 1.5 * 33 * 2.72*/; // Multiplier on setpoints
+  private static final double elbowReduction = 4.1801254204035874439461883408072/*tele theory (wrong)0.5*(60.0/22.0)*(32.0/18.0)*(36.0/24.0)*//*cycloidal: 1.5 * 33 * 2.72*/; // Multiplier on setpoints
   private static final double elbowOffsetLow = 0; // Elbow offset applied when shoulder is lowered
   private static final double elbowOffsetHigh = 60; // Elbow offset applied when shoulder is raised
   private static final double elbowSchoolZoneSpeedLimit = 0.2;
-  private static final double elbowLowSchoolZoneLowerStart = -360;
-  private static final double elbowLowSchoolZoneUpperStart = 360;
+  private static final double elbowLowSchoolZoneLowerStart = 8;
+  private static final double elbowLowSchoolZoneUpperStart = 205;
   private static final double elbowHighSchoolZoneLowerStart = -360;
   private static final double elbowHighSchoolZoneUpperStart = 360;
   private static final double elbowPeakOutput = 0.5;
@@ -52,7 +52,7 @@ public class ArmLight extends Subsystem {
   private static final double elbowReverseNominalOutput = -0.12;
   private static final double elbowAllowableError = 0; // For primary PID
   private static final double elbowZeroPercent = -0.05;
-  private static final double elbowStartingPosition = 39;
+  public static final double elbowStartingPosition = 39;
   private static final NeutralMode elbowNeutralMode = NeutralMode.Brake;
   private static final double elbowRampRate = 0; // Seconds from 0 to full
 
