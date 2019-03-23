@@ -21,7 +21,6 @@ public class ManualArmLightControl extends Command {
   // Called just before this Command runs the first time
   @Override
   protected void initialize() {
-    System.out.println("ManualArmLightControl init");
   }
 
   // Called repeatedly when this Command is scheduled to run
@@ -42,7 +41,6 @@ public class ManualArmLightControl extends Command {
   // Called once after isFinished returns true
   @Override
   protected void end() {
-    System.out.println("ManualArmLightControl init");
     Robot.armLight.disableElbow();
   }
 
