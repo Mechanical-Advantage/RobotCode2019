@@ -28,7 +28,8 @@ public class MoveElbowLight extends Command {
   // Called just before this Command runs the first time
   @Override
   protected void initialize() {
-    Robot.armLight.setElbowPosition(Robot.armLight.getElbowPosition() + moveAmount);
+    Robot.armLight.enableElbow();
+    Robot.armLight.setElbowPosition(Robot.armLight.getElbowTargetPosition() + moveAmount);
   }
 
   // Called repeatedly when this Command is scheduled to run
