@@ -44,7 +44,7 @@ public class SetArmPositions extends Command {
   public static boolean usingArmHeavy = true;  //set to false for arm light.
 
   // Constants in inches
-  public static final double nozzleLength = 5.0;  //nozzle is vacuum piece to suck up games pieces, connected to wrist  THIS IS AN ESTIMATE NEEDS TO BE MEASURED!
+  public static final double nozzleLength = 4.0;  //nozzle is vacuum piece to suck up games pieces, connected to wrist  THIS IS AN ESTIMATE NEEDS TO BE MEASURED!
   public static final double shoulderMountHeight = 18.0; //above ground THIS IS AN ESTIMATE NEEDS TO BE MEASURED!
   public static final double forearmLengthNew = 30.0; 
 
@@ -58,7 +58,7 @@ public class SetArmPositions extends Command {
                                                                       Map.entry(ROCKET_MID_CARGO, true),
                                                                       Map.entry(ROCKET_LO_PLATE, true),  
                                                                       Map.entry(ROCKET_LO_CARGO, true),
-                                                                      Map.entry(CARGOSHIP_PLATE, true),
+                                                                      Map.entry(CARGOSHIP_PLATE, false),
                                                                       Map.entry(CARGOSHIP_CARGO, true),
                                                                       Map.entry(FLOOR_PLATE, false),
                                                                       Map.entry(FLOOR_CARGO, false),
@@ -164,11 +164,11 @@ public class SetArmPositions extends Command {
                                                                   Map.entry(ROCKET_MID_CARGO, 52.5),
                                                                   Map.entry(ROCKET_LO_PLATE, 12.5),
                                                                   Map.entry(ROCKET_LO_CARGO, 22.5),
-                                                                  Map.entry(CARGOSHIP_PLATE, 17.0),
-                                                                  Map.entry(CARGOSHIP_CARGO, 36.0),
+                                                                  Map.entry(CARGOSHIP_PLATE, 15.0),
+                                                                  Map.entry(CARGOSHIP_CARGO, 33.0),
                                                                   Map.entry(FLOOR_PLATE, 0.5),
                                                                   Map.entry(FLOOR_CARGO, 5.53),
-                                                                  Map.entry(LOADING_PLATE, 5.53),
+                                                                  Map.entry(LOADING_PLATE, 2.53),
                                                                   Map.entry(LOADING_CARGO, -42.0));
 
                                                             
