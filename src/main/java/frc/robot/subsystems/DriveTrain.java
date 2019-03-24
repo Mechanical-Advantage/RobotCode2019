@@ -44,6 +44,7 @@ public class DriveTrain extends Subsystem {
 	 * 0: Velocity Low Gear
 	 * 1: Velocity High Gear
 	 * 2: Motion profiling/magic
+	 * 3: PTO Position
 	 * Low gear used on single speed robots
 	 */
 		
@@ -63,6 +64,11 @@ public class DriveTrain extends Subsystem {
 	private double kFMP;
 	private int kIZoneMP;
 	private int kAllowableErrorDistance; // ticks sent to talon as allowable error for distance close loop
+	private double kPPTO;
+	private double kIPTO;
+	private double kDPTO;
+	private int kIZonePTO;
+	private boolean PTOUseMotMaj;
 	
 	private static final double sniperMode = 0.25; // multiplied by velocity in sniper mode
 	private static final boolean sniperModeLocked = false; // when set, sniper mode uses value above, when unset, value comes from throttle control on joystick
@@ -190,6 +196,11 @@ public class DriveTrain extends Subsystem {
 				kFLow = 0.23; // Calculated 0.213125
 				nominalOutputVoltage = 0;
 				hasPTO = true;
+				kPPTO = 0.5;
+				kIPTO = 0;
+				kDPTO = 0;
+				kIZonePTO = 0;
+				PTOUseMotMaj = false;
 				break;
 			default:
 				break;
@@ -204,6 +215,7 @@ public class DriveTrain extends Subsystem {
 			setPID(1, kPHigh, kIHigh, kDHigh, kFHigh, kIZoneHigh);
 			switchGear(DriveGear.HIGH);
 		}
+		setPID(3, kPPTO, kIPTO, kDPTO, 0, kIZonePTO); // Pos. control does not use kF
 		setPID(2, kPMP, kIMP, kDMP, kFMP, kIZoneMP);
 		setPID(0, kPLow, kILow, kDLow, kFLow, kIZoneLow);
 		rightTalonMaster.configSelectedFeedbackSensor(encoderType, 0, configTimeout);
@@ -474,6 +486,8 @@ public class DriveTrain extends Subsystem {
 			slot = 0;
 		} else if (currentControlMode == DriveControlMode.STANDARD_DRIVE && currentGear == DriveGear.HIGH) {
 			slot = 1;
+		} else if (currentControlMode == DriveControlMode.PTO) {
+			slot = 3;
 		} else {
 			slot = 2;
 		}
@@ -596,6 +610,22 @@ public class DriveTrain extends Subsystem {
 		} else if (!Robot.oi.getDriveEnabled()) {
 			leftTalonMaster.neutralOutput();
 			rightTalonMaster.neutralOutput();	
+		}
+	}
+
+	/**
+	 * Drive the PTO to a position
+	 * @param rotations Rotations of the main drive to move
+	 */
+	public void drivePTOToPosition(double rotations) {
+		if (Robot.oi.getDriveEnabled() && currentControlMode == DriveControlMode.PTO) {
+			leftTalonMaster.set(PTOUseMotMaj ? ControlMode.MotionMagic : ControlMode.Position, 
+				(getRotationsLeft() + rotations) * ticksPerRotation);
+			rightTalonMaster.set(PTOUseMotMaj ? ControlMode.MotionMagic : ControlMode.Position, 
+				(getRotationsRight() + rotations) * ticksPerRotation);
+		} else  if (!Robot.oi.getDriveEnabled()) {
+			leftTalonMaster.neutralOutput();
+			rightTalonMaster.neutralOutput();
 		}
 	}
     

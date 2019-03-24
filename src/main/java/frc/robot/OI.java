@@ -20,6 +20,7 @@ import frc.robot.commands.CancelCommand;
 import frc.robot.commands.DisableArm;
 import frc.robot.commands.EjectCargo;
 import frc.robot.commands.LockBeaverTail;
+import frc.robot.commands.LowerPTO;
 import frc.robot.commands.ManualArmLightControl;
 import frc.robot.commands.MoveElbowLight;
 import frc.robot.commands.ReleaseTail;
@@ -152,6 +153,7 @@ public class OI {
 		new JoystickButton(rightController, 10));
 	private Button tailVac = new JoystickButton(oiController2, 4);
 	private Button runPTO = new JoystickButton(rightController, 11);
+	private Button lowerPTO = new JoystickButton(leftController, 6);
 
 	// private Button extendSimpleScorer = new JoystickButton(oiController2, 2); // Disabled so eject cargo can use button
 	private Button retractSimpleScorer = new JoystickButton(oiController2, 1);
@@ -224,6 +226,7 @@ public class OI {
 		releaseTail.whenActive(new ReleaseTail());
 		tailVac.toggleWhenPressed(new VacTail());
 		runPTO.toggleWhenPressed(new RunPTO());
+		lowerPTO.whileHeld(new LowerPTO());
 
 		// extendSimpleScorer.whenPressed(new ExtendSimpleScorer()); // Disabled, see comment on var definition
 		retractSimpleScorer.whenPressed(new RetractSimpleScorer());
