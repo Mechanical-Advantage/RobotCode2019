@@ -90,7 +90,7 @@ public class SetArmLightPosition extends Command {
                                                                                Map.entry(LOADING_CARGO, 126.0), // good
                                                                                Map.entry(LOADING_PLATE, 163.0), // good
                                                                                Map.entry(HOME, ArmLight.elbowStartingPosition),
-                                                                               Map.entry(CAMERA, 11.0));
+                                                                               Map.entry(CAMERA, 19.0));
 
     public Boolean isShoulderRaised() {
       return shoulderMap.get(this);
