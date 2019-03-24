@@ -66,7 +66,7 @@ public class SetArmLightPosition extends Command {
   // This is based on the ArmPosition enum from SetArmPositions
   public enum ArmLightPosition {
     ROCKET_MID_PLATE, ROCKET_MID_CARGO, ROCKET_LO_PLATE, ROCKET_LO_CARGO, CARGOSHIP_PLATE, CARGOSHIP_CARGO,
-    FLOOR_CARGO, LOADING_CARGO, LOADING_PLATE, HOME;
+    FLOOR_CARGO, LOADING_CARGO, LOADING_PLATE, HOME, CAMERA;
 
     private static final Map<ArmLightPosition,Boolean> shoulderMap = Map.ofEntries(Map.entry(ROCKET_MID_PLATE, false),
                                                                                    Map.entry(ROCKET_MID_CARGO, false),
@@ -77,7 +77,8 @@ public class SetArmLightPosition extends Command {
                                                                                    Map.entry(FLOOR_CARGO, false),
                                                                                    Map.entry(LOADING_CARGO, false),
                                                                                    Map.entry(LOADING_PLATE, false),
-                                                                                   Map.entry(HOME, false));
+                                                                                   Map.entry(HOME, false),
+                                                                                   Map.entry(CAMERA, false));
 
     private static final Map<ArmLightPosition,Double> elbowMap = Map.ofEntries(Map.entry(ROCKET_MID_PLATE, 110.0),
                                                                                Map.entry(ROCKET_MID_CARGO, 105.0),
@@ -88,7 +89,8 @@ public class SetArmLightPosition extends Command {
                                                                                Map.entry(FLOOR_CARGO, -60.0),
                                                                                Map.entry(LOADING_CARGO, 126.0), // good
                                                                                Map.entry(LOADING_PLATE, 163.0), // good
-                                                                               Map.entry(HOME, ArmLight.elbowStartingPosition));
+                                                                               Map.entry(HOME, ArmLight.elbowStartingPosition),
+                                                                               Map.entry(CAMERA, 11.0));
 
     public Boolean isShoulderRaised() {
       return shoulderMap.get(this);

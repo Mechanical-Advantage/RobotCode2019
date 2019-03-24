@@ -18,7 +18,7 @@ import edu.wpi.first.wpilibj.buttons.Trigger;
 import edu.wpi.first.wpilibj.command.Command;
 import frc.robot.commands.CancelCommand;
 import frc.robot.commands.DisableArm;
-import frc.robot.commands.ExtendSimpleScorer;
+import frc.robot.commands.EjectCargo;
 import frc.robot.commands.LockBeaverTail;
 import frc.robot.commands.ManualArmLightControl;
 import frc.robot.commands.MoveElbowLight;
@@ -129,7 +129,7 @@ public class OI {
 	private Button armCargoShip = new JoystickButton(oiController1, 5);
 	private Button armRocketLow = new JoystickButton(oiController1, 4);
 	private Button armRocketMid = new JoystickButton(oiController1, 3);
-	// private Button armRocketHigh = new JoystickButton(oiController1, 2); // Rocket high is unused because arm light cannot reach it
+	private Button armCamera = new JoystickButton(oiController1, 2); // Rocket high is unused because arm light cannot reach it
 	private Button armHome = new JoystickButton(oiController1, 1);
 	private Trigger armLoadingPlate = new ButtonNotTrigger(armLoading, armAlt);
 	private Trigger armLoadingCargo = new MultiButtonTrigger(armLoading, armAlt);
@@ -153,10 +153,11 @@ public class OI {
 	private Button tailVac = new JoystickButton(oiController2, 4);
 	private Button runPTO = new JoystickButton(rightController, 11);
 
-	private Button extendSimpleScorer = new JoystickButton(oiController2, 2);
+	// private Button extendSimpleScorer = new JoystickButton(oiController2, 2); // Disabled so eject cargo can use button
 	private Button retractSimpleScorer = new JoystickButton(oiController2, 1);
 
 	private Button intakeCargo = new JoystickButton(oiController2, 5);
+	private Button ejectCargo = new JoystickButton(oiController2, 2);
 
 	NetworkTable ledTable;
 	NetworkTableEntry ledEntry;
@@ -208,6 +209,7 @@ public class OI {
 		armRocketLowPlate.whenActive(new SetArmLightPosition(ArmLightPosition.ROCKET_LO_PLATE));
 		armRocketMidCargo.whenActive(new SetArmLightPosition(ArmLightPosition.ROCKET_MID_CARGO));
 		armRocketMidPlate.whenActive(new SetArmLightPosition(ArmLightPosition.ROCKET_MID_PLATE));
+		armCamera.whenActive(new SetArmLightPosition(ArmLightPosition.CAMERA));
 
 		Command elbowUpCommand = new MoveElbowLight(elbowMoveAmount);
 		Command elbowDownCommand = new MoveElbowLight(elbowMoveAmount*-1);
@@ -223,10 +225,12 @@ public class OI {
 		tailVac.toggleWhenPressed(new VacTail());
 		runPTO.toggleWhenPressed(new RunPTO());
 
-		extendSimpleScorer.whenPressed(new ExtendSimpleScorer());
+		// extendSimpleScorer.whenPressed(new ExtendSimpleScorer()); // Disabled, see comment on var definition
 		retractSimpleScorer.whenPressed(new RetractSimpleScorer());
 
 		intakeCargo.whileHeld(new RunArmLightIntake(false));
+		ejectCargo.whileHeld(new EjectCargo());
+		ejectCargo.whenReleased(new RetractSimpleScorer());
 
 		ledEntry.setBooleanArray(new boolean[] { false, false, false, false,
 			false, false, false, false, false, false, false, false, false, false, false, false, false });
