@@ -31,4 +31,14 @@ public class LockBeaverTail extends Command {
   protected boolean isFinished() {
     return false;
   }
+
+  @Override
+  protected void end() {
+    Robot.driveSubsystem.resetPTODriveStart();
+  }
+
+  @Override
+  protected void interrupted() {
+    end();
+  }
 }

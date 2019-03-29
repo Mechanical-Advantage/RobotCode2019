@@ -102,6 +102,8 @@ public class DriveTrain extends Subsystem {
 	private boolean dualGear = false;
 	private boolean hasPTO = false;
 	private DoubleSolenoid pto;
+	private Double PTOLeftStartingPosition;
+	private Double PTORightStartingPosition;
 //	private ProcessTalonMotionProfileBuffer processTalonMotionProfile = new ProcessTalonMotionProfileBuffer();
 //	private Notifier processMotionProfileNotifier = new Notifier(processTalonMotionProfile);
 //	private double motionProfileNotifierUpdateTime;
@@ -619,14 +621,28 @@ public class DriveTrain extends Subsystem {
 	 */
 	public void drivePTOToPosition(double rotations) {
 		if (Robot.oi.getDriveEnabled() && currentControlMode == DriveControlMode.PTO) {
+			if (PTOLeftStartingPosition == null || PTORightStartingPosition == null) {
+				resetPTODriveStart();
+			}
 			leftTalonMaster.set(PTOUseMotMaj ? ControlMode.MotionMagic : ControlMode.Position, 
-				(getRotationsLeft() + rotations) * ticksPerRotation);
+				(PTOLeftStartingPosition + rotations) * ticksPerRotation);
+			System.out.println("L At: " + getRotationsLeft() + " Commanding: " + (PTOLeftStartingPosition + rotations));
 			rightTalonMaster.set(PTOUseMotMaj ? ControlMode.MotionMagic : ControlMode.Position, 
-				(getRotationsRight() + rotations) * ticksPerRotation);
+				(PTORightStartingPosition + rotations) * ticksPerRotation);
+			System.out.println("R At: " + getRotationsRight() + " Commanding: " + (PTORightStartingPosition + rotations));
 		} else  if (!Robot.oi.getDriveEnabled()) {
 			leftTalonMaster.neutralOutput();
 			rightTalonMaster.neutralOutput();
 		}
+	}
+
+	/**
+	 * Resets the point from which PTO drives are relative to
+	 */
+	public void resetPTODriveStart() {
+		System.out.println("Resetting PTO start positions to L: " + getRotationsLeft() + " R: " + getRotationsRight());
+		PTOLeftStartingPosition = getRotationsLeft();
+		PTORightStartingPosition = getRotationsRight();
 	}
     
     
