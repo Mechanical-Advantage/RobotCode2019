@@ -222,7 +222,7 @@ public class OI {
 
 		vacPickup.whenPressed(new VacPickupToggle());
 
-		tailLock.whenPressed(new LockBeaverTail());
+		tailLock.whileHeld(new LockBeaverTail());
 		releaseTail.whenActive(new ReleaseTail());
 		tailVac.toggleWhenPressed(new VacTail());
 		runPTO.toggleWhenPressed(new RunPTO());

@@ -7,22 +7,28 @@
 
 package frc.robot.commands;
 
-import edu.wpi.first.wpilibj.command.InstantCommand;
+import edu.wpi.first.wpilibj.command.Command;
 import frc.robot.Robot;
 
 /**
  * Locks the beaver tail release pistons
  */
-public class LockBeaverTail extends InstantCommand {
+public class LockBeaverTail extends Command {
 
   public LockBeaverTail() {
     super();
     requires(Robot.beaverTail);
+    this.setInterruptible(false); // Block commands that want the beaver tail from initializing
   }
 
   // Called once when the command executes
   @Override
   protected void initialize() {
     Robot.beaverTail.lockTail();
+  }
+
+  @Override
+  protected boolean isFinished() {
+    return false;
   }
 }

@@ -13,16 +13,18 @@ import frc.robot.OI.OILED;
 
 public class LowerPTO extends Command {
 
-  private static final double rotations = -15.5;
+  private static final double rotations = -12.45;
 
   public LowerPTO() {
     super();
     requires(Robot.driveSubsystem);
+    requires(Robot.beaverTail);
   }
 
   // Called just before this Command runs the first time
   @Override
   protected void initialize() {
+    Robot.beaverTail.releaseTail();
     Robot.driveSubsystem.enablePTO();
     Robot.driveSubsystem.drivePTOToPosition(rotations);
     Robot.oi.updateLED(OILED.MISC_1, true);
