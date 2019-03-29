@@ -39,6 +39,10 @@ import frc.robot.subsystems.SimpleScorer;
 import frc.robot.subsystems.VisionData;
 import frc.robot.subsystems.Vacuum;
 
+//To whom it concerns: below are the imports I want to add to Robot.java to make this where Botlog components are added. For convenience.
+import edu.wpi.first.wpilibj.DriverStation;
+import badlog.lib.BadLog;
+import badlog.lib.DataInferMode;
 /**
  * The VM is configured to automatically run this class, and to call the
  * functions corresponding to each mode, as described in the TimedRobot
@@ -116,8 +120,17 @@ public class Robot extends TimedRobot {
       generateCommand.setRunWhenDisabled(true);
       generateCommand.start();
     }
-    Botlog.createBadlog(runBotlog);
-    //initiates BadLog (and helpful time measurements), the tracking code that provides data from matches based on driver input. Must be called last.
+    //initiates BadLog (and helpful time measurements), the tracking code that provides data from matches based on driver input. Should be called after most all initialization.
+    Botlog.createBadlog(runBotlog);//I would hope most outside Badlog things are created here
+    Botlog.makeValue("Match_Number", "" + DriverStation.getInstance().getMatchNumber());
+    Botlog.makeTopic("Match_Time", "s", () -> DriverStation.getInstance().getMatchTime());
+    Botlog.makeTopicSub("Left_Joystick", BadLog.UNITLESS, DataInferMode.DEFAULT, "", () -> Robot.oi.getLeftAxis(), true, 250, false, false, 0);
+    Botlog.makeTopicSub("Right_Joystick", BadLog.UNITLESS, DataInferMode.DEFAULT, "", () -> Robot.oi.getRightAxis(), true, 250, false, false, 0);
+    Botlog.makeTopicSub("Button_1", BadLog.UNITLESS, DataInferMode.DEFAULT, "", () -> Robot.oi.getSniperMode(), false, 250, false, false, 0);
+    Botlog.makeTopicSub("Button_2", BadLog.UNITLESS, DataInferMode.DEFAULT, "", () -> Robot.oi.getDriveEnabled(), true, 250, false, false, 0);
+    
+
+
     Compressor c = new Compressor();
   }
 

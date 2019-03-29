@@ -45,15 +45,15 @@ public class Botlog{// Wrapper Class to do all things Badlog. If this creates er
         System.out.println("Sent to Roborio");
       }
         if(runBotlog){
-          //Premade values, topics, and subscribers
+          //Premade values and topics
           //Field
           BadLog.createValue("Match_Number", "" + DriverStation.getInstance().getMatchNumber());//example Value: key value-string pair known at init. Aka one time check.
           BadLog.createTopic("Match_Time", "s", () -> DriverStation.getInstance().getMatchTime()); //example Topic: constant stream of numeric data; what we're tracking
-          //Joysticks/Buttons
-          BadLog.createTopicSubscriber("Left_Joystick", BadLog.UNITLESS, DataInferMode.DEFAULT, ""); //example Subscriber: like a topic, but easier for tracking station input.
-          BadLog.createTopicSubscriber("Right_Joystick", BadLog.UNITLESS, DataInferMode.DEFAULT, "");
-          BadLog.createTopicSubscriber("Button_1", BadLog.UNITLESS, DataInferMode.DEFAULT, "");
-          BadLog.createTopicSubscriber("Button_2", BadLog.UNITLESS, DataInferMode.DEFAULT, "");
+          //Joysticks/Buttons, should be moved to outside vals, topics, and top subs.
+            //BadLog.createTopicSubscriber("Left_Joystick", BadLog.UNITLESS, DataInferMode.DEFAULT, ""); //example Subscriber: like a topic, but easier for tracking station input.
+            //BadLog.createTopicSubscriber("Right_Joystick", BadLog.UNITLESS, DataInferMode.DEFAULT, "");
+            //BadLog.createTopicSubscriber("Button_1", BadLog.UNITLESS, DataInferMode.DEFAULT, "");
+            //BadLog.createTopicSubscriber("Button_2", BadLog.UNITLESS, DataInferMode.DEFAULT, "");
 
           //outside values, topics, and subscribers made here. Requires that Robot.java is caled after 
           //EVERY class is run to add every terms.
@@ -65,26 +65,26 @@ public class Botlog{// Wrapper Class to do all things Badlog. If this creates er
     }
 
     public static void runPeriodic(){//caled in robot.periodic often, runs slower when disabled.
-      double sniper;
-      if(Robot.oi.getSniperMode()){
-        sniper = 1.0;
-      } else {
-        sniper = 0.0;
-      }
+      //double sniper;
+      //if(Robot.oi.getSniperMode()){
+      //  sniper = 1.0;
+      //} else {
+      //  sniper = 0.0;
+      //}
 
-      double canDrive;
-      if(Robot.oi.getDriveEnabled()){
-        canDrive = 1.0;
-      } else {
-        canDrive = 0.0;
-      }
+      //double canDrive;
+      //if(Robot.oi.getDriveEnabled()){
+      //  canDrive = 1.0;
+      //} else {
+      //  canDrive = 0.0;
+      //}
       long currentMS = System.currentTimeMillis();
       if (!DriverStation.getInstance().isDisabled() || (currentMS - lastLog) >= defaultUpdate) {//makes code run slower when disabled; 1/4 the rate when enabled.
         lastLog = currentMS;
-        BadLog.publish("Left_Joystick", Robot.oi.getLeftAxis());
-        BadLog.publish("Right_Joystick", Robot.oi.getRightAxis());
-        BadLog.publish("Button_1", sniper);
-        BadLog.publish("Button_2", canDrive);
+        //BadLog.publish("Left_Joystick", Robot.oi.getLeftAxis());
+        //BadLog.publish("Right_Joystick", Robot.oi.getRightAxis());
+        //BadLog.publish("Button_1", sniper);
+        //BadLog.publish("Button_2", canDrive);
         //publishes the topics that were not manually created in Botlog
         publishSubs(currentMS - lastLog);
         log.updateTopics(); 
@@ -127,6 +127,13 @@ public class Botlog{// Wrapper Class to do all things Badlog. If this creates er
     public static void createTopSubs(){
       for (int x = 0; x < topSubs.size(); x++) {
         BadLog.createTopicSubscriber(topSubs.get(x).getName(), topSubs.get(x).getUnit(), topSubs.get(x).getInfer(), topSubs.get(x).getArg());
+        //Since I myself forgot what half this is, here are defininitions:
+        //name, unit, infer (data infer mode), and args are self explanitory
+        //The source is a supplier that is basically where Botlog gets its info from
+        //isDouble is a boolean, true means this is a double value, false makes it boolean
+        //time is a delay in miliseconds for when the Botlog should publish. If it is higher than the default update time (250ms as of now), this will only change update speed when the robot is enabled.
+        //largo and smol (great names, I know) are booleans for when values the Botlog tracks will publish. set one or the other to true to track >= or <=.
+        //"when" is the value for largo and smol to update by. A largo when value of 2 will require the value to be >= 2, vice versa with smol.
       }
     }
 
