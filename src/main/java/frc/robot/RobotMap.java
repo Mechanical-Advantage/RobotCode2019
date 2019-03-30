@@ -145,8 +145,8 @@ public class RobotMap {
         simpleScoringPCM = 0;
         simpleScoringSolenoid1 = 7;
         simpleScoringSolenoid2 = 5;
-        simpleScoringIntake = 11;
-        armLightIntake = 10;
+        simpleScoringIntake = 10;
+        armLightIntake = 11;
         break;
       default:
         break;
