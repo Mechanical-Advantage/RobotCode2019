@@ -38,7 +38,7 @@ public class SimpleScorer extends Subsystem {
     if (available()) {
       extendSolenoid = new DoubleSolenoid(RobotMap.simpleScoringPCM, 
         RobotMap.simpleScoringSolenoid1, RobotMap.simpleScoringSolenoid2);
-        intake = new TalonSRX(RobotMap.armLightIntake);
+        intake = new TalonSRX(RobotMap.simpleScoringIntake);
 
         intake.configFactoryDefault();
         intake.setInverted(intakeReversed);

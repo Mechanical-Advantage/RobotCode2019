@@ -67,6 +67,7 @@ public class RobotMap {
   public static int simpleScoringSolenoid1;
   public static int simpleScoringSolenoid2;
   public static int simpleScoringPCM;
+  public static int simpleScoringIntake;
   public static int armLightIntake;
 
   public RobotMap() {
@@ -144,6 +145,7 @@ public class RobotMap {
         simpleScoringPCM = 0;
         simpleScoringSolenoid1 = 7;
         simpleScoringSolenoid2 = 5;
+        simpleScoringIntake = 11;
         armLightIntake = 10;
         break;
       default:
