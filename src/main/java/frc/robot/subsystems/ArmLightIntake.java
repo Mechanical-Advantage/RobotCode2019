@@ -20,7 +20,7 @@ import frc.robot.RobotMap.RobotType;
  */
 public class ArmLightIntake extends Subsystem {
 
-  private static final boolean intakeReversed = false;
+  private static final boolean intakeReversed = true;
   private static final NeutralMode intakeNeutralMode = NeutralMode.Coast;
 
   private static final boolean intakeEnableCurrentLimit = false;
