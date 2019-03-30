@@ -18,7 +18,7 @@ import edu.wpi.first.wpilibj.buttons.Trigger;
 import edu.wpi.first.wpilibj.command.Command;
 import frc.robot.commands.CancelCommand;
 import frc.robot.commands.DisableArm;
-import frc.robot.commands.EjectCargo;
+import frc.robot.commands.ExtendSimpleScorer;
 import frc.robot.commands.LockBeaverTail;
 import frc.robot.commands.LowerPTO;
 import frc.robot.commands.ManualArmLightControl;
@@ -27,12 +27,12 @@ import frc.robot.commands.ReleaseTail;
 import frc.robot.commands.RetractSimpleScorer;
 import frc.robot.commands.RunArmLightIntake;
 import frc.robot.commands.RunPTO;
+import frc.robot.commands.RunSimpleScorerIntake;
 import frc.robot.commands.SetArmLightPosition;
 import frc.robot.commands.SetArmLightPosition.ArmLightPosition;
 import frc.robot.commands.SetCamera;
 import frc.robot.commands.SwitchGear;
 import frc.robot.commands.ToggleGear;
-import frc.robot.commands.VacPickupToggle;
 import frc.robot.commands.VacTail;
 import frc.robot.commands.ZeroArmFinal;
 import frc.robot.commands.ZeroArmInitial;
@@ -76,6 +76,9 @@ public class OI {
 
 	private static final double elbowMoveAmount = 2;
 	private static final double sliderMin = 0.3;
+	private static final double cargoIntakeSpeed = 0.5;
+	private static final double panelIntakeSpeed = 0.4;
+	private static final double panelEjectSpeed = -1;
 
 	private boolean joysticksReversed = false;
 
@@ -146,7 +149,7 @@ public class OI {
 	private Button elbowUp = new JoystickButton(oiController1, 9);
 	private Button elbowDown = new JoystickButton(oiController1, 10);
 
-	private Button vacPickup = new JoystickButton(oiController2, 3);
+	// private Button vacPickup = new JoystickButton(oiController2, 3); // Suction pickup no longer used
 
 	private Button tailLock = new JoystickButton(oiController1, 12); // Is a switch
 	private Trigger releaseTail = new MultiButtonTrigger(new JoystickButton(leftController, 7),
@@ -155,11 +158,14 @@ public class OI {
 	private Button runPTO = new JoystickButton(rightController, 11);
 	private Button lowerPTO = new JoystickButton(leftController, 6);
 
-	// private Button extendSimpleScorer = new JoystickButton(oiController2, 2); // Disabled so eject cargo can use button
+	private Button extendSimpleScorer = new JoystickButton(oiController2, 2);
 	private Button retractSimpleScorer = new JoystickButton(oiController2, 1);
 
-	private Button intakeCargo = new JoystickButton(oiController2, 5);
-	private Button ejectCargo = new JoystickButton(oiController2, 2);
+	private Button intakePanel = new JoystickButton(oiController1, 10);
+	private Button ejectPanel = new JoystickButton(oiController1, 9);
+
+	private Button intakeCargo = new JoystickButton(oiController2, 3);
+	private Button ejectCargo = new JoystickButton(oiController2, 5);
 
 	NetworkTable ledTable;
 	NetworkTableEntry ledEntry;
@@ -220,7 +226,7 @@ public class OI {
 		elbowDown.whenPressed(elbowDownCommand);
 		elbowDown.whenReleased(new CancelCommand(elbowDownCommand));
 
-		vacPickup.whenPressed(new VacPickupToggle());
+		// vacPickup.whenPressed(new VacPickupToggle());
 
 		tailLock.whileHeld(new LockBeaverTail());
 		releaseTail.whenActive(new ReleaseTail());
@@ -228,12 +234,16 @@ public class OI {
 		runPTO.toggleWhenPressed(new RunPTO());
 		lowerPTO.whileHeld(new LowerPTO());
 
-		// extendSimpleScorer.whenPressed(new ExtendSimpleScorer()); // Disabled, see comment on var definition
+		extendSimpleScorer.whenPressed(new ExtendSimpleScorer());
 		retractSimpleScorer.whenPressed(new RetractSimpleScorer());
 
-		intakeCargo.whileHeld(new RunArmLightIntake(false));
-		ejectCargo.whileHeld(new EjectCargo());
-		ejectCargo.whenReleased(new RetractSimpleScorer());
+		intakePanel.whileHeld(new RunSimpleScorerIntake(panelIntakeSpeed));
+		// ejectPanel.whileHeld(new EjectPanel());
+		// ejectPanel.whenReleased(new RetractSimpleScorer());
+		ejectPanel.whileHeld(new RunSimpleScorerIntake(panelEjectSpeed));
+
+		intakeCargo.whileHeld(new RunArmLightIntake(cargoIntakeSpeed));
+		ejectCargo.whileHeld(new RunArmLightIntake(true));
 
 		ledEntry.setBooleanArray(new boolean[] { false, false, false, false,
 			false, false, false, false, false, false, false, false, false, false, false, false, false });

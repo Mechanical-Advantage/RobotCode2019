@@ -7,39 +7,39 @@ import edu.wpi.first.wpilibj.command.Command;
 /**
  * Run the intake while the command is running
  */
-public class RunArmLightIntake extends Command {
+public class RunSimpleScorerIntake extends Command {
 	
 	private double speed;
 	private boolean eject;
 	
 	/**
-	 * Create a new RunArmLightIntake using slider power
+	 * Create a new RunSimpleScorerIntake using slider power
 	 * 
 	 * @param eject Whether to eject the cargo
 	 */
-	public RunArmLightIntake(boolean eject) {
+	public RunSimpleScorerIntake(boolean eject) {
 		super();
-		requires(Robot.intake);
+		requires(Robot.simpleScorer);
 		this.eject = eject;
 	}
 
 	/**
-	 * Create a new RunArmLightIntake at a fixed power
+	 * Create a new RunSimpleScorerIntake at a fixed power
 	 * 
 	 * @param speed Speed to run at (-negative for eject)
 	 */
-	public RunArmLightIntake(double speed) {
+	public RunSimpleScorerIntake(double speed) {
 		super();
-		requires(Robot.intake);
+		requires(Robot.simpleScorer);
 		this.speed = speed;
 	}
 
 	// Called just before this Command runs the first time
 	protected void initialize() {
 		if (speed == 0) {
-			Robot.intake.run(Robot.oi.getSliderLevel()* (eject ? -1 : 1));
+			Robot.simpleScorer.runIntake(Robot.oi.getSliderLevel()* (eject ? -1 : 1));
 		} else {
-			Robot.intake.run(speed);
+			Robot.simpleScorer.runIntake(speed);
 		}
 	}
 
