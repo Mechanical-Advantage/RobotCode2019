@@ -132,17 +132,17 @@ public class OI {
 	private Button armLoading = new JoystickButton(oiController1, 6);
 	private Button armCargoShip = new JoystickButton(oiController1, 5);
 	private Button armRocketLow = new JoystickButton(oiController1, 4);
-	private Button armRocketMid = new JoystickButton(oiController1, 3);
+	private Button armFloor = new JoystickButton(oiController1, 3);
 	private Button armCamera = new JoystickButton(oiController1, 2); // Rocket high is unused because arm light cannot reach it
 	private Button armHome = new JoystickButton(oiController1, 1);
-	private Trigger armLoadingPlate = new ButtonNotTrigger(armLoading, armAlt);
-	private Trigger armLoadingCargo = new MultiButtonTrigger(armLoading, armAlt);
-	private Trigger armCargoShipPlate = new ButtonNotTrigger(armCargoShip, armAlt);
-	private Trigger armCargoShipCargo = new MultiButtonTrigger(armCargoShip, armAlt);
-	private Trigger armRocketLowPlate = new ButtonNotTrigger(armRocketLow, armAlt);
-	private Trigger armRocketLowCargo = new MultiButtonTrigger(armRocketLow, armAlt);
-	private Trigger armRocketMidPlate = new ButtonNotTrigger(armRocketMid, armAlt);
-	private Trigger armRocketMidCargo = new MultiButtonTrigger(armRocketMid, armAlt);
+	private Trigger armLoadingPlate = new MultiButtonTrigger(armLoading, armAlt);
+	private Trigger armLoadingCargo = new ButtonNotTrigger(armLoading, armAlt);
+	private Trigger armCargoShipPlate = new MultiButtonTrigger(armCargoShip, armAlt);
+	private Trigger armCargoShipCargo = new ButtonNotTrigger(armCargoShip, armAlt);
+	private Trigger armRocketLowPlate = new MultiButtonTrigger(armRocketLow, armAlt);
+	private Trigger armRocketLowCargo = new ButtonNotTrigger(armRocketLow, armAlt);
+	// private Trigger armRocketMidPlate = new MultiButtonTrigger(armRocketMid, armAlt);
+	// private Trigger armRocketMidCargo = new ButtonNotTrigger(armRocketMid, armAlt);
 	// private Trigger armRocketHighPlate = new ButtonNotTrigger(armRocketHigh, armAlt);
 	// private Trigger armRocketHighCargo = new MultiButtonTrigger(armRocketHigh, armAlt);
 
@@ -215,9 +215,10 @@ public class OI {
 		armCargoShipPlate.whenActive(new SetArmLightPosition(ArmLightPosition.CARGOSHIP_PLATE));
 		armRocketLowCargo.whenActive(new SetArmLightPosition(ArmLightPosition.ROCKET_LO_CARGO));
 		armRocketLowPlate.whenActive(new SetArmLightPosition(ArmLightPosition.ROCKET_LO_PLATE));
-		armRocketMidCargo.whenActive(new SetArmLightPosition(ArmLightPosition.ROCKET_MID_CARGO));
-		armRocketMidPlate.whenActive(new SetArmLightPosition(ArmLightPosition.ROCKET_MID_PLATE));
+		// armRocketMidCargo.whenActive(new SetArmLightPosition(ArmLightPosition.ROCKET_MID_CARGO));
+		// armRocketMidPlate.whenActive(new SetArmLightPosition(ArmLightPosition.ROCKET_MID_PLATE));
 		armCamera.whenActive(new SetArmLightPosition(ArmLightPosition.CAMERA));
+		armFloor.whenActive(new SetArmLightPosition(ArmLightPosition.FLOOR_CARGO));
 
 		Command elbowUpCommand = new MoveElbowLight(elbowMoveAmount);
 		Command elbowDownCommand = new MoveElbowLight(elbowMoveAmount*-1);

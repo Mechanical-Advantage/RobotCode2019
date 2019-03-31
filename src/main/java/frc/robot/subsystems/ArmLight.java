@@ -16,6 +16,7 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.command.Subsystem;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
 import frc.robot.RobotMap;
 import frc.robot.RobotMap.RobotType;
@@ -34,17 +35,17 @@ public class ArmLight extends Subsystem {
   private static final boolean elbowUseMotionMagic = true;
   private static final double elbowMotMagAccel = 1;
   private static final double elbowMotMagCruiseVelocity = 30;
-  private static final double elbowZeroedPosition = -3; // deg
-  private static final double elbowLowerLimitLow = -3;
-  private static final double elbowUpperLimitLow = 217;
+  private static final double elbowZeroedPosition = 3; // deg
+  private static final double elbowLowerLimitLow = 3;
+  private static final double elbowUpperLimitLow = 227;
   private static final double elbowLowerLimitHigh = 0;
   private static final double elbowUpperLimitHigh = 360;
   private static final double elbowReduction = 4.1801254204035874439461883408072/*tele theory (wrong)0.5*(60.0/22.0)*(32.0/18.0)*(36.0/24.0)*//*cycloidal: 1.5 * 33 * 2.72*/; // Multiplier on setpoints
   private static final double elbowOffsetLow = 0; // Elbow offset applied when shoulder is lowered
   private static final double elbowOffsetHigh = 60; // Elbow offset applied when shoulder is raised
-  private static final double elbowSchoolZoneSpeedLimit = 0.2;
-  private static final double elbowLowSchoolZoneLowerStart = 8;
-  private static final double elbowLowSchoolZoneUpperStart = 205;
+  private static final double elbowSchoolZoneSpeedLimit = 0.1;
+  private static final double elbowLowSchoolZoneLowerStart = 15;
+  private static final double elbowLowSchoolZoneUpperStart = 210;
   private static final double elbowHighSchoolZoneLowerStart = -360;
   private static final double elbowHighSchoolZoneUpperStart = 360;
   private static final double elbowPeakOutput = 0.5;
@@ -52,7 +53,7 @@ public class ArmLight extends Subsystem {
   private static final double elbowReverseNominalOutput = -0.12;
   private static final double elbowAllowableError = 0.5; // For primary PID
   private static final double elbowZeroPercent = -0.05;
-  public static final double elbowStartingPosition = -3;
+  public static final double elbowStartingPosition = 3;
   private static final NeutralMode elbowNeutralMode = NeutralMode.Brake;
   private static final double elbowRampRate = 0; // Seconds from 0 to full
 
@@ -146,13 +147,13 @@ public class ArmLight extends Subsystem {
     if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
       if (RobotMap.tuningMode) {
         initPID();
+        SmartDashboard.putNumber("Arm Light Current", Robot.armLight.getElbowCurrent());
       }
-      // Should zeroing multiple times be allowed?
       double elbowPosition = getElbowPosition(); // Avoid duplicate calculation
       updateShoulderSetpoint(elbowPosition);
       if (getElbowLimitSwitch()) {
-        setElbowZeroed();
         if (elbowDownEnabledLast) {
+          setElbowZeroed();
           elbowDownEnabledLast = false;
           elbow.configPeakOutputReverse(0);
         }
@@ -382,7 +383,6 @@ public class ArmLight extends Subsystem {
       elbow.setSelectedSensorPosition(newPosition);
       elbowZeroed = true;
       enableElbowLimits();
-      elbow.overrideSoftLimitsEnable(true);
       if (!elbowOpenLoop) {
         updateElbowSetpoint();
       }

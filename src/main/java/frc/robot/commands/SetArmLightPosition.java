@@ -38,9 +38,7 @@ public class SetArmLightPosition extends Command {
   // Called repeatedly when this Command is scheduled to run
   @Override
   protected void execute() {
-    if (RobotMap.tuningMode) {
-      SmartDashboard.putNumber("Arm Light Current", Robot.armLight.getElbowCurrent());
-    }
+    
   }
 
   // Make this return true when this Command no longer needs to run execute()
@@ -82,15 +80,15 @@ public class SetArmLightPosition extends Command {
 
     private static final Map<ArmLightPosition,Double> elbowMap = Map.ofEntries(Map.entry(ROCKET_MID_PLATE, 110.0),
                                                                                Map.entry(ROCKET_MID_CARGO, 105.0),
-                                                                               Map.entry(ROCKET_LO_PLATE, 155.0), // good
-                                                                               Map.entry(ROCKET_LO_CARGO, 150.0), // good
-                                                                               Map.entry(CARGOSHIP_PLATE, 155.0), // good
-                                                                               Map.entry(CARGOSHIP_CARGO, 105.0),
-                                                                               Map.entry(FLOOR_CARGO, -60.0),
-                                                                               Map.entry(LOADING_CARGO, 126.0), // good
-                                                                               Map.entry(LOADING_PLATE, 163.0), // good
+                                                                               Map.entry(ROCKET_LO_PLATE, 155.0),
+                                                                               Map.entry(ROCKET_LO_CARGO, 123.0), // good
+                                                                               Map.entry(CARGOSHIP_PLATE, 155.0),
+                                                                               Map.entry(CARGOSHIP_CARGO, 80.0),
+                                                                               Map.entry(FLOOR_CARGO, 203.0), // good
+                                                                               Map.entry(LOADING_CARGO, 90.0), // good
+                                                                               Map.entry(LOADING_PLATE, 163.0),
                                                                                Map.entry(HOME, ArmLight.elbowStartingPosition),
-                                                                               Map.entry(CAMERA, 19.0));
+                                                                               Map.entry(CAMERA, 35.0)); // good
 
     public Boolean isShoulderRaised() {
       return shoulderMap.get(this);

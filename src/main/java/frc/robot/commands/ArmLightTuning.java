@@ -35,9 +35,6 @@ public class ArmLightTuning extends Command {
     } else {
       Robot.armLight.disableElbow();
     }
-    if (RobotMap.tuningMode) {
-      SmartDashboard.putNumber("Arm Light Current", Robot.armLight.getElbowCurrent());
-    }
    }
 
   // Make this return true when this Command no longer needs to run execute()
