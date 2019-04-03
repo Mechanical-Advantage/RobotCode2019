@@ -10,9 +10,7 @@ package frc.robot.commands;
 import java.util.Map;
 
 import edu.wpi.first.wpilibj.command.Command;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
-import frc.robot.RobotMap;
 import frc.robot.subsystems.ArmLight;
 
 public class SetArmLightPosition extends Command {
@@ -64,7 +62,7 @@ public class SetArmLightPosition extends Command {
   // This is based on the ArmPosition enum from SetArmPositions
   public enum ArmLightPosition {
     ROCKET_MID_PLATE, ROCKET_MID_CARGO, ROCKET_LO_PLATE, ROCKET_LO_CARGO, CARGOSHIP_PLATE, CARGOSHIP_CARGO,
-    FLOOR_CARGO, LOADING_CARGO, LOADING_PLATE, HOME, CAMERA;
+    FLOOR_CARGO, LOADING_CARGO, LOADING_PLATE, HOME, UP, CAMERA;
 
     private static final Map<ArmLightPosition,Boolean> shoulderMap = Map.ofEntries(Map.entry(ROCKET_MID_PLATE, false),
                                                                                    Map.entry(ROCKET_MID_CARGO, false),
@@ -76,6 +74,7 @@ public class SetArmLightPosition extends Command {
                                                                                    Map.entry(LOADING_CARGO, false),
                                                                                    Map.entry(LOADING_PLATE, false),
                                                                                    Map.entry(HOME, false),
+                                                                                   Map.entry(UP, false),
                                                                                    Map.entry(CAMERA, false));
 
     private static final Map<ArmLightPosition,Double> elbowMap = Map.ofEntries(Map.entry(ROCKET_MID_PLATE, 110.0),
@@ -88,6 +87,7 @@ public class SetArmLightPosition extends Command {
                                                                                Map.entry(LOADING_CARGO, 90.0), // good
                                                                                Map.entry(LOADING_PLATE, 163.0),
                                                                                Map.entry(HOME, ArmLight.elbowStartingPosition),
+                                                                               Map.entry(UP, 49.0),
                                                                                Map.entry(CAMERA, 35.0)); // good
 
     public Boolean isShoulderRaised() {
