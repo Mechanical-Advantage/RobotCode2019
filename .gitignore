@@ -167,3 +167,7 @@ bin/
 # /lib is supposed to have these files
 !/lib/*.so
 !/lib/*.jar
+
+
+# Card image files
+*.img
