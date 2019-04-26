@@ -206,7 +206,7 @@ public class DriveTrain extends Subsystem {
 				kIZonePTO = 0;
 				PTOUseMotMaj = false;
 				PTORightSpeedAdjust = 1;
-				PTOLeftSpeedAdjust = 1;
+				PTOLeftSpeedAdjust = 0.926787366;				;
 				break;
 			default:
 				break;
