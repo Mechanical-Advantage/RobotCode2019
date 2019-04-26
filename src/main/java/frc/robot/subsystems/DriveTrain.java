@@ -104,6 +104,8 @@ public class DriveTrain extends Subsystem {
 	private DoubleSolenoid pto;
 	private Double PTOLeftStartingPosition;
 	private Double PTORightStartingPosition;
+	private double PTORightSpeedAdjust; // Multiplier applied to right side setpoint when driving the PTO
+	private double PTOLeftSpeedAdjust; // Multiplier applied to right side setpoint when driving the PTO
 //	private ProcessTalonMotionProfileBuffer processTalonMotionProfile = new ProcessTalonMotionProfileBuffer();
 //	private Notifier processMotionProfileNotifier = new Notifier(processTalonMotionProfile);
 //	private double motionProfileNotifierUpdateTime;
@@ -203,6 +205,8 @@ public class DriveTrain extends Subsystem {
 				kDPTO = 0;
 				kIZonePTO = 0;
 				PTOUseMotMaj = false;
+				PTORightSpeedAdjust = 1;
+				PTOLeftSpeedAdjust = 1;
 				break;
 			default:
 				break;
@@ -607,8 +611,8 @@ public class DriveTrain extends Subsystem {
 
 	public void runPTO(double speed) {
 		if (Robot.oi.getDriveEnabled() && currentControlMode == DriveControlMode.PTO) {
-			leftTalonMaster.set(ControlMode.PercentOutput, speed);
-			rightTalonMaster.set(ControlMode.PercentOutput, speed);
+			leftTalonMaster.set(ControlMode.PercentOutput, speed*PTOLeftSpeedAdjust);
+			rightTalonMaster.set(ControlMode.PercentOutput, speed*PTORightSpeedAdjust);
 		} else if (!Robot.oi.getDriveEnabled()) {
 			leftTalonMaster.neutralOutput();
 			rightTalonMaster.neutralOutput();	
