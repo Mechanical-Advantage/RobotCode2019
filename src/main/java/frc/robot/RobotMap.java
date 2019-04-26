@@ -69,6 +69,12 @@ public class RobotMap {
   public static int simpleScoringPCM;
   public static int simpleScoringIntake;
   public static int armLightIntake;
+  public static int level2FrontPCM;
+  public static int level2FrontSolenoid1;
+  public static int level2FrontSolenoid2;
+  public static int level2RearPCM;
+  public static int level2RearSolenoid1;
+  public static int level2RearSolenoid2;
 
   public RobotMap() {
 		switch (robot) {
@@ -129,12 +135,12 @@ public class RobotMap {
         armWrist = 11;
         vacuumMotor = 4;
         vacuumPressureSensor = 1;
-        armShoulder1Extend = 4; // Left
-        armShoulder1Retract = 6;
-        armShoulder1PCM = 1;
-        armShoulder2Extend = 5; // Right
-        armShoulder2Retract = 7;
-        armShoulder2PCM = 1;
+        armShoulder1Extend = 0; // Left, disabled, using disconnected channels, was PCM 1 extend 4 retract 6
+        armShoulder1Retract = 1;
+        armShoulder1PCM = 0;
+        armShoulder2Extend = 2; // Right, disabled, was PCM 1 extend 5 retract 7
+        armShoulder2Retract = 3;
+        armShoulder2PCM = 0;
         greenLEDRing = 2;
         ptoSolenoid1 = 3;
         ptoSolenoid2 = 2;
@@ -147,6 +153,12 @@ public class RobotMap {
         simpleScoringSolenoid2 = 5;
         simpleScoringIntake = 10;
         armLightIntake = 11;
+        level2FrontPCM = 1;
+        level2FrontSolenoid1 = 5;
+        level2FrontSolenoid2 = 7;
+        level2RearPCM = 1;
+        level2RearSolenoid1 = 4;
+        level2RearSolenoid2 = 6;
         break;
       default:
         break;

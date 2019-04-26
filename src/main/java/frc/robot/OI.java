@@ -33,6 +33,7 @@ import frc.robot.commands.SetArmLightPosition.ArmLightPosition;
 import frc.robot.commands.SetCamera;
 import frc.robot.commands.SwitchGear;
 import frc.robot.commands.ToggleGear;
+import frc.robot.commands.ToggleLevel2Solenoid;
 import frc.robot.commands.VacTail;
 import frc.robot.commands.ZeroArmFinal;
 import frc.robot.commands.ZeroArmInitial;
@@ -106,6 +107,9 @@ public class OI {
 	private Button armZeroInitial = new JoystickButton(oiController2, 7);
 	private Button armZeroFinal = new JoystickButton(oiController2, 6);
 	private Trigger armManualTrigger = new JoystickNotCenteredTrigger(oiController1, AxisType.kY, 0.05);
+
+	private Button level2ClimbFrontToggle = new JoystickButton(leftController, 3);
+	private Button level2ClimbRearToggle = new JoystickButton(leftController, 2);
 
 	// private Button armAlt = new JoystickButton(oiController1, 11);
 	/* Arm Heavy:
@@ -247,6 +251,9 @@ public class OI {
 
 		intakeCargo.whileHeld(new RunArmLightIntake(cargoIntakeSpeed));
 		ejectCargo.whileHeld(new EjectCargo());
+
+		level2ClimbFrontToggle.whenPressed(new ToggleLevel2Solenoid(true));
+		level2ClimbRearToggle.whenPressed(new ToggleLevel2Solenoid(false));
 
 		ledEntry.setBooleanArray(new boolean[] { false, false, false, false,
 			false, false, false, false, false, false, false, false, false, false, false, false, false });

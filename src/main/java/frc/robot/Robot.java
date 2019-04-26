@@ -38,6 +38,7 @@ import frc.robot.subsystems.ArmLightIntake;
 import frc.robot.subsystems.BeaverTail;
 import frc.robot.subsystems.CameraSystem;
 import frc.robot.subsystems.DriveTrain;
+import frc.robot.subsystems.Level2Climber;
 import frc.robot.subsystems.SimpleScorer;
 import frc.robot.subsystems.VisionData;
 import frc.robot.subsystems.Vacuum;
@@ -62,6 +63,7 @@ public class Robot extends TimedRobot {
   public static final BeaverTail beaverTail = new BeaverTail();
   public static final SimpleScorer simpleScorer = new SimpleScorer();
   public static final VisionData visionData = new VisionData();
+  public static final Level2Climber level2Climber = new Level2Climber();
 
   public static OI oi;
   public static final AHRS ahrs = new AHRS(SPI.Port.kMXP);
