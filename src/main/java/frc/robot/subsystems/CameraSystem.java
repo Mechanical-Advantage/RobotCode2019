@@ -25,32 +25,35 @@ public class CameraSystem extends Subsystem {
 
 	public void initDefaultCommand() {
 		// Set the default command for a subsystem here.
-		//setDefaultCommand(new MySpecialCommand());
+		// setDefaultCommand(new MySpecialCommand());
 	}
 
 	public CameraSystem() {
 		switch (RobotMap.robot) {
-			case ROBOT_2017:
-				frontCameraID = 2;
-				secondCameraID = 0;
-				break;
-			case ORIGINAL_ROBOT_2018:
-				frontCameraID = 0;
-				secondCameraID = 2;
-				break;
-			case ROBOT_2019:
-			case ROBOT_2019_2:
-				break;
-			case EVERYBOT_2019:
-			default:
-				break;
+		case ROBOT_REBOT:
+			frontCameraID = 2;
+			secondCameraID = 0;
+			break;
+		case ORIGINAL_ROBOT_2018:
+			frontCameraID = 0;
+			secondCameraID = 2;
+			break;
+		case ROBOT_2019:
+		case ROBOT_2019_2:
+			break;
+		case EVERYBOT_2019:
+		default:
+			break;
 		}
 	}
 
-	// To get network tables publishing, must use startAutomaticCapture and have it create the UsbCamera.
-	// This should not have to work this way, but CameraServer is finicky, and this was the only way it worked
+	// To get network tables publishing, must use startAutomaticCapture and have it
+	// create the UsbCamera.
+	// This should not have to work this way, but CameraServer is finicky, and this
+	// was the only way it worked
 	// Written for WPILib 2017.3.1
-	// Note: Second Camera is just internal, selecting on dashboard will have no effect
+	// Note: Second Camera is just internal, selecting on dashboard will have no
+	// effect
 	private UsbCamera setupServer(int id) {
 		serverCreated = true;
 		return CameraServer.getInstance().startAutomaticCapture("Video Feed", id);
@@ -72,7 +75,7 @@ public class CameraSystem extends Subsystem {
 	}
 
 	public void useSecondCamera() {
-		if (RobotMap.robot == RobotType.ROBOT_2017 || RobotMap.robot == RobotType.ORIGINAL_ROBOT_2018) {
+		if (RobotMap.robot == RobotType.ROBOT_REBOT || RobotMap.robot == RobotType.ORIGINAL_ROBOT_2018) {
 			if (!secondCameraAdded) {
 				if (!serverCreated) {
 					secondCamera = setupServer(secondCameraID);
@@ -88,4 +91,3 @@ public class CameraSystem extends Subsystem {
 		}
 	}
 }
-
