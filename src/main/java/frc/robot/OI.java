@@ -1,5 +1,7 @@
 package frc.robot;
 
+import edu.wpi.first.wpilibj.GenericHID;
+
 // Acts as an interface to multiple OI configurations
 public interface OI {
 
@@ -65,11 +67,17 @@ public interface OI {
         return 0;
     }
 
+    default void setRumble(RUMBLETYPE type, double value) {}
+
     double getOperatorStickY();
     default void updateLED(OILED led, boolean state) {}
 
     static enum OILED {
 		MISC_1, MISC_2, MISC_3, INTAKE_RETRACT, INTAKE_ON_OFF, VAC_PICKUP, VAC_TAIL, TOGGLE_LOW, TOGGLE_HIGH,
 		JOYSTICK_YELLOW, ARM_ALT, ARM_FLOOR, ARM_CARGO_SHIP, ARM_ROCKET_LOW, ARM_ROCKET_MID, ARM_ROCKET_HIGH, ARM_HOME
-	}
+    }
+    
+    static enum RUMBLETYPE {
+        DRIVER_LEFT, DRIVER_RIGHT, OPERATOR_LEFT, OPERATOR_RIGHT
+    }
 }

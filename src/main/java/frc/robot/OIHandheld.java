@@ -2,6 +2,7 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.command.Command;
 
 public class OIHandheld implements OI {
@@ -10,6 +11,12 @@ public class OIHandheld implements OI {
     // map driver controller to ID 0 and operator controller to ID 1 in driver station
     private XboxController driverController = new XboxController(0);
     private XboxController operatorController = new XboxController(1);
+
+    public OIHandheld() {
+        for (RUMBLETYPE type : RUMBLETYPE.values()) {
+            setRumble(type, 0);
+        }
+    }
     
     public double getLeftAxis() {
         if (joysticksReversed) {
@@ -56,6 +63,19 @@ public class OIHandheld implements OI {
             return driverController.getTriggerAxis(Hand.kLeft);
         } else {
             return driverController.getTriggerAxis(Hand.kRight);
+        }
+    }
+
+    public void setRumble(RUMBLETYPE type, double value) {
+        switch (type) {
+            case DRIVER_LEFT:
+                driverController.setRumble(RumbleType.kLeftRumble, value);
+            case DRIVER_RIGHT:
+                driverController.setRumble(RumbleType.kRightRumble, value);
+            case OPERATOR_LEFT:
+                operatorController.setRumble(RumbleType.kLeftRumble, value);
+            case OPERATOR_RIGHT:
+                operatorController.setRumble(RumbleType.kRightRumble, value);
         }
     }
 
