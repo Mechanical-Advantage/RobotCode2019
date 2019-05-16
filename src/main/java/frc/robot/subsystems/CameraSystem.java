@@ -2,7 +2,7 @@ package frc.robot.subsystems;
 
 import frc.robot.RobotMap;
 import frc.robot.RobotMap.RobotType;
-
+import edu.wpi.cscore.MjpegServer;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.command.Subsystem;
@@ -56,7 +56,9 @@ public class CameraSystem extends Subsystem {
 	// effect
 	private UsbCamera setupServer(int id) {
 		serverCreated = true;
-		return CameraServer.getInstance().startAutomaticCapture("Video Feed", id);
+		UsbCamera camera = CameraServer.getInstance().startAutomaticCapture("Video Feed", id);
+		((MjpegServer) CameraServer.getInstance().getServer()).setCompression(50);
+		return camera;
 	}
 
 	public void useFrontCamera() {
