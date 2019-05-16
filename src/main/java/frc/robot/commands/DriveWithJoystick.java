@@ -31,19 +31,27 @@ public class DriveWithJoystick extends Command {
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
-    		double joystickLeft = 0, joystickRight = 0;
+            double joystickLeft = 0, joystickRight = 0;
+            double baseDrive;
     		switch (Robot.joystickModeChooser.getSelected()) {
     		case Tank:
     			joystickRight = processJoystickAxis(Robot.oi.getRightAxis());
     			joystickLeft = processJoystickAxis(Robot.oi.getLeftAxis());
     			break;
     		case SplitArcade:
-    			double baseDrive = processJoystickAxis(Robot.oi.getSingleDriveAxis());
+    			baseDrive = processJoystickAxis(Robot.oi.getSingleDriveAxis());
     			joystickRight = baseDrive + processJoystickAxis(Robot.oi.getRightHorizDriveAxis());
     			joystickRight = joystickRight > 1 ? 1 : joystickRight;
     			joystickLeft = baseDrive - processJoystickAxis(Robot.oi.getRightHorizDriveAxis());
     			joystickLeft = joystickLeft > 1 ? 1 : joystickLeft;
-    			break;
+                break;
+            case Trigger:
+                baseDrive = processJoystickAxis(Robot.oi.getRightTrigger()) - processJoystickAxis(Robot.oi.getLeftTrigger());
+                joystickRight = baseDrive + processJoystickAxis(Robot.oi.getLeftHorizDriveAxis());
+                joystickRight = joystickRight > 1 ? 1 : joystickRight;
+                joystickLeft = baseDrive - processJoystickAxis(Robot.oi.getLeftHorizDriveAxis());
+                joystickLeft = joystickLeft > 1 ? 1 : joystickLeft;
+                break;
             }
     		Robot.driveSubsystem.drive(joystickLeft, joystickRight, alwaysUseHighMaxVel);
     		//System.out.println("Left: " + Robot.oi.getLeftAxis() + " Right: " + Robot.oi.getRightAxis());
@@ -65,6 +73,6 @@ public class DriveWithJoystick extends Command {
     }
     
     public static enum JoystickMode {
-    		Tank, SplitArcade;
+    		Tank, SplitArcade, Trigger;
     }
 }
