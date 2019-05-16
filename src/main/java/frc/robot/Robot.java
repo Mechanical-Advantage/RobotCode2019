@@ -82,7 +82,12 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    oi = new OI();
+    switch (RobotMap.robot) {
+      case ROBOT_2017:
+        oi = new OIHandheld();
+      default:
+        oi = new OIConsole();
+    }
     joystickModeChooser = new SendableChooser<JoystickMode>();
     // chooser.setDefaultOption("Default Auto", new ExampleCommand());
     // chooser.addOption("My Auto", new MyAutoCommand());
