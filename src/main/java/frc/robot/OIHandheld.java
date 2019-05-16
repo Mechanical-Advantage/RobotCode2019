@@ -84,7 +84,7 @@ public class OIHandheld implements OI {
     }
 
     public boolean getDriveEnabled() {
-        return false;
+        return true;
     }
 
     public boolean getSniperMode() {
