@@ -287,7 +287,11 @@ public class OIConsole implements OI {
 		}
 	}
 
-	public double getHorizDriveAxis() {
+	public double getLeftHorizDriveAxis() {
+		return leftController.getRawAxis(0);
+	}
+
+	public double getRightHorizDriveAxis() {
 		return rightController.getRawAxis(0);
 	}
 

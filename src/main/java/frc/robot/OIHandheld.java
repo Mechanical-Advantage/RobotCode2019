@@ -1,33 +1,62 @@
 package frc.robot;
 
-import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.Joystick.AxisType;
-import edu.wpi.first.wpilibj.buttons.Button;
-import edu.wpi.first.wpilibj.buttons.JoystickButton;
-import edu.wpi.first.wpilibj.buttons.Trigger;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.command.Command;
 
 public class OIHandheld implements OI {
     private boolean joysticksReversed = false;
 
     // map driver controller to ID 0 and operator controller to ID 1 in driver station
-    private Joystick driverController = new Joystick(0);
-    private Joystick operatorController = new Joystick(1);
+    private XboxController driverController = new XboxController(0);
+    private XboxController operatorController = new XboxController(1);
     
     public double getLeftAxis() {
-        return 0;
+        if (joysticksReversed) {
+			return driverController.getY(Hand.kRight) * -1;
+		} else {
+			return driverController.getY(Hand.kLeft);
+		}
     }
 
     public double getRightAxis() {
-        return 0;
+        if (joysticksReversed) {
+			return driverController.getY(Hand.kLeft) * -1;
+		} else {
+			return driverController.getY(Hand.kRight);
+		}
     }
 
     public double getSingleDriveAxis() {
-        return 0;
+        if (joysticksReversed) {
+			return driverController.getY(Hand.kLeft) * -1;
+		} else {
+			return driverController.getY(Hand.kLeft);
+		}
     }
 
-    public double getHorizDriveAxis() {
-        return 0;
+    public double getLeftHorizDriveAxis() {
+        return driverController.getX(Hand.kLeft);
+    }
+
+    public double getRightHorizDriveAxis() {
+        return driverController.getX(Hand.kRight);
+    }
+
+    public double getLeftTrigger() {
+        if (joysticksReversed) {
+            return driverController.getTriggerAxis(Hand.kRight);
+        } else {
+            return driverController.getTriggerAxis(Hand.kLeft);
+        }
+    }
+
+    public double getRightTrigger() {
+        if (joysticksReversed) {
+            return driverController.getTriggerAxis(Hand.kLeft);
+        } else {
+            return driverController.getTriggerAxis(Hand.kRight);
+        }
     }
 
     public boolean getOpenLoop() {
@@ -55,6 +84,6 @@ public class OIHandheld implements OI {
     }
 
     public double getOperatorStickY() {
-        return 0;
+        return operatorController.getY(Hand.kLeft);
     }
 }

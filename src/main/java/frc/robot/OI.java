@@ -3,16 +3,48 @@ package frc.robot;
 // Acts as an interface to multiple OI configurations
 public interface OI {
 
-    double getLeftAxis();
-    double getRightAxis();
-    double getSingleDriveAxis();
-    double getHorizDriveAxis();
-    boolean getOpenLoop();
-    boolean getDriveEnabled();
-    boolean getSniperMode();
-    double getSniperLevel();
-    void reverseJoysticks(boolean reverse);
-    boolean isShiftingEnabled();
+    default double getLeftAxis() {
+        return 0;
+    }
+    
+    default double getRightAxis() {
+        return 0;
+    }
+
+    default double getSingleDriveAxis() {
+        return 0;
+    }
+
+    default double getLeftHorizDriveAxis() {
+        return 0;
+    }
+
+    default double getRightHorizDriveAxis() {
+        return 0;
+    }
+
+    default boolean getOpenLoop() {
+        return false;
+    }
+
+    default boolean getDriveEnabled() {
+        return false;
+    }
+
+    default boolean getSniperMode() {
+        return false;
+    }
+
+    default double getSniperLevel() {
+        return 0;
+    }
+
+    default void reverseJoysticks(boolean reverse) {}
+    
+    default boolean isShiftingEnabled() {
+        return false;
+    }
+
     default boolean isArmEnabled() {
         return false;
     }

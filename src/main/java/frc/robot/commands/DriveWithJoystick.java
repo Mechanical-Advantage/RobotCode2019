@@ -39,9 +39,9 @@ public class DriveWithJoystick extends Command {
     			break;
     		case SplitArcade:
     			double baseDrive = processJoystickAxis(Robot.oi.getSingleDriveAxis());
-    			joystickRight = baseDrive + processJoystickAxis(Robot.oi.getHorizDriveAxis());
+    			joystickRight = baseDrive + processJoystickAxis(Robot.oi.getRightHorizDriveAxis());
     			joystickRight = joystickRight > 1 ? 1 : joystickRight;
-    			joystickLeft = baseDrive - processJoystickAxis(Robot.oi.getHorizDriveAxis());
+    			joystickLeft = baseDrive - processJoystickAxis(Robot.oi.getRightHorizDriveAxis());
     			joystickLeft = joystickLeft > 1 ? 1 : joystickLeft;
     			break;
             }
