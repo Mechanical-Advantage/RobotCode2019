@@ -34,24 +34,24 @@ public class DriveWithJoystick extends Command {
             double joystickLeft = 0, joystickRight = 0;
             double baseDrive;
     		switch (Robot.joystickModeChooser.getSelected()) {
-    		case Tank:
-    			joystickRight = processJoystickAxis(Robot.oi.getRightAxis());
-    			joystickLeft = processJoystickAxis(Robot.oi.getLeftAxis());
-    			break;
-    		case SplitArcade:
-    			baseDrive = processJoystickAxis(Robot.oi.getSingleDriveAxis());
-    			joystickRight = baseDrive + processJoystickAxis(Robot.oi.getRightHorizDriveAxis());
-    			joystickRight = joystickRight > 1 ? 1 : joystickRight;
-    			joystickLeft = baseDrive - processJoystickAxis(Robot.oi.getRightHorizDriveAxis());
-    			joystickLeft = joystickLeft > 1 ? 1 : joystickLeft;
-                break;
-            case Trigger:
-                baseDrive = processJoystickAxis(Robot.oi.getRightTrigger()) - processJoystickAxis(Robot.oi.getLeftTrigger());
-                joystickRight = baseDrive + processJoystickAxis(Robot.oi.getLeftHorizDriveAxis());
-                joystickRight = joystickRight > 1 ? 1 : joystickRight;
-                joystickLeft = baseDrive - processJoystickAxis(Robot.oi.getLeftHorizDriveAxis());
-                joystickLeft = joystickLeft > 1 ? 1 : joystickLeft;
-                break;
+                case Tank:
+                    joystickRight = processJoystickAxis(Robot.oi.getRightAxis());
+                    joystickLeft = processJoystickAxis(Robot.oi.getLeftAxis());
+                    break;
+                case SplitArcade:
+                    baseDrive = processJoystickAxis(Robot.oi.getSingleDriveAxis());
+                    joystickRight = baseDrive + processJoystickAxis(Robot.oi.getRightHorizDriveAxis());
+                    joystickRight = joystickRight > 1 ? 1 : joystickRight;
+                    joystickLeft = baseDrive - processJoystickAxis(Robot.oi.getRightHorizDriveAxis());
+                    joystickLeft = joystickLeft > 1 ? 1 : joystickLeft;
+                    break;
+                case Trigger:
+                    baseDrive = processJoystickAxis(Robot.oi.getRightTrigger() - Robot.oi.getLeftTrigger());
+                    joystickRight = baseDrive + processJoystickAxis(Robot.oi.getLeftHorizDriveAxis());
+                    joystickRight = joystickRight > 1 ? 1 : joystickRight;
+                    joystickLeft = baseDrive - processJoystickAxis(Robot.oi.getLeftHorizDriveAxis());
+                    joystickLeft = joystickLeft > 1 ? 1 : joystickLeft;
+                    break;
             }
     		Robot.driveSubsystem.drive(joystickLeft, joystickRight, alwaysUseHighMaxVel);
     		//System.out.println("Left: " + Robot.oi.getLeftAxis() + " Right: " + Robot.oi.getRightAxis());
