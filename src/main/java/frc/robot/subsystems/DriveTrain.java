@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import frc.robot.Robot;
+import frc.robot.OI.OITYPE;
 import frc.robot.RobotMap;
 import frc.robot.RobotMap.RobotType;
 import frc.robot.commands.DriveWithJoystick;
@@ -70,7 +71,9 @@ public class DriveTrain extends Subsystem {
 	private int kIZonePTO;
 	private boolean PTOUseMotMaj;
 	
-	private static final double sniperMode = 0.25; // multiplied by velocity in sniper mode
+	private static final double sniperModeConsole = 0.25; // multiplied by velocity in sniper mode when locked and using console
+	private static final double sniperModeHandheldHigh = 0.3; // used for right trigger when using handheld control
+	private static final double sniperModeHandheldLow = 0.15; // used for left trigger when using handheld control 
 	private static final boolean sniperModeLocked = false; // when set, sniper mode uses value above, when unset, value comes from throttle control on joystick
 	private static final int currentLimit = 50;
 	private static final boolean enableCurrentLimit = false;
@@ -358,9 +361,19 @@ public class DriveTrain extends Subsystem {
     public void drive(double left, double right, boolean alwaysHighMaxVel) {
     		if (Robot.oi.getDriveEnabled() && currentControlMode == DriveControlMode.STANDARD_DRIVE) {
 	    		if (Robot.oi.getSniperMode()) {
-	    			if (sniperModeLocked) {
-	    				left*=sniperMode;
-	    				right*=sniperMode;
+	    			if (sniperModeLocked || Robot.oiType == OITYPE.HANDHELD) {
+							if (Robot.oiType == OITYPE.CONSOLE){
+								left*=sniperModeConsole;
+								right*=sniperModeConsole;
+							} else {
+								if (Robot.oi.getSniperHigh()) {
+									left*=sniperModeHandheldHigh;
+									right*=sniperModeHandheldHigh;
+								} else {
+									left*=sniperModeHandheldLow;
+									right*=sniperModeHandheldLow;
+								}
+							}
 	    			} else {
 	    				left*=Robot.oi.getSniperLevel();
 	    				right*=Robot.oi.getSniperLevel();

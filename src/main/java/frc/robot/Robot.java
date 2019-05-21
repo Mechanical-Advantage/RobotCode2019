@@ -10,6 +10,7 @@ package frc.robot;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.Math;
 import java.util.StringJoiner;
 
 import com.kauailabs.navx.frc.AHRS;
@@ -17,13 +18,20 @@ import com.kauailabs.navx.frc.AHRS;
 import org.zeromq.ZMQ;
 
 import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.BuiltInAccelerometer;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
+import edu.wpi.first.wpilibj.interfaces.Accelerometer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.commands.DriveWithJoystick.JoystickMode;
+import frc.robot.OI.RUMBLETYPE;
+import frc.robot.OI.OITYPE;
+import static frc.robot.OI.fullAcceleration;
+import static frc.robot.OI.lowRumbleFactor;
+import static frc.robot.OI.minAcceleration;
 import frc.robot.commands.ArmLightTuning;
 import frc.robot.commands.ArmTuning;
 import frc.robot.commands.DriveDistanceOnHeading;
@@ -66,6 +74,7 @@ public class Robot extends TimedRobot {
   public static final Level2Climber level2Climber = new Level2Climber();
 
   public static OI oi;
+  public static OITYPE oiType;
   public static final AHRS ahrs = new AHRS(SPI.Port.kMXP);
 
   public static final CameraSystem cameraSubsystem = new CameraSystem();
@@ -76,6 +85,8 @@ public class Robot extends TimedRobot {
   public static SendableChooser<JoystickMode> joystickModeChooser;
   private static final Command vacPickupCommand = new VacPickup();
 
+  public Accelerometer accel = new BuiltInAccelerometer(Accelerometer.Range.k4G);
+
   /**
    * This function is run when the robot is first started up and should be used
    * for any initialization code.
@@ -83,12 +94,14 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     switch (RobotMap.robot) {
-      case EVERYBOT_2019:
-        oi = new OIHandheld();
-        break;
-      default:
-        oi = new OIConsole();
-        break;
+    case EVERYBOT_2019:
+      oi = new OIHandheld();
+      oiType = OITYPE.HANDHELD;
+      break;
+    default:
+      oi = new OIConsole();
+      oiType = OITYPE.CONSOLE;
+      break;
     }
     joystickModeChooser = new SendableChooser<JoystickMode>();
     // chooser.setDefaultOption("Default Auto", new ExampleCommand());
@@ -153,6 +166,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void disabledInit() {
+    oi.resetRumble();
   }
 
   @Override
@@ -183,11 +197,11 @@ public class Robot extends TimedRobot {
     ahrs.zeroYaw();
     if (autoChooser.getSelected() != null) {
       switch (autoChooser.getSelected()) {
-        case TUNING:
-          autonomousCommand = tuningModeChooser.getSelected();
-          break;
-        case VAC_PICKUP:
-          autonomousCommand = vacPickupCommand;
+      case TUNING:
+        autonomousCommand = tuningModeChooser.getSelected();
+        break;
+      case VAC_PICKUP:
+        autonomousCommand = vacPickupCommand;
       }
     }
 
@@ -228,10 +242,24 @@ public class Robot extends TimedRobot {
   /**
    * This function is called periodically during operator control.
    */
+
   @Override
   public void teleopPeriodic() {
     Scheduler.getInstance().run();
-  }
+
+    // Update rumble based on acceleration
+    if (oiType == OITYPE.HANDHELD) {
+      double totalAcceleration = Math.sqrt(accel.getX()*accel.getX() + accel.getY()*accel.getY()); //Calculates total acceleration using pythagorean theorem
+      if (totalAcceleration > minAcceleration) {
+        totalAcceleration/=fullAcceleration;
+        oi.setRumble(RUMBLETYPE.DRIVER_RIGHT, totalAcceleration);
+        oi.setRumble(RUMBLETYPE.DRIVER_LEFT, totalAcceleration*lowRumbleFactor);
+      } else {
+        oi.setRumble(RUMBLETYPE.DRIVER_RIGHT, 0);
+        oi.setRumble(RUMBLETYPE.DRIVER_LEFT, 0);
+      }
+    }
+  }            
 
   /**
    * This function is called periodically during test mode.

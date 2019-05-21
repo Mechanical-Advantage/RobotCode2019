@@ -1,9 +1,10 @@
 package frc.robot;
 
-import edu.wpi.first.wpilibj.GenericHID;
-
 // Acts as an interface to multiple OI configurations
 public interface OI {
+    public double minAcceleration = 0.2; //Minimum total horizontal acceleration before rumbling controller
+    public double fullAcceleration = 0.8; //Total horizontal acceleration (g) for full rumble
+    public double lowRumbleFactor = 0.15; //Multiplied by high frequency rumble power to calculate low frequency rumble power
 
     default double getLeftAxis() {
         return 0;
@@ -41,6 +42,14 @@ public interface OI {
         return 0;
     }
 
+    default boolean getSniperHigh() {
+        return false;
+    }
+
+    default boolean getSniperLow() {
+        return false;
+    }
+
     default void reverseJoysticks(boolean reverse) {}
     
     default boolean isShiftingEnabled() {
@@ -69,6 +78,8 @@ public interface OI {
 
     default void setRumble(RUMBLETYPE type, double value) {}
 
+    default void resetRumble() {}
+
     double getOperatorStickY();
     default void updateLED(OILED led, boolean state) {}
 
@@ -79,5 +90,9 @@ public interface OI {
     
     static enum RUMBLETYPE {
         DRIVER_LEFT, DRIVER_RIGHT, OPERATOR_LEFT, OPERATOR_RIGHT
+    }
+
+    static enum OITYPE {
+        CONSOLE, HANDHELD
     }
 }
