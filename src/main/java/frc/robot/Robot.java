@@ -34,7 +34,7 @@ import frc.robot.commands.VacPickup;
 import frc.robot.commands.VelocityPIDTuner;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.ArmLight;
-import frc.robot.subsystems.ArmLightIntake;
+import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.BeaverTail;
 import frc.robot.subsystems.CameraSystem;
 import frc.robot.subsystems.DriveTrain;
@@ -58,7 +58,7 @@ public class Robot extends TimedRobot {
   public static final DriveTrain driveSubsystem = new DriveTrain();
   public static final Arm arm = new Arm();
   public static final ArmLight armLight = new ArmLight();
-  public static final ArmLightIntake intake = new ArmLightIntake();
+  public static final Intake intake = new Intake();
   public static final Vacuum vacuum = new Vacuum();
   public static final BeaverTail beaverTail = new BeaverTail();
   public static final SimpleScorer simpleScorer = new SimpleScorer();

@@ -67,8 +67,8 @@ public class RobotMap {
   public static int simpleScoringSolenoid1;
   public static int simpleScoringSolenoid2;
   public static int simpleScoringPCM;
-  public static int simpleScoringIntake;
-  public static int armLightIntake;
+  public static int simpleScoringintakeMotor;
+  public static int intakeMotor;
   public static int level2FrontPCM;
   public static int level2FrontSolenoid1;
   public static int level2FrontSolenoid2;
@@ -89,7 +89,8 @@ public class RobotMap {
         minVelocityLow = 135; // 20 RPM
         maxAcceleration = 300;
         robotLength = 31.5;
-        robotWidth = 29.25;
+        robotWidth = 29.25; 
+        intakeMotor = 11; // TBD: set to correct value
         break;
       case ORIGINAL_ROBOT_2018:
         rightMaster = 2;
@@ -151,8 +152,8 @@ public class RobotMap {
         simpleScoringPCM = 0;
         simpleScoringSolenoid1 = 7;
         simpleScoringSolenoid2 = 5;
-        simpleScoringIntake = 10;
-        armLightIntake = 11;
+        simpleScoringintakeMotor = 10;
+        intakeMotor = 11;
         level2FrontPCM = 1;
         level2FrontSolenoid1 = 5;
         level2FrontSolenoid2 = 7;

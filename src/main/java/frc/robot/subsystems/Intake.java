@@ -16,9 +16,9 @@ import frc.robot.RobotMap;
 import frc.robot.RobotMap.RobotType;
 
 /**
- * Intake for arm light
+ * Intake subsystem
  */
-public class ArmLightIntake extends Subsystem {
+public class Intake extends Subsystem {
 
   private static final boolean intakeReversed = true;
   private static final NeutralMode intakeNeutralMode = NeutralMode.Coast;
@@ -30,9 +30,9 @@ public class ArmLightIntake extends Subsystem {
  
   private TalonSRX intake;
 
-  public ArmLightIntake() {
-    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
-      intake = new TalonSRX(RobotMap.armLightIntake);
+  public Intake() {
+    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2 || RobotMap.robot == RobotType.ROBOT_2017) {
+      intake = new TalonSRX(RobotMap.intakeMotor);
 
       intake.configFactoryDefault();
       intake.setInverted(intakeReversed);
@@ -52,13 +52,13 @@ public class ArmLightIntake extends Subsystem {
   }
 
   public void run(double power) {
-    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2 || RobotMap.robot == RobotType.ROBOT_2017) {
       intake.set(ControlMode.PercentOutput, power);
     }
   }
 
   public void stop() {
-    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2 || RobotMap.robot == RobotType.ROBOT_2017) {
       intake.neutralOutput();
     }
   }
