@@ -146,6 +146,21 @@ public class Robot extends TimedRobot {
     Compressor c = new Compressor();
   }
 
+  // Update rumble based on acceleration
+  private void updateControllerRumble() {
+    if (oiType == OITYPE.HANDHELD) {
+      double totalAcceleration = Math.sqrt(accel.getX()*accel.getX() + accel.getY()*accel.getY()); //Calculates total acceleration using pythagorean theorem
+      if (totalAcceleration > minAcceleration) {
+        totalAcceleration/=fullAcceleration;
+        oi.setRumble(RUMBLETYPE.DRIVER_RIGHT, totalAcceleration);
+        oi.setRumble(RUMBLETYPE.DRIVER_LEFT, totalAcceleration*lowRumbleFactor);
+      } else {
+        oi.setRumble(RUMBLETYPE.DRIVER_RIGHT, 0);
+        oi.setRumble(RUMBLETYPE.DRIVER_LEFT, 0);
+      }
+    }
+  }
+
   /**
    * This function is called every robot packet, no matter the mode. Use this for
    * items like diagnostics that you want ran during disabled, autonomous,
@@ -224,6 +239,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousPeriodic() {
     Scheduler.getInstance().run();
+    updateControllerRumble();
   }
 
   @Override
@@ -246,19 +262,7 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     Scheduler.getInstance().run();
-
-    // Update rumble based on acceleration
-    if (oiType == OITYPE.HANDHELD) {
-      double totalAcceleration = Math.sqrt(accel.getX()*accel.getX() + accel.getY()*accel.getY()); //Calculates total acceleration using pythagorean theorem
-      if (totalAcceleration > minAcceleration) {
-        totalAcceleration/=fullAcceleration;
-        oi.setRumble(RUMBLETYPE.DRIVER_RIGHT, totalAcceleration);
-        oi.setRumble(RUMBLETYPE.DRIVER_LEFT, totalAcceleration*lowRumbleFactor);
-      } else {
-        oi.setRumble(RUMBLETYPE.DRIVER_RIGHT, 0);
-        oi.setRumble(RUMBLETYPE.DRIVER_LEFT, 0);
-      }
-    }
+    updateControllerRumble();
   }            
 
   /**
