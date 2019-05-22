@@ -41,7 +41,7 @@ public class RobotMap {
   public static double robotWidth;
   public static double robotLength;
   public static final boolean tuningMode = false;
-  public static final RobotType robot = RobotType.ROBOT_2019;
+  public static final RobotType robot = RobotType.EVERYBOT_2019;
   public static int minVelocityLow; // lower values will be treated as this value, RPM
   public static int maxVelocityLow; // maximum velocity when sticks are fully forward (value of 1), RPM
   public static int maxVelocityHigh;
@@ -111,9 +111,9 @@ public class RobotMap {
         break;
       case EVERYBOT_2019:
         rightMaster = 0;
-        leftMaster = 3;
+        leftMaster = 15;
         rightSlave = 1;
-        leftSlave = 2;
+        leftSlave = 14;
         maxVelocityLow = 950; // 950 native units per 100ms
         minVelocityLow = 40; // 40 native units per 100ms
         maxAcceleration = 300;
