@@ -47,7 +47,7 @@ public class RunPTO extends Command {
   protected void execute() {
     if (canRun) {
       // Joysticks are flipped in DriveWIthJoystick so inverting works backwards to be consistent
-      double joystickVal = Robot.oi.getSingleDriveAxis() * (invert ? 1 : -1);
+      double joystickVal = Robot.oi.getSingleDriveAxisLeft() * (invert ? 1 : -1);
       Robot.driveSubsystem.runPTO(joystickVal * Math.abs(joystickVal));
     }
   }

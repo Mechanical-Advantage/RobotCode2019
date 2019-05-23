@@ -3,7 +3,7 @@ package frc.robot;
 // Acts as an interface to multiple OI configurations
 public interface OI {
     public double minAcceleration = 0.2; //Minimum total horizontal acceleration before rumbling controller
-    public double fullAcceleration = 0.8; //Total horizontal acceleration (g) for full rumble
+    public double fullAcceleration = 0.8; //Total horizontal acceleration (g) for full high frequency rumble
     public double lowRumbleFactor = 0.15; //Multiplied by high frequency rumble power to calculate low frequency rumble power
 
     default double getLeftAxis() {
@@ -14,7 +14,11 @@ public interface OI {
         return 0;
     }
 
-    default double getSingleDriveAxis() {
+    default double getSingleDriveAxisLeft() {
+        return 0;
+    }
+
+    default double getSingleDriveAxisRight() {
         return 0;
     }
 
@@ -30,9 +34,13 @@ public interface OI {
         return false;
     }
 
+    default void toggleOpenLoop() {};
+
     default boolean getDriveEnabled() {
         return false;
     }
+
+    default void toggleDriveEnabled() {};
 
     default boolean getSniperMode() {
         return false;
@@ -80,7 +88,9 @@ public interface OI {
 
     default void resetRumble() {}
 
-    double getOperatorStickY();
+    default double getOperatorStickY() {
+        return 0;
+    }
     default void updateLED(OILED led, boolean state) {}
 
     static enum OILED {

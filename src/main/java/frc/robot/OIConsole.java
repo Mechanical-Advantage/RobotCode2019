@@ -279,11 +279,19 @@ public class OIConsole implements OI {
 	// drive, use
 	// different function to make that correct
 	// Note: Brian is left-handed
-	public double getSingleDriveAxis() {
+	public double getSingleDriveAxisLeft() {
 		if (joysticksReversed) {
 			return leftController.getRawAxis(1) * -1;
 		} else {
 			return leftController.getRawAxis(1);
+		}
+	}
+
+	public double getSingleDriveAxisRight() {
+		if (joysticksReversed) {
+			return rightController.getRawAxis(1) * -1;
+		} else {
+			return rightController.getRawAxis(1);
 		}
 	}
 

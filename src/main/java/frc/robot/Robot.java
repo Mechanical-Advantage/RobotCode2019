@@ -109,6 +109,7 @@ public class Robot extends TimedRobot {
     joystickModeChooser.addOption("Tank", JoystickMode.Tank);
     joystickModeChooser.addOption("Trigger", JoystickMode.Trigger);
     joystickModeChooser.setDefaultOption("Split Arcade", JoystickMode.SplitArcade);
+    joystickModeChooser.setDefaultOption("Split Arcade (right drive)", JoystickMode.SplitArcadeRightDrive);
 
     autoChooser.addOption("None", null);
     autoChooser.addOption("Hold Panel", AutoMode.VAC_PICKUP);
@@ -127,6 +128,9 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putData("Auto mode", autoChooser);
     SmartDashboard.putData("Control Mode", joystickModeChooser);
+
+    SmartDashboard.putBoolean("Drive Enabled", oi.getDriveEnabled());
+    SmartDashboard.putBoolean("Open Loop Drive", Robot.oi.getOpenLoop());
 
     // if the current waypoint version is old, re-generate profiles
     BufferedReader waypointVersionReader;

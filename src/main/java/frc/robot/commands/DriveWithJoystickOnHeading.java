@@ -57,7 +57,7 @@ public class DriveWithJoystickOnHeading extends Command {
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
-    	double outputVelocity = Math.pow(Robot.oi.getSingleDriveAxis(), 3)*-1;
+    	double outputVelocity = Math.pow(Robot.oi.getSingleDriveAxisLeft(), 3)*-1;
     	double outputTurnVelocity = pidOutputAngle.getPIDRate()*kTurnCorrectionAmount;
 		// subtract from right side, add to left side (drive left on positive)
 		Robot.driveSubsystem.drive(outputVelocity+outputTurnVelocity, outputVelocity-outputTurnVelocity);

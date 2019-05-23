@@ -39,10 +39,17 @@ public class DriveWithJoystick extends Command {
                     joystickLeft = processJoystickAxis(Robot.oi.getLeftAxis());
                     break;
                 case SplitArcade:
-                    baseDrive = processJoystickAxis(Robot.oi.getSingleDriveAxis());
+                    baseDrive = processJoystickAxis(Robot.oi.getSingleDriveAxisLeft());
                     joystickRight = baseDrive + processJoystickAxis(Robot.oi.getRightHorizDriveAxis());
                     joystickRight = joystickRight > 1 ? 1 : joystickRight;
                     joystickLeft = baseDrive - processJoystickAxis(Robot.oi.getRightHorizDriveAxis());
+                    joystickLeft = joystickLeft > 1 ? 1 : joystickLeft;
+                    break;
+                case SplitArcadeRightDrive:
+                    baseDrive = processJoystickAxis(Robot.oi.getSingleDriveAxisRight());
+                    joystickRight = baseDrive + processJoystickAxis(Robot.oi.getLeftHorizDriveAxis());
+                    joystickRight = joystickRight > 1 ? 1 : joystickRight;
+                    joystickLeft = baseDrive - processJoystickAxis(Robot.oi.getLeftHorizDriveAxis());
                     joystickLeft = joystickLeft > 1 ? 1 : joystickLeft;
                     break;
                 case Trigger:
@@ -73,6 +80,6 @@ public class DriveWithJoystick extends Command {
     }
     
     public static enum JoystickMode {
-    		Tank, SplitArcade, Trigger;
+    		Tank, SplitArcade, SplitArcadeRightDrive, Trigger;
     }
 }
