@@ -75,6 +75,8 @@ public class RobotMap {
   public static int level2RearPCM;
   public static int level2RearSolenoid1;
   public static int level2RearSolenoid2;
+  public static int climberMaster;
+  public static int climberSlave;
 
   public RobotMap() {
 		switch (robot) {
@@ -90,6 +92,8 @@ public class RobotMap {
         maxAcceleration = 300;
         robotLength = 31.5;
         robotWidth = 29.25;
+        climberMaster = 15;
+        climberSlave = 14;
         break;
       case ORIGINAL_ROBOT_2018:
         rightMaster = 2;
@@ -159,6 +163,8 @@ public class RobotMap {
         level2RearPCM = 1;
         level2RearSolenoid1 = 4;
         level2RearSolenoid2 = 6;
+        climberMaster = 15;
+        climberSlave = 14;
         break;
       default:
         break;
