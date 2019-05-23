@@ -30,6 +30,7 @@ public class CameraSystem extends Subsystem {
 
 	public CameraSystem() {
 		switch (RobotMap.robot) {
+		case EVERYBOT_2019:
 		case ROBOT_REBOT:
 			frontCameraID = 2;
 			secondCameraID = 0;
@@ -41,7 +42,6 @@ public class CameraSystem extends Subsystem {
 		case ROBOT_2019:
 		case ROBOT_2019_2:
 			break;
-		case EVERYBOT_2019:
 		default:
 			break;
 		}

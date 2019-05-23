@@ -41,7 +41,7 @@ public class RobotMap {
   public static double robotWidth;
   public static double robotLength;
   public static final boolean tuningMode = false;
-  public static final RobotType robot = RobotType.ROBOT_REBOT;
+  public static final RobotType robot = RobotType.EVERYBOT_2019;
   public static int minVelocityLow; // lower values will be treated as this value, RPM
   public static int maxVelocityLow; // maximum velocity when sticks are fully forward (value of 1), RPM
   public static int maxVelocityHigh;
