@@ -36,8 +36,8 @@ public class VisionHatchPickup extends Command {
   private double kDDistance;
   private double kFDistance;
   private double kPAngle;
-	private double kIAngle;
-	private double kDAngle;
+  private double kIAngle;
+  private double kDAngle;
   private double kFAngle;
   private DriveGear gear;
 
@@ -56,57 +56,59 @@ public class VisionHatchPickup extends Command {
     requires(Robot.driveSubsystem);
 
     switch (RobotMap.robot) {
-      case ROBOT_2017:
-        kPDistance = 0.04; // 0.0032 slow but good
-        kIDistance = 0.000000;
-        kDDistance = 0;
-        kFDistance = 0;
-        kPAngle = 0.03; // 0.015 works well with 0.0032, slow but good
-        kIAngle = 0;
-        kDAngle = 0;
-        kFAngle = 0;
-        break;
-      case ORIGINAL_ROBOT_2018:
-        kPDistance = 0.02;
-        kIDistance = 0.000000;
-        kDDistance = 0;
-        kFDistance = 0;
-        kPAngle = 0.05; // was 0.05, disabled due to WPILib Tolerance buffer phase lag
-        kIAngle = 0;
-        kDAngle = 0;
-        kFAngle = 0;
-        gear = DriveGear.HIGH;
-        break;
-      case EVERYBOT_2019:
-        kPDistance = 0.017;
-        kIDistance = 0;
-        kDDistance = 0;
-        kFDistance = 0.5;
-        kPAngle = 0.07;
-        kIAngle = 0;
-        kDAngle = 0;
-        kFAngle = 0;
-        break;
-      case ROBOT_2019:
-      case ROBOT_2019_2:
-        kPDistance = 0.;
-        kIDistance = 0.000000;
-        kDDistance = 0;
-        kFDistance = 0;
-        kPAngle = 0;
-        kIAngle = 0;
-        kDAngle = 0;
-        kFAngle = 0;
-        break;
-      default:
-        break;
+    case ROBOT_2017:
+      kPDistance = 0.04; // 0.0032 slow but good
+      kIDistance = 0.000000;
+      kDDistance = 0;
+      kFDistance = 0;
+      kPAngle = 0.03; // 0.015 works well with 0.0032, slow but good
+      kIAngle = 0;
+      kDAngle = 0;
+      kFAngle = 0;
+      break;
+    case ORIGINAL_ROBOT_2018:
+      kPDistance = 0.02;
+      kIDistance = 0.000000;
+      kDDistance = 0;
+      kFDistance = 0;
+      kPAngle = 0.05; // was 0.05, disabled due to WPILib Tolerance buffer phase lag
+      kIAngle = 0;
+      kDAngle = 0;
+      kFAngle = 0;
+      gear = DriveGear.HIGH;
+      break;
+    case EVERYBOT_2019:
+      kPDistance = 0.017;
+      kIDistance = 0;
+      kDDistance = 0;
+      kFDistance = 0.5;
+      kPAngle = 0.07;
+      kIAngle = 0;
+      kDAngle = 0;
+      kFAngle = 0;
+      break;
+    case ROBOT_2019:
+    case ROBOT_2019_2:
+      kPDistance = 0.;
+      kIDistance = 0.000000;
+      kDDistance = 0;
+      kFDistance = 0;
+      kPAngle = 0;
+      kIAngle = 0;
+      kDAngle = 0;
+      kFAngle = 0;
+      break;
+    default:
+      break;
     }
-    distanceController = new PIDController(kPDistance, kIDistance, kDDistance, kFDistance, distanceData, driveOutputter, kUpdatePeriodDistance);
-		turnController = new PIDController(kPAngle, kIAngle, kDAngle, kFAngle, angleData, driveOutputter.getAngleReciever(), kUpdatePeriodAngle);
-		distanceController.setOutputRange(-1, 1);
-		turnController.setOutputRange(-1, 1);
-		turnController.setInputRange(-180, 180); // should this be field of view?
-		turnController.setContinuous();
+    distanceController = new PIDController(kPDistance, kIDistance, kDDistance, kFDistance, distanceData, driveOutputter,
+        kUpdatePeriodDistance);
+    turnController = new PIDController(kPAngle, kIAngle, kDAngle, kFAngle, angleData, driveOutputter.getAngleReciever(),
+        kUpdatePeriodAngle);
+    distanceController.setOutputRange(-1, 1);
+    turnController.setOutputRange(-1, 1);
+    turnController.setInputRange(-180, 180); // should this be field of view?
+    turnController.setContinuous();
     distanceController.setSetpoint(targetDistance);
     distanceController.setAbsoluteTolerance(distanceTolerance);
     turnController.setSetpoint(0);
@@ -118,42 +120,39 @@ public class VisionHatchPickup extends Command {
   protected void initialize() {
     visionDataRecieved = false;
     if (RobotMap.robot == RobotType.ORIGINAL_ROBOT_2018) {
-			Robot.driveSubsystem.switchGear(gear);
-		}
+      Robot.driveSubsystem.switchGear(gear);
+    }
     distanceData.clear();
     angleData.clear();
     Robot.visionData.setPipeline(Robot.visionData.hatch);
     previousYaw = Robot.ahrs.getYaw(); // This makes the initial difference 0
-    previousDistance = (Robot.driveSubsystem.getDistanceLeft() +
-    Robot.driveSubsystem.getDistanceRight()) / 2;
+    previousDistance = (Robot.driveSubsystem.getDistanceLeft() + Robot.driveSubsystem.getDistanceRight()) / 2;
   }
 
   // Called repeatedly when this Command is scheduled to run
   @Override
   protected void execute() {
-    double currentRawDistance = (Robot.driveSubsystem.getDistanceLeft() +
-    Robot.driveSubsystem.getDistanceRight()) / 2;
-    // Subtract because encoder values go in the opposite direction thsn vision 
+    double currentRawDistance = (Robot.driveSubsystem.getDistanceLeft() + Robot.driveSubsystem.getDistanceRight()) / 2;
+    // Subtract because encoder values go in the opposite direction thsn vision
     distanceData.addDataPoint(distanceData.getCurrentPoint() - (currentRawDistance - previousDistance));
     previousDistance = currentRawDistance;
     float currentRawYaw = Robot.ahrs.getYaw();
-    // Calculate how much the gyro reading changed and apply that to the last data point
+    // Calculate how much the gyro reading changed and apply that to the last data
+    // point
     // Subtract because gyro positive is backwards from angle needed to reach target
     angleData.addDataPoint(angleData.getCurrentPoint() - (currentRawYaw - previousYaw));
     previousYaw = currentRawYaw;
     if (!Robot.visionData.hatch.isDataHandled()) {
-      boolean dataApplied = distanceData.addCorrectedData(
-        Robot.visionData.hatch.getDistance(), 
-        Robot.visionData.hatch.getLastTimestamp());
-      dataApplied = dataApplied && angleData.addCorrectedData(
-        Robot.visionData.hatch.getAngle(), 
-        Robot.visionData.hatch.getLastTimestamp());
+      boolean dataApplied = distanceData.addCorrectedData(Robot.visionData.hatch.getDistance(),
+          Robot.visionData.hatch.getLastTimestamp());
+      dataApplied = dataApplied
+          && angleData.addCorrectedData(Robot.visionData.hatch.getAngle(), Robot.visionData.hatch.getLastTimestamp());
       Robot.visionData.hatch.dataHandled();
       // Start actually driving if this is the first data and
       // vision data has been incorporated into the LatencyData objs
       if (!visionDataRecieved && dataApplied) {
         turnController.enable();
-        distanceController.enable();    
+        distanceController.enable();
       }
       visionDataRecieved = true;
     }
@@ -194,24 +193,24 @@ public class VisionHatchPickup extends Command {
     @Override
     public void pidWrite(double output) {
       // Inverted velocity because PID is trying to push input lower
-      double outputVelocity = output*(kMaxOutput-kTurnCorrectionAmount)*-1;
+      double outputVelocity = output * (kMaxOutput - kTurnCorrectionAmount) * -1;
       outputVelocity = calcNewVelocity(outputVelocity, lastOutput);
       lastOutput = outputVelocity;
-		  double outputTurnVelocity = angleOutput*kTurnCorrectionAmount;
-		  Robot.driveSubsystem.drive(outputVelocity-outputTurnVelocity, outputVelocity+outputTurnVelocity);
+      double outputTurnVelocity = angleOutput * kTurnCorrectionAmount;
+      Robot.driveSubsystem.drive(outputVelocity - outputTurnVelocity, outputVelocity + outputTurnVelocity);
     }
 
     private double calcNewVelocity(double currentOutput, double lastOutput) {
-    	double targetOutput = currentOutput*(kMaxOutput-kTurnCorrectionAmount);
-    	if (Math.abs(lastOutput - targetOutput) > maxOutputVelocityChange){
-    		if (lastOutput < targetOutput) {
-        		targetOutput = lastOutput + maxOutputVelocityChange;
-    		} else {
-    			targetOutput = lastOutput - maxOutputVelocityChange;
-    		}
-    	}
-    	return targetOutput;
-	  }
+      double targetOutput = currentOutput * (kMaxOutput - kTurnCorrectionAmount);
+      if (Math.abs(lastOutput - targetOutput) > maxOutputVelocityChange) {
+        if (lastOutput < targetOutput) {
+          targetOutput = lastOutput + maxOutputVelocityChange;
+        } else {
+          targetOutput = lastOutput - maxOutputVelocityChange;
+        }
+      }
+      return targetOutput;
+    }
 
     private AngleReciever getAngleReciever() {
       return angleReciever;

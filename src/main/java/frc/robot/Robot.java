@@ -175,11 +175,11 @@ public class Robot extends TimedRobot {
     ahrs.zeroYaw();
     if (autoChooser.getSelected() != null) {
       switch (autoChooser.getSelected()) {
-        case TUNING:
-          autonomousCommand = tuningModeChooser.getSelected();
-          break;
-        case VAC_PICKUP:
-          autonomousCommand = vacPickupCommand;
+      case TUNING:
+        autonomousCommand = tuningModeChooser.getSelected();
+        break;
+      case VAC_PICKUP:
+        autonomousCommand = vacPickupCommand;
       }
     }
 

@@ -10,7 +10,7 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
-import frc.robot.RobotMap;
+//import frc.robot.RobotMap;
 
 public class ArmLightTuning extends Command {
   public ArmLightTuning() {
@@ -28,14 +28,14 @@ public class ArmLightTuning extends Command {
   protected void execute() {
     SmartDashboard.putNumber("Arm Elbow Position", Robot.armLight.getElbowPosition());
     Robot.armLight.setShoulderRaised(SmartDashboard.getBoolean("Arm Shoulder High", false));
-    
+
     if (SmartDashboard.getBoolean("Arm Elbow/enabled", false)) {
       Robot.armLight.setElbowPosition(SmartDashboard.getNumber("Arm Elbow/setpoint", 0.0));
       Robot.armLight.enableElbow();
     } else {
       Robot.armLight.disableElbow();
     }
-   }
+  }
 
   // Make this return true when this Command no longer needs to run execute()
   @Override

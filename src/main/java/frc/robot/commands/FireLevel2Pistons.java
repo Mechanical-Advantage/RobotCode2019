@@ -10,7 +10,8 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj.command.InstantCommand;
 
 /**
- * Fires the pistons for the HAB 2 climb, first time the front and second time the back
+ * Fires the pistons for the HAB 2 climb, first time the front and second time
+ * the back
  */
 public class FireLevel2Pistons extends InstantCommand {
 

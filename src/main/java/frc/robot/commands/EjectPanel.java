@@ -10,7 +10,7 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj.command.CommandGroup;
 
 public class EjectPanel extends CommandGroup {
-  
+
   private static final double speed = -1;
 
   public EjectPanel() {
