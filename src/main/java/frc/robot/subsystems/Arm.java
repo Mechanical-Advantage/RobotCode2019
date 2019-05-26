@@ -20,7 +20,7 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import frc.robot.Robot;
 import frc.robot.RobotMap;
-import frc.robot.RobotMap.RobotType;
+//import frc.robot.RobotMap.RobotType;
 import frc.robot.util.SchoolZone;
 import frc.robot.util.TunableNumber;
 
@@ -65,7 +65,7 @@ public class Arm extends Subsystem {
   private static final boolean wristOutputReversed = false;
   private static final double wristZeroedPosition = 0; // Wrist position 0 should be same as elbow direction
   private static final int wristTicksPerRotation = 4096;
-  private static final double wristReduction = (60/22)*33*1;
+  private static final double wristReduction = (60 / 22) * 33 * 1;
   private static final double wristOffsetLow = 0;
   private static final double wristOffsetHigh = 60;
   private static final boolean wristUseMotMag = false;
@@ -88,8 +88,8 @@ public class Arm extends Subsystem {
   private static final boolean telescopeSensorReversed = false;
   private static final boolean telescopeOutputReversed = false;
   private static final int telescopeTicksPerRotation = 4096;
-  private static final double telescopeReduction = (60/22)*33*(36/24);
-  private static final double telescopeInchesPerRotation = 1.432*Math.PI;
+  private static final double telescopeReduction = (60 / 22) * 33 * (36 / 24);
+  private static final double telescopeInchesPerRotation = 1.432 * Math.PI;
   private static final double telescopeZeroedPosition = 0;
   private static final boolean telescopeUseMotMag = false;
   private static final double telescopeMotMagAccel = 0;
@@ -278,10 +278,8 @@ public class Arm extends Subsystem {
       elbowLeft.configMotionAcceleration(convertElbowPositionToTicks(elbowMotMagAccel, false));
       elbowLeft.configNominalOutputForward(elbowForwardNominalOutput);
       elbowLeft.configNominalOutputReverse(elbowReverseNominalOutput);
-      elbowLeft.configAllowableClosedloopError(0, convertElbowPositionToTicks(
-        elbowAllowableError, false));
-      elbowLeft.configAllowableClosedloopError(1, convertElbowPositionToTicks(
-        elbowAllowableErrorSync, false));
+      elbowLeft.configAllowableClosedloopError(0, convertElbowPositionToTicks(elbowAllowableError, false));
+      elbowLeft.configAllowableClosedloopError(1, convertElbowPositionToTicks(elbowAllowableErrorSync, false));
       elbowRight.configForwardSoftLimitEnable(true);
       elbowRight.configReverseSoftLimitEnable(true);
       elbowLeft.configNominalOutputForward(elbowForwardNominalOutput);
@@ -294,8 +292,7 @@ public class Arm extends Subsystem {
       wrist.configMotionCruiseVelocity(convertWristRelativePositionToTicks(wristMotMagCruiseVelocity));
       wrist.configNominalOutputForward(wristNominalOutputForward);
       wrist.configNominalOutputReverse(wristNominalOutputReverse);
-      wrist.configAllowableClosedloopError(0, 
-        convertWristRelativePositionToTicks(wristAllowableError));
+      wrist.configAllowableClosedloopError(0, convertWristRelativePositionToTicks(wristAllowableError));
       wrist.configForwardSoftLimitEnable(true);
       wrist.configReverseSoftLimitEnable(true);
       wristSchoolZone.setControllerLimits();
@@ -305,8 +302,7 @@ public class Arm extends Subsystem {
       telescope.configMotionCruiseVelocity(convertTelescopeInchesToTicks(telescopeMotMagCruiseVelocity));
       telescope.configNominalOutputForward(telescopeNominalOutputForward);
       telescope.configNominalOutputReverse(telescopeNominalOutputReverse);
-      telescope.configAllowableClosedloopError(0, 
-        convertTelescopeInchesToTicks(telescopeAllowableError));
+      telescope.configAllowableClosedloopError(0, convertTelescopeInchesToTicks(telescopeAllowableError));
       telescope.configForwardSoftLimitEnable(true);
       telescope.configReverseSoftLimitEnable(true);
       telescopeSchoolZone.setControllerLimits();
@@ -372,7 +368,8 @@ public class Arm extends Subsystem {
         elbowCurrentSchoolZone.setControllerLimits();
       }
       if (elbowZeroed) {
-        // Disable applying of reverse limits if elbow down disabled because that also uses peak output
+        // Disable applying of reverse limits if elbow down disabled because that also
+        // uses peak output
         elbowCurrentSchoolZone.applyPosition(elbowPosition, true, elbowDownEnabledLast);
       }
       if (!wristZeroed) {
@@ -465,11 +462,11 @@ public class Arm extends Subsystem {
   private void updateShoulderSetpoint(double elbowPosition) {
     if ((Robot.oi == null || Robot.oi.isArmEnabled()) && enabledOnRobot()) {
       if (targetShoulderRaised != shoulderRaised) {
-        if (elbowPosition >= getElbowLowerLimit(targetShoulderRaised) && 
-        elbowPosition <= getElbowUpperLimit(targetShoulderRaised)) {
+        if (elbowPosition >= getElbowLowerLimit(targetShoulderRaised)
+            && elbowPosition <= getElbowUpperLimit(targetShoulderRaised)) {
           shoulder1.set(targetShoulderRaised ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
           shoulder2.set(targetShoulderRaised ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
-          shoulderRaised = targetShoulderRaised;  
+          shoulderRaised = targetShoulderRaised;
         }
       }
     }
@@ -517,8 +514,7 @@ public class Arm extends Subsystem {
   }
 
   private void updateElbowSetpoint() {
-    if ((elbowZeroed || !elbowLimitsEnabled) && (enabledOnRobot())
-        && elbowEnabled) {
+    if ((elbowZeroed || !elbowLimitsEnabled) && (enabledOnRobot()) && elbowEnabled) {
       double target;
       if (elbowLimitsEnabled && targetElbowPosition < getElbowLowerLimit(targetShoulderRaised)) {
         target = getElbowLowerLimit(targetShoulderRaised);
@@ -576,6 +572,7 @@ public class Arm extends Subsystem {
   private double getElbowLowerLimit() {
     return getElbowLowerLimit(shoulderRaised);
   }
+
   /**
    * Get the lower elbow limit for the passed state
    * 
@@ -585,6 +582,7 @@ public class Arm extends Subsystem {
   private double getElbowLowerLimit(boolean raised) {
     return raised ? elbowLowerLimitHigh : elbowLowerLimitLow;
   }
+
   /**
    * Get the upper elbow limit for the current shoulder state
    * 
@@ -593,6 +591,7 @@ public class Arm extends Subsystem {
   private double getElbowUpperLimit() {
     return getElbowUpperLimit(shoulderRaised);
   }
+
   /**
    * Get the upper elbow limit for the passed state
    * 
@@ -633,6 +632,7 @@ public class Arm extends Subsystem {
     elbowLeft.overrideSoftLimitsEnable(false);
     elbowRight.overrideSoftLimitsEnable(false);
   }
+
   private void enableElbowLimits() {
     elbowLimitsEnabled = true;
     elbowLeft.overrideSoftLimitsEnable(true);
@@ -728,8 +728,7 @@ public class Arm extends Subsystem {
   }
 
   private void updateWristSetpoint() {
-    if (wristZeroed && (enabledOnRobot())
-        && wristEnabled) {
+    if (wristZeroed && (enabledOnRobot()) && wristEnabled) {
       int setpoint = convertWristPositionToTicks(targetWristPosition.getAngle(), true, getElbowTargetPosition());
       // Make sure aux PID does nothing with DemandType.Neutral
       wrist.set(wristUseMotMag ? ControlMode.MotionMagic : ControlMode.Position, setpoint, DemandType.Neutral, 0);
@@ -884,8 +883,7 @@ public class Arm extends Subsystem {
    *                        and needs to be reevaluated
    */
   private void updateTelescopeForwardLimit(boolean setpointChanged) {
-    if ((enabledOnRobot()) && telescopeZeroed
-        && elbowZeroed && telescopeEnabled) {
+    if ((enabledOnRobot()) && telescopeZeroed && elbowZeroed && telescopeEnabled) {
       double currentMaxExtension = getAllowedTelescopeExtension(getElbowPosition());
       int currentMaxExtensionTicks = convertTelescopeInchesToTicks(currentMaxExtension);
       int limit = currentMaxExtensionTicks > telescopeMaxExtensionTicks ? telescopeMaxExtensionTicks

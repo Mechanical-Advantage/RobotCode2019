@@ -27,7 +27,7 @@ public class ArmLightIntake extends Subsystem {
   private static final int intakeContinousCurrentLimit = 0;
   private static final int intakePeakCurrentLimit = 0;
   private static final int intakePeakCurrentLimitDuration = 0; // ms
- 
+
   private TalonSRX intake;
 
   public ArmLightIntake() {

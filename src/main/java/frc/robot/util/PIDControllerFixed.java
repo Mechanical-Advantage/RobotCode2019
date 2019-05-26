@@ -84,10 +84,12 @@ public class PIDControllerFixed extends SendableBase implements PIDInterface, Se
   Timer m_setpointTimer;
 
   /**
-   * Tolerance is the type of tolerance used to specify if the PID controller is on target.
+   * Tolerance is the type of tolerance used to specify if the PID controller is
+   * on target.
    *
-   * <p>The various implementations of this class such as PercentageTolerance and AbsoluteTolerance
-   * specify types of tolerance specifications to use.
+   * <p>
+   * The various implementations of this class such as PercentageTolerance and
+   * AbsoluteTolerance specify types of tolerance specifications to use.
    */
   public interface Tolerance {
     boolean onTarget();
@@ -153,12 +155,13 @@ public class PIDControllerFixed extends SendableBase implements PIDInterface, Se
    * @param Kf     the feed forward term
    * @param source The PIDSource object that is used to get values
    * @param output The PIDOutput object that is set to the output percentage
-   * @param period the loop time for doing calculations. This particularly effects calculations of
-   *               the integral and differential terms. The default is 50ms.
+   * @param period the loop time for doing calculations. This particularly effects
+   *               calculations of the integral and differential terms. The
+   *               default is 50ms.
    */
   @SuppressWarnings("ParameterName")
-  public PIDControllerFixed(double Kp, double Ki, double Kd, double Kf, PIDSource source,
-                       PIDOutput output, double period) {
+  public PIDControllerFixed(double Kp, double Ki, double Kd, double Kf, PIDSource source, PIDOutput output,
+      double period) {
     super(false);
     requireNonNull(source, "Null PIDSource was given");
     requireNonNull(output, "Null PIDOutput was given");
@@ -195,17 +198,18 @@ public class PIDControllerFixed extends SendableBase implements PIDInterface, Se
    * @param Kd     the derivative coefficient
    * @param source the PIDSource object that is used to get values
    * @param output the PIDOutput object that is set to the output percentage
-   * @param period the loop time for doing calculations. This particularly effects calculations of
-   *               the integral and differential terms. The default is 50ms.
+   * @param period the loop time for doing calculations. This particularly effects
+   *               calculations of the integral and differential terms. The
+   *               default is 50ms.
    */
   @SuppressWarnings("ParameterName")
-  public PIDControllerFixed(double Kp, double Ki, double Kd, PIDSource source, PIDOutput output,
-                       double period) {
+  public PIDControllerFixed(double Kp, double Ki, double Kd, PIDSource source, PIDOutput output, double period) {
     this(Kp, Ki, Kd, 0.0, source, output, period);
   }
 
   /**
-   * Allocate a PID object with the given constants for P, I, D, using a 50ms period.
+   * Allocate a PID object with the given constants for P, I, D, using a 50ms
+   * period.
    *
    * @param Kp     the proportional coefficient
    * @param Ki     the integral coefficient
@@ -219,7 +223,8 @@ public class PIDControllerFixed extends SendableBase implements PIDInterface, Se
   }
 
   /**
-   * Allocate a PID object with the given constants for P, I, D, using a 50ms period.
+   * Allocate a PID object with the given constants for P, I, D, using a 50ms
+   * period.
    *
    * @param Kp     the proportional coefficient
    * @param Ki     the integral coefficient
@@ -229,8 +234,7 @@ public class PIDControllerFixed extends SendableBase implements PIDInterface, Se
    * @param output The PIDOutput object that is set to the output percentage
    */
   @SuppressWarnings("ParameterName")
-  public PIDControllerFixed(double Kp, double Ki, double Kd, double Kf, PIDSource source,
-                       PIDOutput output) {
+  public PIDControllerFixed(double Kp, double Ki, double Kd, double Kf, PIDSource source, PIDOutput output) {
     this(Kp, Ki, Kd, Kf, source, output, kDefaultPeriod);
   }
 
@@ -252,8 +256,9 @@ public class PIDControllerFixed extends SendableBase implements PIDInterface, Se
   }
 
   /**
-   * Read the input, calculate the output accordingly, and write to the output. This should only be
-   * called by the PIDTask and is created during initialization.
+   * Read the input, calculate the output accordingly, and write to the output.
+   * This should only be called by the PIDTask and is created during
+   * initialization.
    */
   @SuppressWarnings("LocalVariableName")
   protected void calculate() {
@@ -310,19 +315,16 @@ public class PIDControllerFixed extends SendableBase implements PIDInterface, Se
 
       if (pidSourceType.equals(PIDSourceType.kRate)) {
         if (P != 0) {
-          totalError = clamp(totalError + error, minimumOutput / P,
-              maximumOutput / P);
+          totalError = clamp(totalError + error, minimumOutput / P, maximumOutput / P);
         }
 
         result = P * totalError + D * error + feedForward;
       } else {
         if (I != 0) {
-          totalError = clamp(totalError + error, minimumOutput / I,
-              maximumOutput / I);
+          totalError = clamp(totalError + error, minimumOutput / I, maximumOutput / I);
         }
 
-        result = P * error + I * totalError + D * (error - prevError)
-            + feedForward;
+        result = P * error + I * totalError + D * (error - prevError) + feedForward;
       }
 
       result = clamp(result, minimumOutput, maximumOutput);
@@ -362,15 +364,19 @@ public class PIDControllerFixed extends SendableBase implements PIDInterface, Se
   /**
    * Calculate the feed forward term.
    *
-   * <p>Both of the provided feed forward calculations are velocity feed forwards. If a different
-   * feed forward calculation is desired, the user can override this function and provide his or
-   * her own. This function  does no synchronization because the PIDController class only calls it
-   * in synchronized code, so be careful if calling it oneself.
+   * <p>
+   * Both of the provided feed forward calculations are velocity feed forwards. If
+   * a different feed forward calculation is desired, the user can override this
+   * function and provide his or her own. This function does no synchronization
+   * because the PIDController class only calls it in synchronized code, so be
+   * careful if calling it oneself.
    *
-   * <p>If a velocity PID controller is being used, the F term should be set to 1 over the maximum
-   * setpoint for the output. If a position PID controller is being used, the F term should be set
-   * to 1 over the maximum speed for the output measured in setpoint units per this controller's
-   * update period (see the default period in this class's constructor).
+   * <p>
+   * If a velocity PID controller is being used, the F term should be set to 1
+   * over the maximum setpoint for the output. If a position PID controller is
+   * being used, the F term should be set to 1 over the maximum speed for the
+   * output measured in setpoint units per this controller's update period (see
+   * the default period in this class's constructor).
    */
   protected double calculateFeedForward() {
     if (m_pidInput.getPIDSourceType().equals(PIDSourceType.kRate)) {
@@ -384,8 +390,8 @@ public class PIDControllerFixed extends SendableBase implements PIDInterface, Se
   }
 
   /**
-   * Set the PID Controller gain parameters. Set the proportional, integral, and differential
-   * coefficients.
+   * Set the PID Controller gain parameters. Set the proportional, integral, and
+   * differential coefficients.
    *
    * @param p Proportional coefficient
    * @param i Integral coefficient
@@ -404,8 +410,8 @@ public class PIDControllerFixed extends SendableBase implements PIDInterface, Se
   }
 
   /**
-   * Set the PID Controller gain parameters. Set the proportional, integral, and differential
-   * coefficients.
+   * Set the PID Controller gain parameters. Set the proportional, integral, and
+   * differential coefficients.
    *
    * @param p Proportional coefficient
    * @param i Integral coefficient
@@ -542,8 +548,8 @@ public class PIDControllerFixed extends SendableBase implements PIDInterface, Se
   }
 
   /**
-   * Return the current PID result This is always centered on zero and constrained the the max and
-   * min outs.
+   * Return the current PID result This is always centered on zero and constrained
+   * the the max and min outs.
    *
    * @return the latest calculated output
    */
@@ -557,9 +563,9 @@ public class PIDControllerFixed extends SendableBase implements PIDInterface, Se
   }
 
   /**
-   * Set the PID controller to consider the input to be continuous, Rather then using the max and
-   * min input range as constraints, it considers them to be the same point and automatically
-   * calculates the shortest route to the setpoint.
+   * Set the PID controller to consider the input to be continuous, Rather then
+   * using the max and min input range as constraints, it considers them to be the
+   * same point and automatically calculates the shortest route to the setpoint.
    *
    * @param continuous Set to true turns on continuous, false turns off continuous
    */
@@ -576,9 +582,9 @@ public class PIDControllerFixed extends SendableBase implements PIDInterface, Se
   }
 
   /**
-   * Set the PID controller to consider the input to be continuous, Rather then using the max and
-   * min input range as constraints, it considers them to be the same point and automatically
-   * calculates the shortest route to the setpoint.
+   * Set the PID controller to consider the input to be continuous, Rather then
+   * using the max and min input range as constraints, it considers them to be the
+   * same point and automatically calculates the shortest route to the setpoint.
    */
   public void setContinuous() {
     setContinuous(true);
@@ -692,12 +698,12 @@ public class PIDControllerFixed extends SendableBase implements PIDInterface, Se
   }
 
   /**
-   * Returns the current difference of the error over the past few iterations. You can specify the
-   * number of iterations to average with setToleranceBuffer() (defaults to 1). getAvgError() is
-   * used for the onTarget() function.
+   * Returns the current difference of the error over the past few iterations. You
+   * can specify the number of iterations to average with setToleranceBuffer()
+   * (defaults to 1). getAvgError() is used for the onTarget() function.
    *
    * @deprecated Use getError(), which is now already filtered.
-   * @return     the current average of the error
+   * @return the current average of the error
    */
   @Deprecated
   public double getAvgError() {
@@ -728,14 +734,15 @@ public class PIDControllerFixed extends SendableBase implements PIDInterface, Se
   }
 
   /**
-   * Set the PID tolerance using a Tolerance object. Tolerance can be specified as a percentage of
-   * the range or as an absolute value. The Tolerance object encapsulates those options in an
-   * object. Use it by creating the type of tolerance that you want to use: setTolerance(new
+   * Set the PID tolerance using a Tolerance object. Tolerance can be specified as
+   * a percentage of the range or as an absolute value. The Tolerance object
+   * encapsulates those options in an object. Use it by creating the type of
+   * tolerance that you want to use: setTolerance(new
    * PIDController.AbsoluteTolerance(0.1))
    *
-   * @deprecated      Use setPercentTolerance() instead.
-   * @param tolerance A tolerance object of the right type, e.g. PercentTolerance or
-   *                  AbsoluteTolerance
+   * @deprecated Use setPercentTolerance() instead.
+   * @param tolerance A tolerance object of the right type, e.g. PercentTolerance
+   *                  or AbsoluteTolerance
    */
   @Deprecated
   public void setTolerance(Tolerance tolerance) {
@@ -745,7 +752,8 @@ public class PIDControllerFixed extends SendableBase implements PIDInterface, Se
   /**
    * Set the absolute error which is considered tolerable for use with OnTarget.
    *
-   * @param absvalue absolute error which is tolerable in the units of the input object
+   * @param absvalue absolute error which is tolerable in the units of the input
+   *                 object
    */
   public void setAbsoluteTolerance(double absvalue) {
     m_thisMutex.lock();
@@ -757,8 +765,8 @@ public class PIDControllerFixed extends SendableBase implements PIDInterface, Se
   }
 
   /**
-   * Set the percentage error which is considered tolerable for use with OnTarget. (Input of 15.0 =
-   * 15 percent)
+   * Set the percentage error which is considered tolerable for use with OnTarget.
+   * (Input of 15.0 = 15 percent)
    *
    * @param percentage percent error which is tolerable
    */
@@ -772,13 +780,14 @@ public class PIDControllerFixed extends SendableBase implements PIDInterface, Se
   }
 
   /**
-   * Set the number of previous error samples to average for tolerancing. When determining whether a
-   * mechanism is on target, the user may want to use a rolling average of previous measurements
-   * instead of a precise position or velocity. This is useful for noisy sensors which return a few
-   * erroneous measurements when the mechanism is on target. However, the mechanism will not
+   * Set the number of previous error samples to average for tolerancing. When
+   * determining whether a mechanism is on target, the user may want to use a
+   * rolling average of previous measurements instead of a precise position or
+   * velocity. This is useful for noisy sensors which return a few erroneous
+   * measurements when the mechanism is on target. However, the mechanism will not
    * register as on target for at least the specified bufLength cycles.
    *
-   * @deprecated      Use a LinearDigitalFilter as the input.
+   * @deprecated Use a LinearDigitalFilter as the input.
    * @param bufLength Number of previous cycles to average.
    */
   @Deprecated
@@ -792,8 +801,9 @@ public class PIDControllerFixed extends SendableBase implements PIDInterface, Se
   }
 
   /**
-   * Return true if the error is within the percentage of the total input range, determined by
-   * setTolerance. This assumes that the maximum and minimum input were set using setInput.
+   * Return true if the error is within the percentage of the total input range,
+   * determined by setTolerance. This assumes that the maximum and minimum input
+   * were set using setInput.
    *
    * @return true if the error is less than the tolerance
    */
@@ -894,8 +904,8 @@ public class PIDControllerFixed extends SendableBase implements PIDInterface, Se
   }
 
   /**
-   * Wraps error around for continuous inputs. The original error is returned if continuous mode is
-   * disabled. This is an unsynchronized function.
+   * Wraps error around for continuous inputs. The original error is returned if
+   * continuous mode is disabled. This is an unsynchronized function.
    *
    * @param error The current error of the PID controller.
    * @return Error for continuous inputs.

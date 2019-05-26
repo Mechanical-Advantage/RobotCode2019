@@ -32,7 +32,7 @@ public class VisionData extends Subsystem {
   public HatchPipeline hatch = new HatchPipeline();
   public WhiteTapePipeline whiteTape = new WhiteTapePipeline();
   public DeliveryTargetPipeline delivery = new DeliveryTargetPipeline();
-  private final Pipeline[] pipelines = new Pipeline[] {hatch, whiteTape, delivery};
+  private final Pipeline[] pipelines = new Pipeline[] { hatch, whiteTape, delivery };
 
   ZMQ.Socket commandSocket = Robot.ZMQContext.socket(ZMQ.PUSH);
   ZMQ.Socket recieverSocket = Robot.ZMQContext.socket(ZMQ.SUB);
@@ -49,8 +49,7 @@ public class VisionData extends Subsystem {
         recieverSocket.subscribe(subscription);
       }
     }
-    if (RobotMap.robot == RobotType.ROBOT_2019 || 
-    RobotMap.robot == RobotType.ROBOT_2019_2) {
+    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
       LEDRelay = new Relay(2, Relay.Direction.kForward);
     }
   }
@@ -77,11 +76,11 @@ public class VisionData extends Subsystem {
 
   /**
    * Turns on or off the green LED ring
+   * 
    * @param on Whether the ring should be on
    */
   public void setLEDRing(boolean on) {
-    if (RobotMap.robot == RobotType.ROBOT_2019 || 
-    RobotMap.robot == RobotType.ROBOT_2019_2) {
+    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
       LEDRelay.set(on ? Relay.Value.kForward : Relay.Value.kOff);
     }
   }
@@ -110,17 +109,20 @@ public class VisionData extends Subsystem {
    */
   public abstract class Pipeline {
     protected double lastTimestamp;
-    // This means that the 0s from before the first data point are "handled" 
+    // This means that the 0s from before the first data point are "handled"
     // so the user of the pipeline does not try to process the invalid data
     protected boolean currentDataHandled = true;
 
     public abstract String getName();
+
     public abstract byte[][] getSubscriptions();
+
     protected void processData(List<byte[]> frames) {
       lastTimestamp = ByteBuffer.wrap(frames.get(1)).getDouble();
       // lastTimestamp = Timer.getFPGATimestamp(); // Temporary until real timestamps
       currentDataHandled = false;
     }
+
     /**
      * @return the timestamp of the last data recieved
      */
@@ -129,8 +131,8 @@ public class VisionData extends Subsystem {
     }
 
     /**
-     * Sets a flag that the current data point has been processed.
-     * This flag resets when new data is recieved.
+     * Sets a flag that the current data point has been processed. This flag resets
+     * when new data is recieved.
      */
     public void dataHandled() {
       currentDataHandled = true;
@@ -145,7 +147,8 @@ public class VisionData extends Subsystem {
     private double distance;
     private double angle;
 
-    private HatchPipeline() {};
+    private HatchPipeline() {
+    };
 
     @Override
     public String getName() {
@@ -155,12 +158,15 @@ public class VisionData extends Subsystem {
     @Override
     public byte[][] getSubscriptions() {
       /*
-      * frame 0: "distangle"
-      * frame 1: timestamp (double)
-      * frame 2: distance to target (double)
-      * frame 3: angle to target (double)
-      */
-      return new byte[][] {"distangle".getBytes()};
+       * frame 0: "distangle"
+       * 
+       * frame 1: timestamp (double)
+       * 
+       * frame 2: distance to target (double)
+       * 
+       * frame 3: angle to target (double)
+       */
+      return new byte[][] { "distangle".getBytes() };
     }
 
     @Override
@@ -189,7 +195,8 @@ public class VisionData extends Subsystem {
 
   // White tape pipeline uses almost the same code
   public class WhiteTapePipeline extends HatchPipeline {
-    private WhiteTapePipeline() {} // Prevent construction outside of VisionData
+    private WhiteTapePipeline() {
+    } // Prevent construction outside of VisionData
 
     @Override
     public String getName() {
@@ -202,7 +209,8 @@ public class VisionData extends Subsystem {
     private double y;
     private double angle;
 
-    private DeliveryTargetPipeline() {};
+    private DeliveryTargetPipeline() {
+    };
 
     @Override
     public String getName() {
@@ -212,13 +220,17 @@ public class VisionData extends Subsystem {
     @Override
     public byte[][] getSubscriptions() {
       /*
-      * frame 0: "coordinates"
-      * frame 1: timestamp (double)
-      * frame 2: x from target (double)
-      * frame 3: y from target (double)
-      * frame 4: angle from robot in world coordinates (double)
-      */
-      return new byte[][] {"coordinates".getBytes()};
+       * frame 0: "coordinates"
+       * 
+       * frame 1: timestamp (double)
+       * 
+       * frame 2: x from target (double)
+       * 
+       * frame 3: y from target (double)
+       * 
+       * frame 4: angle from robot in world coordinates (double)
+       */
+      return new byte[][] { "coordinates".getBytes() };
     }
 
     @Override
