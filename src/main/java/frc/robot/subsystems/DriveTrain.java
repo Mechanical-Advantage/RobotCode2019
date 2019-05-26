@@ -3,7 +3,7 @@ package frc.robot.subsystems;
 import frc.robot.Robot;
 import frc.robot.OI.OITYPE;
 import frc.robot.RobotMap;
-import frc.robot.RobotMap.RobotType;
+//import frc.robot.RobotMap.RobotType;
 import frc.robot.commands.DriveWithJoystick;
 
 import com.ctre.phoenix.motorcontrol.ControlFrame;

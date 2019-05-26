@@ -30,20 +30,20 @@ public class ZeroArmInitial extends Command {
   @Override
   protected void execute() {
     switch (state) {
-      case TELESCOPE:
-        if (Robot.arm.isTelescopeZeroed()) {
-          Robot.arm.zeroWrist();
-          state = ZeroState.WRIST;
-        }
-        break;
-      case WRIST:
-        if (Robot.arm.isWristZeroed()) {
-          Robot.arm.beginElbowZeroSequence();
-          state = ZeroState.FINISHED;
-        }
-        break;
-      default:
-        break;
+    case TELESCOPE:
+      if (Robot.arm.isTelescopeZeroed()) {
+        Robot.arm.zeroWrist();
+        state = ZeroState.WRIST;
+      }
+      break;
+    case WRIST:
+      if (Robot.arm.isWristZeroed()) {
+        Robot.arm.beginElbowZeroSequence();
+        state = ZeroState.FINISHED;
+      }
+      break;
+    default:
+      break;
     }
   }
 
