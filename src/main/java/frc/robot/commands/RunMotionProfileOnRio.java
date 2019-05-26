@@ -65,9 +65,9 @@ public class RunMotionProfileOnRio extends Command {
    * Tuning Notes:
    * 
    * Tune wheelbase with gyro correction disabled until heading is about accurate
-   *
+   * 
    * D should be significantly lower than P
-   *
+   * 
    * Too much D will overcorrect, robot will go too fast, not much is needed, in
    * my initial test, any causes problems
    */

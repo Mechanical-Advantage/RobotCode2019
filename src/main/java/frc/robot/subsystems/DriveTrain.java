@@ -34,7 +34,7 @@ public class DriveTrain extends Subsystem {
    * 
    * - CTRE Mag Encoder Relative: 4096 ticks/native units per rotation
    *
-   * -Conversion factor: 6.8266 native units/100ms = 1rpm (for encoder with 4096
+   * - Conversion factor: 6.8266 native units/100ms = 1rpm (for encoder with 4096
    * ticks only)
    * 
    * - Native units are ticks, native units in velocity is ticks per 100ms
@@ -46,13 +46,13 @@ public class DriveTrain extends Subsystem {
    * Talon Slots:
    * 
    * 0: Velocity Low Gear
-   *
+   * 
    * 1: Velocity High Gear
-   *
+   * 
    * 2: Motion profiling/magic
    * 
    * 3: PTO Position
-   *
+   * 
    * Low gear used on single speed robots
    */
 
