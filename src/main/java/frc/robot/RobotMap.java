@@ -77,93 +77,93 @@ public class RobotMap {
   public static int level2RearSolenoid2;
 
   public RobotMap() {
-		switch (robot) {
-      case ROBOT_2017:
-        rightMaster = 14;
-        rightSlave = 13;
-        rightSlave2 = 12;
-        leftMaster = 15;
-        leftSlave = 0;
-        leftSlave2 = 1;
-        maxVelocityLow = 3284; // 525 RPM
-        minVelocityLow = 135; // 20 RPM
-        maxAcceleration = 300;
-        robotLength = 31.5;
-        robotWidth = 29.25;
-        break;
-      case ORIGINAL_ROBOT_2018:
-        rightMaster = 2;
-        rightSlave = 0;
-        leftMaster = 12;
-        leftSlave = 13;
-        leftDriveGearSolenoid1 = 0;
-        leftDriveGearSolenoid2 = 1;
-        leftDriveGearPCM = 1;
-        rightDriveGearSolenoid1 = 2;
-        rightDriveGearSolenoid2 = 3;
-        rightDriveGearPCM = 0;
-        maxVelocityHigh = 7056; // ~230 in/s
-        maxVelocityLow = 3252; // 106 in/s
-        minVelocityLow = 100;
-        minVelocityHigh = 400;
-        robotLength = 32+6;
-        robotWidth = 27+6;
-        break;
-      case EVERYBOT_2019:
-        rightMaster = 0;
-        leftMaster = 15;
-        rightSlave = 1;
-        leftSlave = 14;
-        maxVelocityLow = 950; // 950 native units per 100ms
-        minVelocityLow = 40; // 40 native units per 100ms
-        maxAcceleration = 300;
-        break;
-      case ROBOT_2019:
-      case ROBOT_2019_2:
-        rightMaster = 3;
-        rightSlave = 2;
-        rightSlave2 = 1;
-        leftMaster = 12;
-        leftSlave = 14;
-        leftSlave2 = 13;
-        maxVelocityLow = 4800; // 5710 on blocks
-        minVelocityLow = 210;
-        maxAcceleration = 0;
-        armElbowLeft = 15;
-        armElbowRight = 0;
-        armTelescope = 5;
-        armWrist = 11;
-        vacuumMotor = 4;
-        vacuumPressureSensor = 1;
-        armShoulder1Extend = 0; // Left, disabled, using disconnected channels, was PCM 1 extend 4 retract 6
-        armShoulder1Retract = 1;
-        armShoulder1PCM = 0;
-        armShoulder2Extend = 2; // Right, disabled, was PCM 1 extend 5 retract 7
-        armShoulder2Retract = 3;
-        armShoulder2PCM = 0;
-        greenLEDRing = 2;
-        ptoSolenoid1 = 3;
-        ptoSolenoid2 = 2;
-        ptoSolenoidPCM = 1;
-        tailReleaseSolenoid1 = 0;
-        tailReleaseSolenoid2 = 1;
-        tailReleasePCM = 1;
-        simpleScoringPCM = 0;
-        simpleScoringSolenoid1 = 7;
-        simpleScoringSolenoid2 = 5;
-        simpleScoringIntake = 10;
-        armLightIntake = 11;
-        level2FrontPCM = 1;
-        level2FrontSolenoid1 = 5;
-        level2FrontSolenoid2 = 7;
-        level2RearPCM = 1;
-        level2RearSolenoid1 = 4;
-        level2RearSolenoid2 = 6;
-        break;
-      default:
-        break;
-		}
-	}
+    switch (robot) {
+    case ROBOT_2017:
+      rightMaster = 14;
+      rightSlave = 13;
+      rightSlave2 = 12;
+      leftMaster = 15;
+      leftSlave = 0;
+      leftSlave2 = 1;
+      maxVelocityLow = 3284; // 525 RPM
+      minVelocityLow = 135; // 20 RPM
+      maxAcceleration = 300;
+      robotLength = 31.5;
+      robotWidth = 29.25;
+      break;
+    case ORIGINAL_ROBOT_2018:
+      rightMaster = 2;
+      rightSlave = 0;
+      leftMaster = 12;
+      leftSlave = 13;
+      leftDriveGearSolenoid1 = 0;
+      leftDriveGearSolenoid2 = 1;
+      leftDriveGearPCM = 1;
+      rightDriveGearSolenoid1 = 2;
+      rightDriveGearSolenoid2 = 3;
+      rightDriveGearPCM = 0;
+      maxVelocityHigh = 7056; // ~230 in/s
+      maxVelocityLow = 3252; // 106 in/s
+      minVelocityLow = 100;
+      minVelocityHigh = 400;
+      robotLength = 32 + 6;
+      robotWidth = 27 + 6;
+      break;
+    case EVERYBOT_2019:
+      rightMaster = 0;
+      leftMaster = 15;
+      rightSlave = 1;
+      leftSlave = 14;
+      maxVelocityLow = 950; // 950 native units per 100ms
+      minVelocityLow = 40; // 40 native units per 100ms
+      maxAcceleration = 300;
+      break;
+    case ROBOT_2019:
+    case ROBOT_2019_2:
+      rightMaster = 3;
+      rightSlave = 2;
+      rightSlave2 = 1;
+      leftMaster = 12;
+      leftSlave = 14;
+      leftSlave2 = 13;
+      maxVelocityLow = 4800; // 5710 on blocks
+      minVelocityLow = 210;
+      maxAcceleration = 0;
+      armElbowLeft = 15;
+      armElbowRight = 0;
+      armTelescope = 5;
+      armWrist = 11;
+      vacuumMotor = 4;
+      vacuumPressureSensor = 1;
+      armShoulder1Extend = 0; // Left, disabled, using disconnected channels, was PCM 1 extend 4 retract 6
+      armShoulder1Retract = 1;
+      armShoulder1PCM = 0;
+      armShoulder2Extend = 2; // Right, disabled, was PCM 1 extend 5 retract 7
+      armShoulder2Retract = 3;
+      armShoulder2PCM = 0;
+      greenLEDRing = 2;
+      ptoSolenoid1 = 3;
+      ptoSolenoid2 = 2;
+      ptoSolenoidPCM = 1;
+      tailReleaseSolenoid1 = 0;
+      tailReleaseSolenoid2 = 1;
+      tailReleasePCM = 1;
+      simpleScoringPCM = 0;
+      simpleScoringSolenoid1 = 7;
+      simpleScoringSolenoid2 = 5;
+      simpleScoringIntake = 10;
+      armLightIntake = 11;
+      level2FrontPCM = 1;
+      level2FrontSolenoid1 = 5;
+      level2FrontSolenoid2 = 7;
+      level2RearPCM = 1;
+      level2RearSolenoid1 = 4;
+      level2RearSolenoid2 = 6;
+      break;
+    default:
+      break;
+    }
+  }
 
   public enum RobotType {
     ROBOT_2019, ROBOT_2019_2, ORIGINAL_ROBOT_2018, EVERYBOT_2019, ROBOT_2017
