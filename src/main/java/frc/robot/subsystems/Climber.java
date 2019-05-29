@@ -11,31 +11,26 @@ package frc.robot.subsystems;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 
 import edu.wpi.first.wpilibj.command.Subsystem;
 import frc.robot.RobotMap;
 import frc.robot.RobotMap.RobotType;
 
-import com.ctre.phoenix.motorcontrol.can.VictorSPX;
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.NeutralMode;
-
-import com.ctre.phoenix.motorcontrol.can.BaseMotorController;
 /**
  * Add your docs here.
  */
 public class Climber extends Subsystem {
 
-  
-  private static final boolean climberMasterReversed = true;
-  private static final boolean climberSlaveReversed = true;
-  private static final NeutralMode climberNeutralMode = NeutralMode.Coast;
+  private static final boolean masterReversed = true;
+  private static final boolean slaveReversed = true;
+  private static final NeutralMode neutralMode = NeutralMode.Coast;
 
   
-  private static final boolean climberEnableCurrentLimit = false;
-  private static final int climberContinousCurrentLimit = 0;
-  private static final int climberPeakCurrentLimit = 0;
-  private static final int climberPeakCurrentLimitDuration = 0; // ms no clue what "Ms" meant
+  private static final boolean enableCurrentLimit = false;
+  private static final int continousCurrentLimit = 0;
+  private static final int peakCurrentLimit = 0;
+  private static final int peakCurrentLimitDuration = 0; // ms 
  
  
   private TalonSRX climberMaster;
@@ -49,25 +44,40 @@ public class Climber extends Subsystem {
      climberSlave = new VictorSPX(RobotMap.climberSlave);
 
      climberMaster.configFactoryDefault();
-     climberMaster.setInverted (climberMasterReversed);
-     climberMaster.setNeutralMode (climberNeutralMode);
+     climberMaster.setInverted(masterReversed);
+     climberMaster.setNeutralMode(neutralMode);
 
 
-     climberMaster.configContinuousCurrentLimit (climberContinousCurrentLimit);
-     climberMaster.configPeakCurrentLimit (climberPeakCurrentLimit);
-     climberMaster.configPeakCurrentDuration (climberPeakCurrentLimitDuration);
-     climberMaster.enableCurrentLimit (climberEnableCurrentLimit);
+     climberMaster.configContinuousCurrentLimit(continousCurrentLimit);
+     climberMaster.configPeakCurrentLimit(peakCurrentLimit);
+     climberMaster.configPeakCurrentDuration(peakCurrentLimitDuration);
+     climberMaster.enableCurrentLimit(enableCurrentLimit);
    
      climberSlave.configFactoryDefault();
-     climberSlave.setInverted (climberSlaveReversed);
-     climberSlave.setNeutralMode (climberNeutralMode);
+     climberSlave.setInverted(slaveReversed);
+     climberSlave.setNeutralMode(neutralMode);
    
      climberSlave.follow(climberMaster);
-
-
-
     }
   }
+
+  private boolean available() {
+    return RobotMap.robot == RobotType.ROBOT_2017;
+  }
+
+
+  public void run(double power) {
+    if (available()) {
+      climberMaster.set(ControlMode.PercentOutput, power);
+    }
+  }
+
+  public void stop() {
+    if (available()) {
+      climberMaster.neutralOutput();
+    }
+  }
+
 
 
   // Put methods for controlling this subsystem
