@@ -109,7 +109,7 @@ public class RunMotionProfileOnRio extends Command {
   private void initCommand() {
     requires(Robot.driveSubsystem);
     switch (RobotMap.robot) {
-    case ROBOT_2017:
+    case ROBOT_REBOT:
       // tuned using max velocity: 100, accel: 55, jerk: 200
       kP.setDefault(8); // No oscillation at 10, 15 has some but D might help, 11 on 1/26
       kD.setDefault(0);

@@ -33,10 +33,10 @@ public class DriveTrain extends Subsystem {
    * - Firmware in Phoenix does not support scaling
    * 
    * - CTRE Mag Encoder Relative: 4096 ticks/native units per rotation
-   * 
+   *
    * - Conversion factor: 6.8266 native units/100ms = 1rpm (for encoder with 4096
    * ticks only)
-   *
+   * 
    * - Native units are ticks, native units in velocity is ticks per 100ms
    * 
    * See Talon SRX Software Reference Manual sections 17.1, 17.2
@@ -80,7 +80,7 @@ public class DriveTrain extends Subsystem {
 
   private static final double sniperMode = 0.25; // multiplied by velocity in sniper mode
   private static final boolean sniperModeLocked = false; // when set, sniper mode uses value above, when unset, value
-  // comes from throttle control on joystick
+                                                         // comes from throttle control on joystick
   private static final int currentLimit = 50;
   private static final boolean enableCurrentLimit = false;
   @SuppressWarnings("unused")
@@ -127,19 +127,16 @@ public class DriveTrain extends Subsystem {
     leftTalonMaster = new TalonSRX(RobotMap.leftMaster);
     leftTalonSlave = new VictorSPX(RobotMap.leftSlave);
     switch (RobotMap.robot) {
-    case ROBOT_2017:
+    case ROBOT_REBOT:
       sixMotorDrive = true;
       encoderType = FeedbackDevice.CTRE_MagEncoder_Relative;
       ticksPerRotation = 4096;
-      // wheelDiameter = 4.1791666667; // before worlds, from end of build season
-      // wheelDiameter = 4.24881941; // 7:48 AM worlds
-      wheelDiameter = 4.0541069007; // Measured 1/27/2018
+      wheelDiameter = 5; // This is just a best guess, make sure to measure before tuning
       reverseSensorRight = true;
       reverseSensorLeft = true;
       reverseOutputLeft = false;
       reverseOutputRight = true;
-      // wheelBaseWidth = 22.5; // 18
-      wheelBaseWidth = 18;
+      wheelBaseWidth = 18; // Revise this later on
       kPLow = 0.6;
       kILow = 0.0007;
       kDLow = 6;
@@ -714,7 +711,7 @@ public class DriveTrain extends Subsystem {
       rightTalonMaster.configAllowableClosedloopError(1, 0, configTimeout); // motion profiling does not use this
       leftTalonMaster.configAllowableClosedloopError(1, 0, configTimeout);
       currentControlMode = DriveControlMode.STANDARD_DRIVE; // this needs to be changed before calling
-      // useClosed/OpenLoop so that they work
+                                                            // useClosed/OpenLoop so that they work
       rightTalonMaster.selectProfileSlot(0, 0);
       leftTalonMaster.selectProfileSlot(0, 0);
       rightTalonMaster.configNominalOutputForward(nominalOutputVoltage / 12, configTimeout);

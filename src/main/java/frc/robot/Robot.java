@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.commands.DriveWithJoystick.JoystickMode;
+import frc.robot.RobotMap.RobotType;
 import frc.robot.commands.ArmLightTuning;
 import frc.robot.commands.ArmTuning;
 import frc.robot.commands.DriveDistanceOnHeading;
@@ -121,6 +122,9 @@ public class Robot extends TimedRobot {
       GenerateMotionProfiles generateCommand = new GenerateMotionProfiles();
       generateCommand.setRunWhenDisabled(true);
       generateCommand.start();
+    }
+    if (RobotMap.robot == RobotType.EVERYBOT_2019 || RobotMap.robot == RobotType.ROBOT_REBOT) {
+      cameraSubsystem.useFrontCamera();
     }
     Compressor c = new Compressor();
   }

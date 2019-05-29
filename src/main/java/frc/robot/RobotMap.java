@@ -41,7 +41,7 @@ public class RobotMap {
   public static double robotWidth;
   public static double robotLength;
   public static final boolean tuningMode = false;
-  public static final RobotType robot = RobotType.ROBOT_2019;
+  public static final RobotType robot = RobotType.EVERYBOT_2019;
   public static int minVelocityLow; // lower values will be treated as this value, RPM
   public static int maxVelocityLow; // maximum velocity when sticks are fully forward (value of 1), RPM
   public static int maxVelocityHigh;
@@ -78,7 +78,7 @@ public class RobotMap {
 
   public RobotMap() {
     switch (robot) {
-    case ROBOT_2017:
+    case ROBOT_REBOT:
       rightMaster = 14;
       rightSlave = 13;
       rightSlave2 = 12;
@@ -166,6 +166,6 @@ public class RobotMap {
   }
 
   public enum RobotType {
-    ROBOT_2019, ROBOT_2019_2, ORIGINAL_ROBOT_2018, EVERYBOT_2019, ROBOT_2017
+    ROBOT_2019, ROBOT_2019_2, ORIGINAL_ROBOT_2018, EVERYBOT_2019, ROBOT_REBOT
   }
 }
