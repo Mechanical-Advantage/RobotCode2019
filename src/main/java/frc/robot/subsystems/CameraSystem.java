@@ -20,6 +20,8 @@ public class CameraSystem extends Subsystem {
 	private int frontCameraID;
 	private int secondCameraID;
 
+	private static final int compressionQuality = 50; // Valid range 0-100, higher value for higher quality and higher
+														// bandwith.
 	// Put methods for controlling this subsystem
 	// here. Call these from Commands.
 
@@ -31,6 +33,9 @@ public class CameraSystem extends Subsystem {
 	public CameraSystem() {
 		switch (RobotMap.robot) {
 		case EVERYBOT_2019:
+			frontCameraID = 0;
+			secondCameraID = 2;
+			break;
 		case ROBOT_REBOT:
 			frontCameraID = 2;
 			secondCameraID = 0;
@@ -57,7 +62,7 @@ public class CameraSystem extends Subsystem {
 	private UsbCamera setupServer(int id) {
 		serverCreated = true;
 		UsbCamera camera = CameraServer.getInstance().startAutomaticCapture("Video Feed", id);
-		((MjpegServer) CameraServer.getInstance().getServer()).setCompression(50);
+		((MjpegServer) CameraServer.getInstance().getServer()).setCompression(compressionQuality);
 		return camera;
 	}
 
