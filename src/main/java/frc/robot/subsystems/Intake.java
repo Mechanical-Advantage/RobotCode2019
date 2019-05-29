@@ -30,8 +30,12 @@ public class Intake extends Subsystem {
 
   private TalonSRX intake;
 
+  private boolean available() {
+    return RobotMap.robot == RobotType.ROBOT_2017;
+  }
+
   public Intake() {
-    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2 || RobotMap.robot == RobotType.ROBOT_2017) {
+    if (available()) {
       intake = new TalonSRX(RobotMap.intakeMotor);
 
       intake.configFactoryDefault();
@@ -52,13 +56,13 @@ public class Intake extends Subsystem {
   }
 
   public void run(double power) {
-    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2 || RobotMap.robot == RobotType.ROBOT_2017) {
+    if (available()) {
       intake.set(ControlMode.PercentOutput, power);
     }
   }
 
   public void stop() {
-    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2 || RobotMap.robot == RobotType.ROBOT_2017) {
+    if (available()) {
       intake.neutralOutput();
     }
   }
