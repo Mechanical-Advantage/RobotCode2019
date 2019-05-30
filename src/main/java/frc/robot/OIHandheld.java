@@ -5,10 +5,11 @@ import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.buttons.POVButton;
-
+import edu.wpi.first.wpilibj.buttons.Trigger;
 import frc.robot.commands.ReverseJoysticks;
 import frc.robot.commands.ToggleDriveEnabled;
 import frc.robot.commands.ToggleOpenLoop;
+import frc.robot.triggers.TriggerPressedTrigger;
 
 public class OIHandheld implements OI {
     private boolean joysticksReversed = false;
@@ -22,10 +23,27 @@ public class OIHandheld implements OI {
 
     private POVButton joysticksForwards = new POVButton(driverController, 0);
     private POVButton joysticksBackwards = new POVButton(driverController, 180);
-    private JoystickButton driverToggleDriveEnabled = new JoystickButton(driverController, 7);
-    private JoystickButton driverToggleOpenLoop = new JoystickButton(driverController, 8);
-    private JoystickButton operatorToggleDriveEnabled = new JoystickButton(operatorController, 7);
-    private JoystickButton operatorToggleOpenLoop = new JoystickButton(operatorController, 8);
+    private JoystickButton driverToggleDriveEnabled = new JoystickButton(driverController, 7); // back button
+    private JoystickButton driverToggleOpenLoop = new JoystickButton(driverController, 8); // start button
+    private JoystickButton operatorToggleDriveEnabled = new JoystickButton(operatorController, 7); // back button
+    private JoystickButton operatorToggleOpenLoop = new JoystickButton(operatorController, 8); // start button
+
+    private JoystickButton hatchRetract = new JoystickButton(operatorController, 1); // A button
+    private JoystickButton hatchExtend = new JoystickButton(operatorController, 3); // X button
+    private JoystickButton cargoIntake = new JoystickButton(operatorController, 2); // B button
+    private JoystickButton cargoEject = new JoystickButton(operatorController, 4); // Y button
+    private JoystickButton raiseIntake = new JoystickButton(operatorController, 6); // right bumper
+    private JoystickButton lowerIntake = new JoystickButton(operatorController, 5); // left bumper
+
+    private POVButton shipSetpoint = new POVButton(operatorController, 0);
+    private POVButton rocketL1Setpoint = new POVButton(operatorController, 90);
+    private POVButton rocketL2Setpoint = new POVButton(operatorController, 180);
+    private POVButton rocketL3Setpoint = new POVButton(operatorController, 270);
+    private JoystickButton setHatch = new JoystickButton(operatorController, 9); // left stick click
+    private JoystickButton setCargo = new JoystickButton(operatorController, 10); // right stick click
+
+    private Trigger enableVacuum = new TriggerPressedTrigger(operatorController, Hand.kRight);
+    private Trigger disableVacuum = new TriggerPressedTrigger(operatorController, Hand.kLeft);
 
     public OIHandheld() {
         resetRumble();
