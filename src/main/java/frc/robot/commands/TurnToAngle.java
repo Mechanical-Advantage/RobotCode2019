@@ -53,7 +53,7 @@ public class TurnToAngle extends Command implements PIDOutput {
     targetAngle = (angle > 180) ? 180 : angle;
     targetAngle = (targetAngle < -180) ? -180 : targetAngle;
     switch (RobotMap.robot) {
-    case ROBOT_2017:
+    case ROBOT_REBOT:
       kP = 0.0077; // 0.008
       kI = 0;
       kD = 0.0137; // 0.014

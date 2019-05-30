@@ -32,6 +32,7 @@ import frc.robot.OI.OITYPE;
 import static frc.robot.OI.fullAcceleration;
 import static frc.robot.OI.lowRumbleFactor;
 import static frc.robot.OI.minAcceleration;
+import frc.robot.RobotMap.RobotType;
 import frc.robot.commands.ArmLightTuning;
 import frc.robot.commands.ArmTuning;
 import frc.robot.commands.DriveDistanceOnHeading;
@@ -147,6 +148,9 @@ public class Robot extends TimedRobot {
       GenerateMotionProfiles generateCommand = new GenerateMotionProfiles();
       generateCommand.setRunWhenDisabled(true);
       generateCommand.start();
+    }
+    if (RobotMap.robot == RobotType.EVERYBOT_2019 || RobotMap.robot == RobotType.ROBOT_REBOT) {
+      cameraSubsystem.useFrontCamera();
     }
     Compressor c = new Compressor();
   }

@@ -102,7 +102,7 @@ public class GenerateMotionProfiles extends InstantCommand {
     case ORIGINAL_ROBOT_2018:
       generateProfile(stdConfigOrig2018, fileName);
       break;
-    case ROBOT_2017:
+    case ROBOT_REBOT:
       generateProfile(stdConfig2017, fileName);
       break;
     case ROBOT_2019:
