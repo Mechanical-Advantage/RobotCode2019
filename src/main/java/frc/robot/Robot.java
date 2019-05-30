@@ -86,6 +86,7 @@ public class Robot extends TimedRobot {
   private static final Command vacPickupCommand = new VacPickup();
 
   public Accelerometer accel = new BuiltInAccelerometer(Accelerometer.Range.k4G);
+  public GamePiece gamePiece;
 
   /**
    * This function is run when the robot is first started up and should be used
@@ -153,11 +154,16 @@ public class Robot extends TimedRobot {
   // Update rumble based on acceleration
   private void updateControllerRumble() {
     if (oiType == OITYPE.HANDHELD) {
-      double totalAcceleration = Math.sqrt(accel.getX()*accel.getX() + accel.getY()*accel.getY()); //Calculates total acceleration using pythagorean theorem
+      double totalAcceleration = Math.sqrt(accel.getX() * accel.getX() + accel.getY() * accel.getY()); // Calculates
+                                                                                                       // total
+                                                                                                       // acceleration
+                                                                                                       // using
+                                                                                                       // pythagorean
+                                                                                                       // theorem
       if (totalAcceleration > minAcceleration) {
-        totalAcceleration/=fullAcceleration;
+        totalAcceleration /= fullAcceleration;
         oi.setRumble(RUMBLETYPE.DRIVER_RIGHT, totalAcceleration);
-        oi.setRumble(RUMBLETYPE.DRIVER_LEFT, totalAcceleration*lowRumbleFactor);
+        oi.setRumble(RUMBLETYPE.DRIVER_LEFT, totalAcceleration * lowRumbleFactor);
       } else {
         oi.setRumble(RUMBLETYPE.DRIVER_RIGHT, 0);
         oi.setRumble(RUMBLETYPE.DRIVER_LEFT, 0);
@@ -267,7 +273,7 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
     Scheduler.getInstance().run();
     updateControllerRumble();
-  }            
+  }
 
   /**
    * This function is called periodically during test mode.
@@ -278,6 +284,10 @@ public class Robot extends TimedRobot {
 
   private enum AutoMode {
     TUNING, VAC_PICKUP;
+  }
+
+  public enum GamePiece {
+    HATCH, CARGO;
   }
 
   // Utility functions
