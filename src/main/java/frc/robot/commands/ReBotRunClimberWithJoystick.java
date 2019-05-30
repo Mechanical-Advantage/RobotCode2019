@@ -18,7 +18,7 @@ public class ReBotRunClimberWithJoystick extends Command {
     // Use requires() here to declare subsystem dependencies
     // eg. requires(chassis);
     super("ReBotRunClimberWithJoystick");
-    // requires(Robot.climberSubsystem);
+    requires(Robot.climber);
   }
 
   // Called just before this Command runs the first time
@@ -31,7 +31,7 @@ public class ReBotRunClimberWithJoystick extends Command {
   protected void execute() {
     double joystickAxis = Robot.oi.getRightOperatorStickY();
     joystickAxis = Math.abs(joystickAxis) > deadband ? joystickAxis : 0;
-    // Robot.climberSubsystem.drive(joystickAxis);
+    Robot.climber.run(joystickAxis);
   }
 
   // Make this return true when this Command no longer needs to run execute()

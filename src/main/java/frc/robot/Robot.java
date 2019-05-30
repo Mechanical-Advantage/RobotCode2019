@@ -51,6 +51,7 @@ import frc.robot.subsystems.Level2Climber;
 import frc.robot.subsystems.SimpleScorer;
 import frc.robot.subsystems.VisionData;
 import frc.robot.subsystems.Vacuum;
+import frc.robot.subsystems.Climber;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -73,6 +74,7 @@ public class Robot extends TimedRobot {
   public static final SimpleScorer simpleScorer = new SimpleScorer();
   public static final VisionData visionData = new VisionData();
   public static final Level2Climber level2Climber = new Level2Climber();
+  public static final Climber climber = new Climber();
 
   public static OI oi;
   public static OITYPE oiType;
