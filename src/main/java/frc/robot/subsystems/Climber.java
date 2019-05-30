@@ -39,7 +39,7 @@ public class Climber extends Subsystem {
 
 
   public Climber() {
-    if (RobotMap.robot == RobotType.ROBOT_2017) {
+    if (RobotMap.robot == RobotType.ROBOT_REBOT) {
      climberMaster = new TalonSRX(RobotMap.climberMaster);
      climberSlave = new VictorSPX(RobotMap.climberSlave);
 
@@ -62,7 +62,7 @@ public class Climber extends Subsystem {
   }
 
   private boolean available() {
-    return RobotMap.robot == RobotType.ROBOT_2017;
+    return RobotMap.robot == RobotType.ROBOT_REBOT;
   }
 
 
