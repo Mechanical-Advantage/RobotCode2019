@@ -16,7 +16,7 @@ import edu.wpi.first.wpilibj.command.InstantCommand;
 public class CancelCommand extends InstantCommand {
 
   private Command command;
-  
+
   public CancelCommand(Command command) {
     super();
     this.command = command;

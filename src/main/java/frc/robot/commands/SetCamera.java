@@ -10,25 +10,24 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class SetCamera extends InstantCommand {
 
-	private boolean frontCamera;
-	
-    public SetCamera(boolean useFrontCamera) {
-        super("SetCamera");
-        // Use requires() here to declare subsystem dependencies
-        // eg. requires(chassis);
-        frontCamera = useFrontCamera;
-        requires(Robot.cameraSubsystem);
-    }
+  private boolean frontCamera;
 
-    // Called once when the command executes
-    protected void initialize() {
-    	if (frontCamera) {
-    		Robot.cameraSubsystem.useFrontCamera();
-    	}
-    	else {
-    		Robot.cameraSubsystem.useSecondCamera();
-    	}
-    	SmartDashboard.putString("Current Camera", frontCamera ? "Front" : "Second");
+  public SetCamera(boolean useFrontCamera) {
+    super("SetCamera");
+    // Use requires() here to declare subsystem dependencies
+    // eg. requires(chassis);
+    frontCamera = useFrontCamera;
+    requires(Robot.cameraSubsystem);
+  }
+
+  // Called once when the command executes
+  protected void initialize() {
+    if (frontCamera) {
+      Robot.cameraSubsystem.useFrontCamera();
+    } else {
+      Robot.cameraSubsystem.useSecondCamera();
     }
+    SmartDashboard.putString("Current Camera", frontCamera ? "Front" : "Second");
+  }
 
 }

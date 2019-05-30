@@ -14,8 +14,8 @@ import frc.robot.RobotMap;
 import frc.robot.RobotMap.RobotType;
 
 /**
- * Beaver tail.
- * Note: Most functionality is part of either Vacuum or DriveTrain (pto methods)
+ * Beaver tail. Note: Most functionality is part of either Vacuum or DriveTrain
+ * (pto methods)
  */
 public class BeaverTail extends Subsystem {
 
@@ -23,8 +23,8 @@ public class BeaverTail extends Subsystem {
 
   public BeaverTail() {
     if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
-      release = new DoubleSolenoid(RobotMap.tailReleasePCM, 
-        RobotMap.tailReleaseSolenoid1, RobotMap.tailReleaseSolenoid2);
+      release = new DoubleSolenoid(RobotMap.tailReleasePCM, RobotMap.tailReleaseSolenoid1,
+          RobotMap.tailReleaseSolenoid2);
     }
   }
 
@@ -41,8 +41,8 @@ public class BeaverTail extends Subsystem {
   }
 
   public void releaseTail() {
-    if (!Robot.oi.isTailLocked() && RobotMap.robot == RobotType.ROBOT_2019 || 
-    RobotMap.robot == RobotType.ROBOT_2019_2) {
+    if (!Robot.oi.isTailLocked() && RobotMap.robot == RobotType.ROBOT_2019
+        || RobotMap.robot == RobotType.ROBOT_2019_2) {
       release.set(DoubleSolenoid.Value.kReverse);
     }
   }

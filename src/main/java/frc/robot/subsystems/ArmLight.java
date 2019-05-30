@@ -40,7 +40,13 @@ public class ArmLight extends Subsystem {
   private static final double elbowUpperLimitLow = 227;
   private static final double elbowLowerLimitHigh = 0;
   private static final double elbowUpperLimitHigh = 360;
-  private static final double elbowReduction = 4.1801254204035874439461883408072/*tele theory (wrong)0.5*(60.0/22.0)*(32.0/18.0)*(36.0/24.0)*//*cycloidal: 1.5 * 33 * 2.72*/; // Multiplier on setpoints
+  private static final double elbowReduction = 4.1801254204035874439461883408072/*
+                                                                                 * tele theory
+                                                                                 * (wrong)0.5*(60.0/22.0)*(32.0/18.0)*(
+                                                                                 * 36.0/24.0)
+                                                                                 *//* cycloidal: 1.5 * 33 * 2.72 */; // Multiplier
+                                                                                                                     // on
+                                                                                                                     // setpoints
   private static final double elbowOffsetLow = 0; // Elbow offset applied when shoulder is lowered
   private static final double elbowOffsetHigh = 60; // Elbow offset applied when shoulder is raised
   private static final double elbowSchoolZoneSpeedLimit = 0.1;
@@ -120,8 +126,7 @@ public class ArmLight extends Subsystem {
       elbow.configMotionAcceleration(convertElbowPositionToTicks(elbowMotMagAccel, false));
       elbow.configNominalOutputForward(elbowForwardNominalOutput);
       elbow.configNominalOutputReverse(elbowReverseNominalOutput);
-      elbow.configAllowableClosedloopError(0, convertElbowPositionToTicks(
-        elbowAllowableError, false));
+      elbow.configAllowableClosedloopError(0, convertElbowPositionToTicks(elbowAllowableError, false));
       elbow.configClosedloopRamp(elbowRampRate);
       elbowLowSchoolZone.setControllerLimits(); // This sets the peak output of the controllers
 
@@ -163,7 +168,8 @@ public class ArmLight extends Subsystem {
         elbowCurrentSchoolZone.setControllerLimits();
       }
       if (elbowZeroed) {
-        // Disable applying of reverse limits if elbow down disabled because that also uses peak output
+        // Disable applying of reverse limits if elbow down disabled because that also
+        // uses peak output
         elbowCurrentSchoolZone.applyPosition(elbowPosition, true, elbowDownEnabledLast);
       }
     }
@@ -226,13 +232,14 @@ public class ArmLight extends Subsystem {
   }
 
   private void updateShoulderSetpoint(double elbowPosition) {
-    if ((Robot.oi == null || Robot.oi.isArmEnabled()) && RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+    if ((Robot.oi == null || Robot.oi.isArmEnabled()) && RobotMap.robot == RobotType.ROBOT_2019
+        || RobotMap.robot == RobotType.ROBOT_2019_2) {
       if (targetShoulderRaised != shoulderRaised) {
-        if (elbowPosition >= getElbowLowerLimit(targetShoulderRaised) && 
-        elbowPosition <= getElbowUpperLimit(targetShoulderRaised)) {
+        if (elbowPosition >= getElbowLowerLimit(targetShoulderRaised)
+            && elbowPosition <= getElbowUpperLimit(targetShoulderRaised)) {
           shoulder1.set(targetShoulderRaised ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
           shoulder2.set(targetShoulderRaised ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
-          shoulderRaised = targetShoulderRaised;  
+          shoulderRaised = targetShoulderRaised;
         }
       }
     }
@@ -260,6 +267,7 @@ public class ArmLight extends Subsystem {
 
   /**
    * Drive the elbow at a percentage instead of position PID
+   * 
    * @param speed The percent speed to drive at
    */
   public void driveElbow(double speed) {
@@ -291,8 +299,8 @@ public class ArmLight extends Subsystem {
   }
 
   private void updateElbowSetpoint() {
-    if ((elbowZeroed || !elbowLimitsEnabled) && (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2)
-        && elbowEnabled) {
+    if ((elbowZeroed || !elbowLimitsEnabled)
+        && (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) && elbowEnabled) {
       double target;
       if (elbowLimitsEnabled && targetElbowPosition < getElbowLowerLimit(targetShoulderRaised)) {
         target = getElbowLowerLimit(targetShoulderRaised);
@@ -347,6 +355,7 @@ public class ArmLight extends Subsystem {
   private double getElbowLowerLimit() {
     return getElbowLowerLimit(shoulderRaised);
   }
+
   /**
    * Get the lower elbow limit for the passed state
    * 
@@ -356,6 +365,7 @@ public class ArmLight extends Subsystem {
   private double getElbowLowerLimit(boolean raised) {
     return raised ? elbowLowerLimitHigh : elbowLowerLimitLow;
   }
+
   /**
    * Get the upper elbow limit for the current shoulder state
    * 
@@ -364,6 +374,7 @@ public class ArmLight extends Subsystem {
   private double getElbowUpperLimit() {
     return getElbowUpperLimit(shoulderRaised);
   }
+
   /**
    * Get the upper elbow limit for the passed state
    * 
@@ -401,6 +412,7 @@ public class ArmLight extends Subsystem {
     elbowLimitsEnabled = false;
     elbow.overrideSoftLimitsEnable(false);
   }
+
   private void enableElbowLimits() {
     elbowLimitsEnabled = true;
     elbow.overrideSoftLimitsEnable(true);
@@ -437,8 +449,8 @@ public class ArmLight extends Subsystem {
   }
 
   public void enableElbow() {
-    if ((RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) && 
-    (Robot.oi == null || Robot.oi.isArmEnabled())) {
+    if ((RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2)
+        && (Robot.oi == null || Robot.oi.isArmEnabled())) {
       elbowEnabled = true;
       if (!elbowOpenLoop) {
         updateElbowSetpoint();

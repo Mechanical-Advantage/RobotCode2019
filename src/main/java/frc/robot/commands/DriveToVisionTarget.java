@@ -80,8 +80,13 @@ public class DriveToVisionTarget extends Command {
   private boolean visionDataRecieved; // Whether any vision data has been recieved
 
   /*
-   * Coordinate System: Origin=target Y=Perpendicular to target plane, positive =
-   * further away X=Parallel to target plane, positive = further right
+   * Coordinate System:
+   * 
+   * Origin=target
+   * 
+   * Y=Perpendicular to target plane, positive = further away
+   * 
+   * X=Parallel to target plane, positive = further right
    * 
    * A point along the y axis is picked as a target and the angle controller is
    * aimed at it. How far out is based on distance to target
