@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.BuiltInAccelerometer;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.interfaces.Accelerometer;
@@ -75,6 +76,9 @@ public class Robot extends TimedRobot {
   public static final VisionData visionData = new VisionData();
   public static final Level2Climber level2Climber = new Level2Climber();
   public static final Climber climber = new Climber();
+  // public static final ReBotVacuum reBotVacuum = new ReBotVacuum();
+  // public static final Elevator elevator = new Elevator();
+  // public static final Intake reBotIntake = new Intake();
 
   public static OI oi;
   public static OITYPE oiType;
@@ -89,7 +93,7 @@ public class Robot extends TimedRobot {
   private static final Command vacPickupCommand = new VacPickup();
 
   public Accelerometer accel = new BuiltInAccelerometer(Accelerometer.Range.k4G);
-  public GamePiece gamePiece;
+  public static GamePiece gamePiece;
 
   /**
    * This function is run when the robot is first started up and should be used
@@ -101,6 +105,8 @@ public class Robot extends TimedRobot {
     case EVERYBOT_2019:
       oi = new OIHandheld();
       oiType = OITYPE.HANDHELD;
+      SmartDashboard.putBoolean("Drive Enabled", oi.getDriveEnabled());
+      SmartDashboard.putBoolean("Open Loop Drive", Robot.oi.getOpenLoop());
       break;
     default:
       oi = new OIConsole();
@@ -133,8 +139,9 @@ public class Robot extends TimedRobot {
     SmartDashboard.putData("Auto mode", autoChooser);
     SmartDashboard.putData("Control Mode", joystickModeChooser);
 
-    SmartDashboard.putBoolean("Drive Enabled", oi.getDriveEnabled());
-    SmartDashboard.putBoolean("Open Loop Drive", Robot.oi.getOpenLoop());
+    if (RobotMap.robot == RobotType.ROBOT_REBOT) {
+      SmartDashboard.putBoolean("Suction Good", false);
+    }
 
     // if the current waypoint version is old, re-generate profiles
     BufferedReader waypointVersionReader;

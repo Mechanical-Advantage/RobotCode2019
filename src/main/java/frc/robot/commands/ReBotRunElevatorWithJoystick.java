@@ -10,15 +10,15 @@ package frc.robot.commands;
 import frc.robot.Robot;
 import edu.wpi.first.wpilibj.command.Command;
 
-public class ReBotRunClimberWithJoystick extends Command {
+public class ReBotRunElevatorWithJoystick extends Command {
 
   private final double deadband = 0.05;
 
-  public ReBotRunClimberWithJoystick() {
+  public ReBotRunElevatorWithJoystick() {
     // Use requires() here to declare subsystem dependencies
     // eg. requires(chassis);
-    super("ReBotRunClimberWithJoystick");
-    requires(Robot.climber);
+    super("ReBotRunElevatorWithJoystick");
+    // requires(Robot.elevator);
   }
 
   // Called just before this Command runs the first time
@@ -29,9 +29,9 @@ public class ReBotRunClimberWithJoystick extends Command {
   // Called repeatedly when this Command is scheduled to run
   @Override
   protected void execute() {
-    double joystickAxis = Robot.oi.getRightOperatorStickY();
+    double joystickAxis = Robot.oi.getLeftOperatorStickY();
     joystickAxis = Math.abs(joystickAxis) > deadband ? joystickAxis : 0;
-    Robot.climber.run(joystickAxis);
+    // Robot.elevator.run(joystickAxis);
   }
 
   // Make this return true when this Command no longer needs to run execute()
@@ -49,6 +49,6 @@ public class ReBotRunClimberWithJoystick extends Command {
   // subsystems is scheduled to run
   @Override
   protected void interrupted() {
-    Robot.climber.stop();
+    // Robot.elevator.stop();
   }
 }

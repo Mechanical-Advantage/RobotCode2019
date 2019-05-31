@@ -6,9 +6,18 @@ import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.buttons.POVButton;
 import edu.wpi.first.wpilibj.buttons.Trigger;
+import frc.robot.Robot.GamePiece;
 import frc.robot.commands.ReverseJoysticks;
 import frc.robot.commands.ToggleDriveEnabled;
 import frc.robot.commands.ToggleOpenLoop;
+import frc.robot.commands.ReBotEjectHatch;
+import frc.robot.commands.ReBotCloseHatchIntake;
+import frc.robot.commands.ReBotRunCargoIntake;
+import frc.robot.commands.ReBotRunCargoIntake.IntakeAction;
+import frc.robot.commands.ReBotSetIntakeRaised;
+import frc.robot.commands.ReBotSetGamepiece;
+import frc.robot.commands.ReBotEnableVacuum;
+import frc.robot.commands.ReBotDisableVacuum;
 import frc.robot.triggers.TriggerPressedTrigger;
 
 public class OIHandheld implements OI {
@@ -53,6 +62,19 @@ public class OIHandheld implements OI {
         driverToggleOpenLoop.whenPressed(new ToggleOpenLoop());
         operatorToggleDriveEnabled.whenPressed(new ToggleDriveEnabled());
         operatorToggleOpenLoop.whenPressed(new ToggleOpenLoop());
+
+        hatchExtend.whenPressed(new ReBotEjectHatch());
+        hatchRetract.whenPressed(new ReBotCloseHatchIntake());
+        cargoIntake.whileHeld(new ReBotRunCargoIntake(IntakeAction.INTAKE));
+        cargoEject.whileHeld(new ReBotRunCargoIntake(IntakeAction.EJECT));
+        raiseIntake.whenPressed(new ReBotSetIntakeRaised(true));
+        lowerIntake.whenPressed(new ReBotSetIntakeRaised(false));
+
+        setHatch.whenPressed(new ReBotSetGamepiece(GamePiece.HATCH));
+        setCargo.whenPressed(new ReBotSetGamepiece(GamePiece.CARGO));
+
+        enableVacuum.whenActive(new ReBotEnableVacuum());
+        disableVacuum.whenActive(new ReBotDisableVacuum());
     }
 
     public double getLeftAxis() {

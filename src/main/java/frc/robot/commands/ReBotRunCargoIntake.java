@@ -10,15 +10,35 @@ package frc.robot.commands;
 import frc.robot.Robot;
 import edu.wpi.first.wpilibj.command.Command;
 
-public class ReBotRunClimberWithJoystick extends Command {
+public class ReBotRunCargoIntake extends Command {
 
-  private final double deadband = 0.05;
+  private final Double intakeSpeed = 0.5;
+  private final Double ejectSpeed = -0.5;
 
-  public ReBotRunClimberWithJoystick() {
+  private Double speed;
+
+  public ReBotRunCargoIntake(IntakeAction action) {
     // Use requires() here to declare subsystem dependencies
     // eg. requires(chassis);
-    super("ReBotRunClimberWithJoystick");
-    requires(Robot.climber);
+
+    // requires(Robot.reBotIntake);
+    switch (action) {
+    case INTAKE:
+      speed = intakeSpeed;
+      Robot.gamePiece = Robot.GamePiece.CARGO;
+      break;
+    case EJECT:
+      speed = ejectSpeed;
+      break;
+    }
+  }
+
+  public ReBotRunCargoIntake(Double speed) {
+    // requires(Robot.reBotIntake);
+    this.speed = speed;
+    if ((speed > 1 && intakeSpeed > 1) || (speed < 1 && intakeSpeed < 1)) {
+      Robot.gamePiece = Robot.GamePiece.CARGO;
+    }
   }
 
   // Called just before this Command runs the first time
@@ -29,9 +49,7 @@ public class ReBotRunClimberWithJoystick extends Command {
   // Called repeatedly when this Command is scheduled to run
   @Override
   protected void execute() {
-    double joystickAxis = Robot.oi.getRightOperatorStickY();
-    joystickAxis = Math.abs(joystickAxis) > deadband ? joystickAxis : 0;
-    Robot.climber.run(joystickAxis);
+    // Robot.reBotIntake.runCargoIntake(speed);
   }
 
   // Make this return true when this Command no longer needs to run execute()
@@ -49,6 +67,10 @@ public class ReBotRunClimberWithJoystick extends Command {
   // subsystems is scheduled to run
   @Override
   protected void interrupted() {
-    Robot.climber.stop();
+    // Robot.reBotIntake.stopCargoIntake();
+  }
+
+  public enum IntakeAction {
+    INTAKE, EJECT
   }
 }

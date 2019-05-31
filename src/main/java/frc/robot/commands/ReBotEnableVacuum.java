@@ -9,29 +9,42 @@ package frc.robot.commands;
 
 import frc.robot.Robot;
 import edu.wpi.first.wpilibj.command.Command;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-public class ReBotRunClimberWithJoystick extends Command {
+public class ReBotEnableVacuum extends Command {
 
-  private final double deadband = 0.05;
+  private static final double suctionGoodThreshold = 0.55; // For SmartDashboard indicator
 
-  public ReBotRunClimberWithJoystick() {
+  private boolean indicatorOnLast;
+
+  public ReBotEnableVacuum() {
     // Use requires() here to declare subsystem dependencies
     // eg. requires(chassis);
-    super("ReBotRunClimberWithJoystick");
-    requires(Robot.climber);
+
+    // requires(Robot.reBotVacuum);
   }
 
   // Called just before this Command runs the first time
   @Override
   protected void initialize() {
+    // Robot.reBotVacuum.setVacuumMotor(true);
   }
 
   // Called repeatedly when this Command is scheduled to run
   @Override
   protected void execute() {
-    double joystickAxis = Robot.oi.getRightOperatorStickY();
-    joystickAxis = Math.abs(joystickAxis) > deadband ? joystickAxis : 0;
-    Robot.climber.run(joystickAxis);
+    // double pressureSensorVoltage = Robot.reBotVacuum.getPressureSensorVoltage();
+    // if (pressureSensorVoltage > suctionGoodThreshold) {
+    // if (!indicatorOnLast) {
+    // SmartDashboard.putBoolean("Suction Good", true);
+    // indicatorOnLast = true;
+    // }
+    // } else {
+    // if (indicatorOnLast) {
+    // SmartDashboard.putBoolean("Suction Good", false);
+    // indicatorOnLast = false;
+    // }
+    // }
   }
 
   // Make this return true when this Command no longer needs to run execute()
@@ -43,12 +56,14 @@ public class ReBotRunClimberWithJoystick extends Command {
   // Called once after isFinished returns true
   @Override
   protected void end() {
+    SmartDashboard.putBoolean("Suction Good", false);
+    indicatorOnLast = false;
   }
 
   // Called when another command which requires one or more of the same
   // subsystems is scheduled to run
   @Override
   protected void interrupted() {
-    Robot.climber.stop();
+    end();
   }
 }
