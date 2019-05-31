@@ -75,8 +75,8 @@ public class RobotMap {
   public static int level2RearPCM;
   public static int level2RearSolenoid1;
   public static int level2RearSolenoid2;
-  public static int rightElevatorMaster;
-  public static int leftElevatorMaster;
+  public static int elevatorMaster;
+  public static int elevatorSlave;
 
   public RobotMap() {
     switch (robot) {
@@ -92,8 +92,8 @@ public class RobotMap {
       maxAcceleration = 300;
       robotLength = 31.5;
       robotWidth = 29.25;
-      rightElevatorMaster = 2; // temporary; change later
-      leftElevatorMaster = 3; // temporary; change later
+      elevatorMaster = 2; // temporary; change later
+      elevatorSlave = 3; // temporary; change later
       break;
     case ORIGINAL_ROBOT_2018:
       rightMaster = 2;
