@@ -370,6 +370,10 @@ public class OIConsole implements OI {
 		return oiController1.getY();
 	}
 
+	public double getRightOperatorStickY() {
+		return oiController1.getY();
+	}
+
 	public void updateLED(OILED led, boolean state) {
 		boolean[] array = ledTable.getEntry("OI LEDs").getBooleanArray(new boolean[] { false, false, false, false,
 				false, false, false, false, false, false, false, false, false, false, false, false, false });
