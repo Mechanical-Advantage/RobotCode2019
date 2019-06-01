@@ -115,9 +115,9 @@ public class RobotMap {
       break;
     case EVERYBOT_2019:
       rightMaster = 0;
-      leftMaster = 3;
+      leftMaster = 15;
       rightSlave = 1;
-      leftSlave = 2;
+      leftSlave = 14;
       maxVelocityLow = 950; // 950 native units per 100ms
       minVelocityLow = 40; // 40 native units per 100ms
       maxAcceleration = 300;
