@@ -28,8 +28,8 @@ import edu.wpi.first.wpilibj.interfaces.Accelerometer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.commands.DriveWithJoystick.JoystickMode;
-import frc.robot.OI.RUMBLETYPE;
-import frc.robot.OI.OITYPE;
+import frc.robot.OI.OIRumbleType;
+import frc.robot.OI.OIType;
 import static frc.robot.OI.fullAcceleration;
 import static frc.robot.OI.lowRumbleFactor;
 import static frc.robot.OI.minAcceleration;
@@ -81,7 +81,7 @@ public class Robot extends TimedRobot {
   // public static final Intake reBotIntake = new Intake();
 
   public static OI oi;
-  public static OITYPE oiType;
+  public static OIType oiType;
   public static final AHRS ahrs = new AHRS(SPI.Port.kMXP);
 
   public static final CameraSystem cameraSubsystem = new CameraSystem();
@@ -104,13 +104,13 @@ public class Robot extends TimedRobot {
     switch (RobotMap.robot) {
     case EVERYBOT_2019:
       oi = new OIHandheld();
-      oiType = OITYPE.HANDHELD;
+      oiType = OIType.HANDHELD;
       SmartDashboard.putBoolean("Drive Enabled", oi.getDriveEnabled());
       SmartDashboard.putBoolean("Open Loop Drive", Robot.oi.getOpenLoop());
       break;
     default:
       oi = new OIConsole();
-      oiType = OITYPE.CONSOLE;
+      oiType = OIType.CONSOLE;
       break;
     }
     joystickModeChooser = new SendableChooser<JoystickMode>();
@@ -166,7 +166,7 @@ public class Robot extends TimedRobot {
 
   // Update rumble based on acceleration
   private void updateControllerRumble() {
-    if (oiType == OITYPE.HANDHELD) {
+    if (oiType == OIType.HANDHELD) {
       double totalAcceleration = Math.sqrt(accel.getX() * accel.getX() + accel.getY() * accel.getY()); // Calculates
                                                                                                        // total
                                                                                                        // acceleration
@@ -175,11 +175,11 @@ public class Robot extends TimedRobot {
                                                                                                        // theorem
       if (totalAcceleration > minAcceleration) {
         totalAcceleration /= fullAcceleration;
-        oi.setRumble(RUMBLETYPE.DRIVER_RIGHT, totalAcceleration);
-        oi.setRumble(RUMBLETYPE.DRIVER_LEFT, totalAcceleration * lowRumbleFactor);
+        oi.setRumble(OIRumbleType.DRIVER_RIGHT, totalAcceleration);
+        oi.setRumble(OIRumbleType.DRIVER_LEFT, totalAcceleration * lowRumbleFactor);
       } else {
-        oi.setRumble(RUMBLETYPE.DRIVER_RIGHT, 0);
-        oi.setRumble(RUMBLETYPE.DRIVER_LEFT, 0);
+        oi.setRumble(OIRumbleType.DRIVER_RIGHT, 0);
+        oi.setRumble(OIRumbleType.DRIVER_LEFT, 0);
       }
     }
   }

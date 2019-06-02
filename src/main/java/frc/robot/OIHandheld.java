@@ -133,7 +133,7 @@ public class OIHandheld implements OI {
         }
     }
 
-    public void setRumble(RUMBLETYPE type, double value) {
+    public void setRumble(OIRumbleType type, double value) {
         value = value > 1 ? 1 : value;
         switch (type) {
         case DRIVER_LEFT:
@@ -148,7 +148,7 @@ public class OIHandheld implements OI {
     }
 
     public void resetRumble() {
-        for (RUMBLETYPE type : RUMBLETYPE.values()) {
+        for (OIRumbleType type : OIRumbleType.values()) {
             setRumble(type, 0);
         }
     }

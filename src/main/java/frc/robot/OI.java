@@ -88,7 +88,7 @@ public interface OI {
         return 0;
     }
 
-    default void setRumble(RUMBLETYPE type, double value) {
+    default void setRumble(OIRumbleType type, double value) {
     }
 
     default void resetRumble() {
@@ -110,11 +110,11 @@ public interface OI {
         JOYSTICK_YELLOW, ARM_ALT, ARM_FLOOR, ARM_CARGO_SHIP, ARM_ROCKET_LOW, ARM_ROCKET_MID, ARM_ROCKET_HIGH, ARM_HOME
     }
 
-    static enum RUMBLETYPE {
+    static enum OIRumbleType {
         DRIVER_LEFT, DRIVER_RIGHT, OPERATOR_LEFT, OPERATOR_RIGHT
     }
 
-    static enum OITYPE {
+    static enum OIType {
         CONSOLE, HANDHELD
     }
 }

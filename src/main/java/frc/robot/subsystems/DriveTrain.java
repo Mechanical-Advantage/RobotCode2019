@@ -1,7 +1,7 @@
 package frc.robot.subsystems;
 
 import frc.robot.Robot;
-import frc.robot.OI.OITYPE;
+import frc.robot.OI.OIType;
 import frc.robot.RobotMap;
 //import frc.robot.RobotMap.RobotType;
 import frc.robot.commands.DriveWithJoystick;
@@ -78,11 +78,11 @@ public class DriveTrain extends Subsystem {
 	private boolean PTOUseMotMaj;
 
 	private static final double sniperModeConsole = 0.25; // multiplied by velocity in sniper mode when locked and using
-																												// console
+															// console
 	private static final double sniperModeHandheldHigh = 0.3; // used for right trigger when using handheld control
 	private static final double sniperModeHandheldLow = 0.15; // used for left trigger when using handheld control
 	private static final boolean sniperModeLocked = false; // when set, sniper mode uses value above, when unset, value
-																													// comes from throttle control on joystick
+															// comes from throttle control on joystick
 	private static final int currentLimit = 50;
 	private static final boolean enableCurrentLimit = false;
 	@SuppressWarnings("unused")
@@ -378,8 +378,8 @@ public class DriveTrain extends Subsystem {
 	public void drive(double left, double right, boolean alwaysHighMaxVel) {
 		if (Robot.oi.getDriveEnabled() && currentControlMode == DriveControlMode.STANDARD_DRIVE) {
 			if (Robot.oi.getSniperMode()) {
-				if (sniperModeLocked || Robot.oiType == OITYPE.HANDHELD) {
-					if (Robot.oiType == OITYPE.CONSOLE) {
+				if (sniperModeLocked || Robot.oiType == OIType.HANDHELD) {
+					if (Robot.oiType == OIType.CONSOLE) {
 						left *= sniperModeConsole;
 						right *= sniperModeConsole;
 					} else {
@@ -492,8 +492,8 @@ public class DriveTrain extends Subsystem {
 	 * @return current velocity in inches per second
 	 */
 	public double getVelocityRight() {
-		return (double) rightTalonMaster.getSelectedSensorVelocity(0) / (double) ticksPerRotation * wheelDiameter * Math.PI
-				* 10;
+		return (double) rightTalonMaster.getSelectedSensorVelocity(0) / (double) ticksPerRotation * wheelDiameter
+				* Math.PI * 10;
 	}
 
 	/**
@@ -502,8 +502,8 @@ public class DriveTrain extends Subsystem {
 	 * @return current velocity in inches per second
 	 */
 	public double getVelocityLeft() {
-		return (double) leftTalonMaster.getSelectedSensorVelocity(0) / (double) ticksPerRotation * wheelDiameter * Math.PI
-				* 10;
+		return (double) leftTalonMaster.getSelectedSensorVelocity(0) / (double) ticksPerRotation * wheelDiameter
+				* Math.PI * 10;
 	}
 
 	// average current of left and right masters
@@ -673,7 +673,8 @@ public class DriveTrain extends Subsystem {
 			System.out.println("L At: " + getRotationsLeft() + " Commanding: " + (PTOLeftStartingPosition + rotations));
 			rightTalonMaster.set(PTOUseMotMaj ? ControlMode.MotionMagic : ControlMode.Position,
 					(PTORightStartingPosition + rotations) * ticksPerRotation);
-			System.out.println("R At: " + getRotationsRight() + " Commanding: " + (PTORightStartingPosition + rotations));
+			System.out
+					.println("R At: " + getRotationsRight() + " Commanding: " + (PTORightStartingPosition + rotations));
 		} else if (!Robot.oi.getDriveEnabled()) {
 			leftTalonMaster.neutralOutput();
 			rightTalonMaster.neutralOutput();
@@ -723,7 +724,7 @@ public class DriveTrain extends Subsystem {
 			rightTalonMaster.configAllowableClosedloopError(1, 0, configTimeout); // motion profiling does not use this
 			leftTalonMaster.configAllowableClosedloopError(1, 0, configTimeout);
 			currentControlMode = DriveControlMode.STANDARD_DRIVE; // this needs to be changed before calling
-																														// useClosed/OpenLoop so that they work
+																	// useClosed/OpenLoop so that they work
 			rightTalonMaster.selectProfileSlot(0, 0);
 			leftTalonMaster.selectProfileSlot(0, 0);
 			rightTalonMaster.configNominalOutputForward(nominalOutputVoltage / 12, configTimeout);
