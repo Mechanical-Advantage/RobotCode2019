@@ -8,6 +8,7 @@
 package frc.robot.commands;
 
 import frc.robot.Robot;
+import frc.robot.subsystems.Vacuum.VacuumLevel;
 import edu.wpi.first.wpilibj.command.InstantCommand;
 
 /**
@@ -20,13 +21,13 @@ public class ReBotDisableVacuum extends InstantCommand {
     // Use requires() here to declare subsystem dependencies
     // eg. requires(chassis);
 
-    // requires(Robot.reBotVacuum);
+    requires(Robot.vacuum);
   }
 
   // Called once when the command executes
   @Override
   protected void initialize() {
-    // Robot.reBotVacuum.setVacuumMotor(false);
+    Robot.vacuum.setVacuumMotor(VacuumLevel.OFF);
   }
 
 }

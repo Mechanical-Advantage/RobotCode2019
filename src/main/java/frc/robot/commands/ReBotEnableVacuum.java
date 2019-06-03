@@ -8,6 +8,7 @@
 package frc.robot.commands;
 
 import frc.robot.Robot;
+import frc.robot.subsystems.Vacuum.VacuumLevel;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -21,30 +22,30 @@ public class ReBotEnableVacuum extends Command {
     // Use requires() here to declare subsystem dependencies
     // eg. requires(chassis);
 
-    // requires(Robot.reBotVacuum);
+    requires(Robot.vacuum);
   }
 
   // Called just before this Command runs the first time
   @Override
   protected void initialize() {
-    // Robot.reBotVacuum.setVacuumMotor(true);
+    Robot.vacuum.setVacuumMotor(VacuumLevel.HIGH);
   }
 
   // Called repeatedly when this Command is scheduled to run
   @Override
   protected void execute() {
-    // double pressureSensorVoltage = Robot.reBotVacuum.getPressureSensorVoltage();
-    // if (pressureSensorVoltage > suctionGoodThreshold) {
-    // if (!indicatorOnLast) {
-    // SmartDashboard.putBoolean("Suction Good", true);
-    // indicatorOnLast = true;
-    // }
-    // } else {
-    // if (indicatorOnLast) {
-    // SmartDashboard.putBoolean("Suction Good", false);
-    // indicatorOnLast = false;
-    // }
-    // }
+    double pressureSensorVoltage = Robot.vacuum.getPressureSensorVoltage();
+    if (pressureSensorVoltage > suctionGoodThreshold) {
+      if (!indicatorOnLast) {
+        SmartDashboard.putBoolean("Suction Good", true);
+        indicatorOnLast = true;
+      }
+    } else {
+      if (indicatorOnLast) {
+        SmartDashboard.putBoolean("Suction Good", false);
+        indicatorOnLast = false;
+      }
+    }
   }
 
   // Make this return true when this Command no longer needs to run execute()

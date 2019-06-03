@@ -76,7 +76,6 @@ public class Robot extends TimedRobot {
   public static final VisionData visionData = new VisionData();
   public static final Level2Climber level2Climber = new Level2Climber();
   public static final Climber climber = new Climber();
-  // public static final ReBotVacuum reBotVacuum = new ReBotVacuum();
   // public static final Elevator elevator = new Elevator();
   // public static final Intake reBotIntake = new Intake();
 
