@@ -78,6 +78,10 @@ public class RobotMap {
   public static int RebotPCM;
   public static int CargoRaiseSolenoid;
   public static int CargoLowerSolenoid;
+  public static int HatchOpenSolenoid;
+  public static int HatchCloseSolenoid;
+  public static int HatchDeliverSolenoid;
+  public static int HatchWithdrawSolenoid;
 
   public RobotMap() {
     switch (robot) {
@@ -96,6 +100,10 @@ public class RobotMap {
       intakeMotor = 11; // TBD: set to correct value
       CargoRaiseSolenoid = 0;
       CargoLowerSolenoid = 1;
+      HatchCloseSolenoid = 2;
+      HatchOpenSolenoid = 3;
+      HatchDeliverSolenoid = 4;
+      HatchWithdrawSolenoid = 5;
       RebotPCM = 0;
       break;
     case ORIGINAL_ROBOT_2018:

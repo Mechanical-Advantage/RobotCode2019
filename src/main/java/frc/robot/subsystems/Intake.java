@@ -22,14 +22,14 @@ import frc.robot.RobotMap.RobotType;
 public class Intake extends Subsystem {
 
   private static final boolean intakeReversed = true;
-  private static final NeutralMode intakeNeutralMode = NeutralMode.Coast;
+  private static final NeutralMode intakeNeutralMode = NeutralMode.Brake;
 
-  private static final boolean intakeEnableCurrentLimit = false;
-  private static final int intakeContinousCurrentLimit = 0;
-  private static final int intakePeakCurrentLimit = 0;
-  private static final int intakePeakCurrentLimitDuration = 0; // ms
+  private static final boolean intakeEnableCurrentLimit = true;
+  private static final int intakeContinousCurrentLimit = 30; // A
+  private static final int intakePeakCurrentLimit = 40; // A
+  private static final int intakePeakCurrentLimitDuration = 1000; // ms
 
-  private DoubleSolenoid CargoSolenoid;
+  private DoubleSolenoid cargoSolenoid;
   private DoubleSolenoid hatchControlSolenoid;
   private DoubleSolenoid hatchReleaseSolenoid;
   private TalonSRX intake;
@@ -40,10 +40,11 @@ public class Intake extends Subsystem {
 
   public Intake() {
     if (available()) {
-      CargoSolenoid = new DoubleSolenoid(RobotMap.RebotPCM, RobotMap.CargoRaiseSolenoid, RobotMap.CargoLowerSolenoid);
-
-      intake = new TalonSRX(RobotMap.intakeMotor);
-
+      cargoSolenoid = new DoubleSolenoid(RobotMap.RebotPCM, RobotMap.CargoRaiseSolenoid, RobotMap.CargoLowerSolenoid);
+      hatchControlSolenoid = new DoubleSolenoid(RobotMap.RebotPCM, RobotMap.HatchOpenSolenoid,
+          RobotMap.HatchCloseSolenoid);
+      hatchReleaseSolenoid = new DoubleSolenoid(RobotMap.RebotPCM, RobotMap.HatchDeliverSolenoid,
+          RobotMap.HatchWithdrawSolenoid);
       intake.configFactoryDefault();
       intake.setInverted(intakeReversed);
       intake.setNeutralMode(intakeNeutralMode);
@@ -69,28 +70,38 @@ public class Intake extends Subsystem {
 
   public void raise() {
     if (available()) {
-
+      cargoSolenoid.set(DoubleSolenoid.Value.kReverse);
     }
   }
 
   public void lower() {
-
+    if (available()) {
+      cargoSolenoid.set(DoubleSolenoid.Value.kForward);
+    }
   }
 
   public void close() {
-
+    if (available()) {
+      hatchControlSolenoid.set(DoubleSolenoid.Value.kReverse);
+    }
   }
 
   public void open() {
-
+    if (available()) {
+      hatchControlSolenoid.set(DoubleSolenoid.Value.kForward);
+    }
   }
 
   public void extend() {
-
+    if (available()) {
+      hatchReleaseSolenoid.set(DoubleSolenoid.Value.kReverse);
+    }
   }
 
   public void retract() {
-
+    if (available()) {
+      hatchReleaseSolenoid.set(DoubleSolenoid.Value.kForward);
+    }
   }
 
   public void stop() {
