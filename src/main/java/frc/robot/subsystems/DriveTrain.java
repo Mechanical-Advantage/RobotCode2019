@@ -90,11 +90,11 @@ public class DriveTrain extends Subsystem {
   private static final int configTimeout = 0;
 
   private TalonSRX rightTalonMaster;
-  private BaseMotorController rightTalonSlave;
-  private BaseMotorController rightTalonSlave2;
+  private BaseMotorController rightControllerFollower;
+  private BaseMotorController rightControllerFollower2;
   private TalonSRX leftTalonMaster;
-  private BaseMotorController leftTalonSlave;
-  private BaseMotorController leftTalonSlave2;
+  private BaseMotorController leftControllerFollower;
+  private BaseMotorController leftControllerFollower2;
   private DoubleSolenoid leftGearSolenoid;
   private DoubleSolenoid rightGearSolenoid;
   private FeedbackDevice encoderType;
@@ -112,6 +112,7 @@ public class DriveTrain extends Subsystem {
   private boolean sixMotorDrive = false;
   private boolean dualGear = false;
   private boolean hasPTO = false;
+  private boolean followersAreVictorSPX = true;
   private DoubleSolenoid pto;
   private Double PTOLeftStartingPosition;
   private Double PTORightStartingPosition;
@@ -125,9 +126,7 @@ public class DriveTrain extends Subsystem {
 
   public DriveTrain() {
     rightTalonMaster = new TalonSRX(RobotMap.rightMaster);
-    rightTalonSlave = new VictorSPX(RobotMap.rightSlave);
     leftTalonMaster = new TalonSRX(RobotMap.leftMaster);
-    leftTalonSlave = new VictorSPX(RobotMap.leftSlave);
     switch (RobotMap.robot) {
     case ROBOT_REBOT:
       sixMotorDrive = true;
@@ -152,6 +151,7 @@ public class DriveTrain extends Subsystem {
       kAllowableErrorDistance = 24;
       break;
     case ORIGINAL_ROBOT_2018:
+      followersAreVictorSPX = false;
       dualGear = true;
       encoderType = FeedbackDevice.CTRE_MagEncoder_Relative;
       ticksPerRotation = 4096;
@@ -172,6 +172,7 @@ public class DriveTrain extends Subsystem {
       nominalOutputVoltage = 0;
       break;
     case EVERYBOT_2019:
+      followersAreVictorSPX = false;
       encoderType = FeedbackDevice.QuadEncoder;
       ticksPerRotation = 1440;
       wheelDiameter = 5.9000000002; // 6
@@ -221,9 +222,20 @@ public class DriveTrain extends Subsystem {
     default:
       break;
     }
-    if (sixMotorDrive) {
-      rightTalonSlave2 = new VictorSPX(RobotMap.rightSlave2);
-      leftTalonSlave2 = new VictorSPX(RobotMap.leftSlave2);
+    if (followersAreVictorSPX) {
+      rightControllerFollower = new VictorSPX(RobotMap.rightSlave);
+      leftControllerFollower = new VictorSPX(RobotMap.leftSlave);
+      if (sixMotorDrive) {
+        rightControllerFollower2 = new VictorSPX(RobotMap.rightSlave2);
+        leftControllerFollower2 = new VictorSPX(RobotMap.leftSlave2);
+      }
+    } else {
+      rightControllerFollower = new TalonSRX(RobotMap.rightSlave);
+      leftControllerFollower = new TalonSRX(RobotMap.leftSlave);
+      if (sixMotorDrive) {
+        rightControllerFollower2 = new TalonSRX(RobotMap.rightSlave2);
+        leftControllerFollower2 = new TalonSRX(RobotMap.leftSlave2);
+      }
     }
     if (dualGear) {
       leftGearSolenoid = new DoubleSolenoid(RobotMap.leftDriveGearPCM, RobotMap.leftDriveGearSolenoid1,
@@ -264,23 +276,27 @@ public class DriveTrain extends Subsystem {
     leftTalonMaster.configPeakOutputForward(1, configTimeout);
     leftTalonMaster.configPeakOutputReverse(-1, configTimeout);
     resetPosition();
-    rightTalonSlave.follow(rightTalonMaster);
-    // rightTalonSlave.enableCurrentLimit(enableCurrentLimit);
-    // rightTalonSlave.configContinuousCurrentLimit(currentLimit, configTimeout);
-    rightTalonSlave.setInverted(reverseOutputRight);
-    leftTalonSlave.follow(leftTalonMaster);
-    // leftTalonSlave.enableCurrentLimit(enableCurrentLimit);
-    // leftTalonSlave.configContinuousCurrentLimit(currentLimit, configTimeout);
-    leftTalonSlave.setInverted(reverseOutputLeft);
+    rightControllerFollower.follow(rightTalonMaster);
+    // rightControllerFollower.enableCurrentLimit(enableCurrentLimit);
+    // rightControllerFollower.configContinuousCurrentLimit(currentLimit,
+    // configTimeout);
+    rightControllerFollower.setInverted(reverseOutputRight);
+    leftControllerFollower.follow(leftTalonMaster);
+    // leftControllerFollower.enableCurrentLimit(enableCurrentLimit);
+    // leftControllerFollower.configContinuousCurrentLimit(currentLimit,
+    // configTimeout);
+    leftControllerFollower.setInverted(reverseOutputLeft);
     if (sixMotorDrive) {
-      rightTalonSlave2.follow(rightTalonMaster);
-      // rightTalonSlave2.enableCurrentLimit(enableCurrentLimit);
-      // rightTalonSlave2.configContinuousCurrentLimit(currentLimit, configTimeout);
-      rightTalonSlave2.setInverted(reverseOutputRight);
-      leftTalonSlave2.follow(leftTalonMaster);
-      // leftTalonSlave2.enableCurrentLimit(enableCurrentLimit);
-      // leftTalonSlave2.configContinuousCurrentLimit(currentLimit, configTimeout);
-      leftTalonSlave2.setInverted(reverseOutputLeft);
+      rightControllerFollower2.follow(rightTalonMaster);
+      // rightControllerFollower2.enableCurrentLimit(enableCurrentLimit);
+      // rightControllerFollower2.configContinuousCurrentLimit(currentLimit,
+      // configTimeout);
+      rightControllerFollower2.setInverted(reverseOutputRight);
+      leftControllerFollower2.follow(leftTalonMaster);
+      // leftControllerFollower2.enableCurrentLimit(enableCurrentLimit);
+      // leftControllerFollower2.configContinuousCurrentLimit(currentLimit,
+      // configTimeout);
+      leftControllerFollower2.setInverted(reverseOutputLeft);
     }
     enableBrakeMode(true);
     if (hasPTO) {
@@ -290,9 +306,9 @@ public class DriveTrain extends Subsystem {
 
     /*
      * rightTalonMaster.setSafetyEnabled(false);
-     * rightTalonSlave.setSafetyEnabled(false);
+     * rightControllerFollower.setSafetyEnabled(false);
      * leftTalonMaster.setSafetyEnabled(false);
-     * leftTalonSlave.setSafetyEnabled(false);
+     * leftControllerFollower.setSafetyEnabled(false);
      */
   }
 
@@ -451,11 +467,11 @@ public class DriveTrain extends Subsystem {
     }
     rightTalonMaster.setNeutralMode(mode);
     leftTalonMaster.setNeutralMode(mode);
-    rightTalonSlave.setNeutralMode(mode);
-    leftTalonSlave.setNeutralMode(mode);
+    rightControllerFollower.setNeutralMode(mode);
+    leftControllerFollower.setNeutralMode(mode);
     if (sixMotorDrive) {
-      rightTalonSlave2.setNeutralMode(mode);
-      leftTalonSlave2.setNeutralMode(mode);
+      rightControllerFollower2.setNeutralMode(mode);
+      leftControllerFollower2.setNeutralMode(mode);
     }
   }
 
