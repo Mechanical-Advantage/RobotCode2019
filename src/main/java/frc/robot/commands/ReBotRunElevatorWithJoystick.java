@@ -49,6 +49,6 @@ public class ReBotRunElevatorWithJoystick extends Command {
   // subsystems is scheduled to run
   @Override
   protected void interrupted() {
-    // Robot.elevator.stop();
+    // Robot.elevator.stop;
   }
 }

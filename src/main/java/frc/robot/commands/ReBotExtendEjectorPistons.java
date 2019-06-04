@@ -25,7 +25,7 @@ public class ReBotExtendEjectorPistons extends TimedCommand {
   // Called just before this Command runs the first time
   @Override
   protected void initialize() {
-    // Robot.reBotIntake.extendEjectorPistons();
+    // Robot.reBotIntake.extend();
   }
 
   // Called repeatedly when this Command is scheduled to run
@@ -36,13 +36,13 @@ public class ReBotExtendEjectorPistons extends TimedCommand {
   // Called once after timeout
   @Override
   protected void end() {
-    // Robot.reBotIntake.retractEjectorPistons();
+    // Robot.reBotIntake.retract();
   }
 
   // Called when another command which requires one or more of the same
   // subsystems is scheduled to run
   @Override
   protected void interrupted() {
-    // Robot.reBotIntake.retractEjectorPistons();
+    // Robot.reBotIntake.retract();
   }
 }
