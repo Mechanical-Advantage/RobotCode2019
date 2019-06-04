@@ -101,7 +101,7 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     switch (RobotMap.robot) {
-    case EVERYBOT_2019:
+    case ROBOT_REBOT:
       oi = new OIHandheld();
       oiType = OIType.HANDHELD;
       SmartDashboard.putBoolean("Drive Enabled", oi.getDriveEnabled());
