@@ -92,7 +92,7 @@ public class Robot extends TimedRobot {
   private static final Command vacPickupCommand = new VacPickup();
 
   public Accelerometer accel = new BuiltInAccelerometer(Accelerometer.Range.k4G);
-  public static GamePiece gamePiece;
+  public static GamePiece gamePiece = GamePiece.HATCH;
 
   /**
    * This function is run when the robot is first started up and should be used
@@ -115,10 +115,10 @@ public class Robot extends TimedRobot {
     joystickModeChooser = new SendableChooser<JoystickMode>();
     // chooser.setDefaultOption("Default Auto", new ExampleCommand());
     // chooser.addOption("My Auto", new MyAutoCommand());
-    joystickModeChooser.addOption("Tank", JoystickMode.Tank);
+    joystickModeChooser.setDefaultOption("Tank", JoystickMode.Tank);
     joystickModeChooser.addOption("Trigger", JoystickMode.Trigger);
-    joystickModeChooser.setDefaultOption("Split Arcade", JoystickMode.SplitArcade);
-    joystickModeChooser.setDefaultOption("Split Arcade (right drive)", JoystickMode.SplitArcadeRightDrive);
+    joystickModeChooser.addOption("Split Arcade", JoystickMode.SplitArcade);
+    joystickModeChooser.addOption("Split Arcade (right drive)", JoystickMode.SplitArcadeRightDrive);
 
     autoChooser.addOption("None", null);
     autoChooser.addOption("Hold Panel", AutoMode.VAC_PICKUP);
@@ -137,6 +137,7 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putData("Auto mode", autoChooser);
     SmartDashboard.putData("Control Mode", joystickModeChooser);
+    SmartDashboard.putBoolean("Game Piece", gamePiece == GamePiece.HATCH);
 
     if (RobotMap.robot == RobotType.ROBOT_REBOT) {
       SmartDashboard.putBoolean("Suction Good", false);

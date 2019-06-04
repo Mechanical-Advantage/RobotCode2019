@@ -102,6 +102,10 @@ public interface OI {
         return 0;
     }
 
+    default double getDeadband() {
+        return 0;
+    }
+
     default void updateLED(OILED led, boolean state) {
     }
 

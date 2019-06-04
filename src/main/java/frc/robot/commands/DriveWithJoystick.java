@@ -9,7 +9,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class DriveWithJoystick extends Command {
 
-  private final double deadband = 0.05;
   private static final boolean alwaysUseHighMaxVel = true; // Whether to always use the max velocity of high gear or
                                                            // of current gear
 
@@ -28,7 +27,7 @@ public class DriveWithJoystick extends Command {
   private double processJoystickAxis(double joystickAxis) {
     // cube to improve low speed control, multiply by -1 because negative joystick
     // means forward, 0 if within deadband
-    return Math.abs(joystickAxis) > deadband ? joystickAxis * Math.abs(joystickAxis) * -1 : 0;
+    return Math.abs(joystickAxis) > Robot.oi.getDeadband() ? joystickAxis * Math.abs(joystickAxis) * -1 : 0;
   }
 
   // Called repeatedly when this Command is scheduled to run
@@ -55,7 +54,7 @@ public class DriveWithJoystick extends Command {
       joystickLeft = joystickLeft > 1 ? 1 : joystickLeft;
       break;
     case Trigger:
-      baseDrive = processJoystickAxis(Robot.oi.getLeftTrigger() - Robot.oi.getRightTrigger());
+      baseDrive = (Robot.oi.getLeftTrigger() - Robot.oi.getRightTrigger()) * -1;
       joystickRight = baseDrive + processJoystickAxis(Robot.oi.getLeftHorizDriveAxis());
       joystickRight = joystickRight > 1 ? 1 : joystickRight;
       joystickLeft = baseDrive - processJoystickAxis(Robot.oi.getLeftHorizDriveAxis());

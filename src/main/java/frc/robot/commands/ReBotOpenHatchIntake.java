@@ -25,7 +25,7 @@ public class ReBotOpenHatchIntake extends InstantCommand {
   // Called once when the command executes
   @Override
   protected void initialize() {
-    // Robot.reBotIntake.openHatchIntake();
+    // Robot.reBotIntake.open();
   }
 
 }

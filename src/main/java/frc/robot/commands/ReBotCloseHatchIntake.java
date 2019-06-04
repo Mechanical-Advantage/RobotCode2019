@@ -25,7 +25,7 @@ public class ReBotCloseHatchIntake extends InstantCommand {
   // Called once when the command executes
   @Override
   protected void initialize() {
-    // Robot.reBotIntake.closeHatchIntake();
+    // Robot.reBotIntake.close();
     Robot.gamePiece = Robot.GamePiece.HATCH;
   }
 

@@ -44,12 +44,12 @@ public class ReBotRunCargoIntake extends Command {
   // Called just before this Command runs the first time
   @Override
   protected void initialize() {
+    // Robot.reBotIntake.run(speed);
   }
 
   // Called repeatedly when this Command is scheduled to run
   @Override
   protected void execute() {
-    // Robot.reBotIntake.runCargoIntake(speed);
   }
 
   // Make this return true when this Command no longer needs to run execute()
@@ -67,7 +67,7 @@ public class ReBotRunCargoIntake extends Command {
   // subsystems is scheduled to run
   @Override
   protected void interrupted() {
-    // Robot.reBotIntake.stopCargoIntake();
+    // Robot.reBotIntake.stop;
   }
 
   public enum IntakeAction {
