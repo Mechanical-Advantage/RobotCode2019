@@ -195,4 +195,8 @@ public class OIHandheld implements OI {
     public double getRightOperatorStickY() {
         return operatorController.getY(Hand.kRight);
     }
+
+    public double getDeadband() {
+        return 0.07;
+    }
 }
