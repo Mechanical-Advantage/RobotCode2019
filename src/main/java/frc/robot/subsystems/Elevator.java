@@ -71,7 +71,8 @@ public class Elevator extends Subsystem {
       elevatorMaster.setInverted(elevatorMasterReversed);
       elevatorMaster.setNeutralMode(neutralMode);
 
-      schoolZone.setControllerLimits(); // This sets the peak output of the controllers
+      // schoolZone.setControllerLimits(); // This sets the peak output of the
+      // controllers
 
       elevatorMaster.configContinuousCurrentLimit(continuousCurrentLimit);
       elevatorMaster.configPeakCurrentLimit(peakCurrentLimit);
