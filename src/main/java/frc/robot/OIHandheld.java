@@ -15,6 +15,8 @@ import frc.robot.commands.ReBotCloseHatchIntake;
 import frc.robot.commands.ReBotRunCargoIntake;
 import frc.robot.commands.ReBotRunCargoIntake.IntakeAction;
 import frc.robot.commands.ReBotSetIntakeRaised;
+import frc.robot.commands.ReBotMoveToSetpoint;
+import frc.robot.commands.ReBotMoveToSetpoint.OIElevatorPosition;
 import frc.robot.commands.ReBotSetGamepiece;
 import frc.robot.commands.ReBotEnableVacuum;
 import frc.robot.commands.ReBotDisableVacuum;
@@ -32,10 +34,8 @@ public class OIHandheld implements OI {
 
     private POVButton joysticksForwards = new POVButton(driverController, 0);
     private POVButton joysticksBackwards = new POVButton(driverController, 180);
-    private JoystickButton driverToggleDriveEnabled = new JoystickButton(driverController, 7); // back button
-    private JoystickButton driverToggleOpenLoop = new JoystickButton(driverController, 8); // start button
-    private JoystickButton operatorToggleDriveEnabled = new JoystickButton(operatorController, 7); // back button
-    private JoystickButton operatorToggleOpenLoop = new JoystickButton(operatorController, 8); // start button
+    private JoystickButton toggleDriveEnabled = new JoystickButton(driverController, 7); // back button
+    private JoystickButton toggleOpenLoop = new JoystickButton(driverController, 8); // start button
 
     private JoystickButton hatchRetract = new JoystickButton(operatorController, 1); // A button
     private JoystickButton hatchExtend = new JoystickButton(operatorController, 3); // X button
@@ -44,12 +44,12 @@ public class OIHandheld implements OI {
     private JoystickButton raiseIntake = new JoystickButton(operatorController, 6); // right bumper
     private JoystickButton lowerIntake = new JoystickButton(operatorController, 5); // left bumper
 
-    private POVButton shipSetpoint = new POVButton(operatorController, 0);
-    private POVButton rocketL1Setpoint = new POVButton(operatorController, 90);
-    private POVButton rocketL2Setpoint = new POVButton(operatorController, 180);
-    private POVButton rocketL3Setpoint = new POVButton(operatorController, 270);
-    private JoystickButton setHatch = new JoystickButton(operatorController, 9); // left stick click
-    private JoystickButton setCargo = new JoystickButton(operatorController, 10); // right stick click
+    private POVButton floorSetpoint = new POVButton(operatorController, 0);
+    private POVButton shipSetpoint = new POVButton(operatorController, 90);
+    private POVButton rocketL1Setpoint = new POVButton(operatorController, 180);
+    private POVButton rocketL2Setpoint = new POVButton(operatorController, 270);
+    private JoystickButton setHatch = new JoystickButton(operatorController, 7); // back button
+    private JoystickButton setCargo = new JoystickButton(operatorController, 8); // start button
 
     private Trigger enableVacuum = new TriggerPressedTrigger(operatorController, Hand.kRight);
     private Trigger disableVacuum = new TriggerPressedTrigger(operatorController, Hand.kLeft);
@@ -58,10 +58,8 @@ public class OIHandheld implements OI {
         resetRumble();
         joysticksForwards.whenPressed(new ReverseJoysticks(false));
         joysticksBackwards.whenPressed(new ReverseJoysticks(true));
-        driverToggleDriveEnabled.whenPressed(new ToggleDriveEnabled());
-        driverToggleOpenLoop.whenPressed(new ToggleOpenLoop());
-        operatorToggleDriveEnabled.whenPressed(new ToggleDriveEnabled());
-        operatorToggleOpenLoop.whenPressed(new ToggleOpenLoop());
+        toggleDriveEnabled.whenPressed(new ToggleDriveEnabled());
+        toggleOpenLoop.whenPressed(new ToggleOpenLoop());
 
         hatchExtend.whenPressed(new ReBotEjectHatch());
         hatchRetract.whenPressed(new ReBotCloseHatchIntake());
@@ -70,6 +68,10 @@ public class OIHandheld implements OI {
         raiseIntake.whenPressed(new ReBotSetIntakeRaised(true));
         lowerIntake.whenPressed(new ReBotSetIntakeRaised(false));
 
+        floorSetpoint.whenPressed(new ReBotMoveToSetpoint(OIElevatorPosition.FLOOR));
+        shipSetpoint.whenPressed(new ReBotMoveToSetpoint(OIElevatorPosition.SHIP));
+        rocketL1Setpoint.whenPressed(new ReBotMoveToSetpoint(OIElevatorPosition.ROCKET_L1));
+        rocketL2Setpoint.whenPressed(new ReBotMoveToSetpoint(OIElevatorPosition.ROCKET_L2));
         setHatch.whenPressed(new ReBotSetGamepiece(GamePiece.HATCH));
         setCargo.whenPressed(new ReBotSetGamepiece(GamePiece.CARGO));
 
