@@ -77,23 +77,29 @@ public class RobotMap {
   public static int level2RearSolenoid2;
   public static int climberMaster;
   public static int climberSlave;
+  public static int elevatorMaster;
+  public static int elevatorSlave;
+  public static int intake;
 
   public RobotMap() {
     switch (robot) {
     case ROBOT_REBOT:
-      rightMaster = 14;
-      rightSlave = 13;
-      rightSlave2 = 12;
-      leftMaster = 15;
-      leftSlave = 0;
-      leftSlave2 = 1;
+      rightMaster = 1;
+      rightSlave = 2;
+      rightSlave2 = 3;
+      leftMaster = 12;
+      leftSlave = 13;
+      leftSlave2 = 14;
       maxVelocityLow = 3284; // 525 RPM
       minVelocityLow = 135; // 20 RPM
       maxAcceleration = 300;
       robotLength = 31.5;
       robotWidth = 29.25;
-      climberMaster = 15;
-      climberSlave = 14;
+      climberMaster = 5;
+      climberSlave = 10;
+      elevatorMaster = 4;
+      elevatorSlave = 11;
+      intake = 6;
       break;
     case ORIGINAL_ROBOT_2018:
       rightMaster = 2;
