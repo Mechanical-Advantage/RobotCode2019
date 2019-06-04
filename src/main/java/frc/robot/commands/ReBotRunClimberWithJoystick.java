@@ -7,15 +7,18 @@
 
 package frc.robot.commands;
 
-import edu.wpi.first.wpilibj.command.Command;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
-import frc.robot.RobotMap;
+import edu.wpi.first.wpilibj.command.Command;
 
-public class ManualArmLightControl extends Command {
-  public ManualArmLightControl() {
-    super();
-    requires(Robot.armLight);
+public class ReBotRunClimberWithJoystick extends Command {
+
+  private final double deadband = 0.05;
+
+  public ReBotRunClimberWithJoystick() {
+    // Use requires() here to declare subsystem dependencies
+    // eg. requires(chassis);
+    super("ReBotRunClimberWithJoystick");
+    requires(Robot.climber);
   }
 
   // Called just before this Command runs the first time
@@ -26,10 +29,9 @@ public class ManualArmLightControl extends Command {
   // Called repeatedly when this Command is scheduled to run
   @Override
   protected void execute() {
-    Robot.armLight.driveElbow(Robot.oi.getLeftOperatorStickY());
-    if (RobotMap.tuningMode) {
-      SmartDashboard.putNumber("Arm Light Current", Robot.armLight.getElbowCurrent());
-    }
+    double joystickAxis = Robot.oi.getRightOperatorStickY();
+    joystickAxis = Math.abs(joystickAxis) > deadband ? joystickAxis : 0;
+    Robot.climber.run(joystickAxis);
   }
 
   // Make this return true when this Command no longer needs to run execute()
@@ -41,13 +43,12 @@ public class ManualArmLightControl extends Command {
   // Called once after isFinished returns true
   @Override
   protected void end() {
-    Robot.armLight.disableElbow();
   }
 
   // Called when another command which requires one or more of the same
   // subsystems is scheduled to run
   @Override
   protected void interrupted() {
-    end();
+    Robot.climber.stop();
   }
 }

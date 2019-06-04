@@ -7,47 +7,42 @@
 
 package frc.robot.commands;
 
-import edu.wpi.first.wpilibj.command.Command;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
-import frc.robot.RobotMap;
+import edu.wpi.first.wpilibj.command.TimedCommand;
 
-public class ManualArmLightControl extends Command {
-  public ManualArmLightControl() {
-    super();
-    requires(Robot.armLight);
+/**
+ * Extends the hatch ejector pistons briefly
+ */
+public class ReBotExtendEjectorPistons extends TimedCommand {
+  public ReBotExtendEjectorPistons(double timeout) {
+    super(timeout);
+    // Use requires() here to declare subsystem dependencies
+    // eg. requires(chassis);
+
+    // requires(Robot.reBotIntake);
   }
 
   // Called just before this Command runs the first time
   @Override
   protected void initialize() {
+    // Robot.reBotIntake.extendEjectorPistons();
   }
 
   // Called repeatedly when this Command is scheduled to run
   @Override
   protected void execute() {
-    Robot.armLight.driveElbow(Robot.oi.getLeftOperatorStickY());
-    if (RobotMap.tuningMode) {
-      SmartDashboard.putNumber("Arm Light Current", Robot.armLight.getElbowCurrent());
-    }
   }
 
-  // Make this return true when this Command no longer needs to run execute()
-  @Override
-  protected boolean isFinished() {
-    return false;
-  }
-
-  // Called once after isFinished returns true
+  // Called once after timeout
   @Override
   protected void end() {
-    Robot.armLight.disableElbow();
+    // Robot.reBotIntake.retractEjectorPistons();
   }
 
   // Called when another command which requires one or more of the same
   // subsystems is scheduled to run
   @Override
   protected void interrupted() {
-    end();
+    // Robot.reBotIntake.retractEjectorPistons();
   }
 }

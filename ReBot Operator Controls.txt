@@ -1,0 +1,28 @@
+ReBot Operator Controls
+
+General
+-drive disable toggle = back (7)
+-open loop toggle = start (8)
+
+Intake
+-retract hatch intake = A (1)
+-extend hatch intake = X (3)
+-intake cargo = B (2)
+-eject cargo = Y (4)
+-raise intake = right bumper (6)
+-lower intake = left bumper (5)
+
+Elevator
+*All set points based on last intake operated*
+-move to floor = POV up	
+-move to ship = POV right
+-move to rocket L1 = POV down
+-move to rocket L2 = POV left
+-force hatch set points = left stick click (9)
+-force cargo set points = right stick click (10)
+-manual drive = left stick
+
+Climber
+-manual drive = right stick
+-enable vacuum = right trigger
+-disable vacuum = left trigger

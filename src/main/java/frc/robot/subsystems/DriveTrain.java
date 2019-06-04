@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import frc.robot.Robot;
+import frc.robot.OI.OIType;
 import frc.robot.RobotMap;
 //import frc.robot.RobotMap.RobotType;
 import frc.robot.commands.DriveWithJoystick;
@@ -30,7 +31,7 @@ public class DriveTrain extends Subsystem {
   /*
    * Talon SRX Unit Notes:
    * 
-   * - Firmware in Phoenix does not support scaling
+   * Firmware in Phoenix does not support scaling
    * 
    * - CTRE Mag Encoder Relative: 4096 ticks/native units per rotation
    *
@@ -51,9 +52,7 @@ public class DriveTrain extends Subsystem {
    * 
    * 2: Motion profiling/magic
    * 
-   * 3: PTO Position
-   * 
-   * Low gear used on single speed robots
+   * 3: PTO Position Low gear used on single speed robots
    */
 
   private double kPLow;
@@ -78,9 +77,12 @@ public class DriveTrain extends Subsystem {
   private int kIZonePTO;
   private boolean PTOUseMotMaj;
 
-  private static final double sniperMode = 0.25; // multiplied by velocity in sniper mode
+  private static final double sniperModeConsole = 0.25; // multiplied by velocity in sniper mode when locked and using
+  // console
+  private static final double sniperModeHandheldHigh = 0.3; // used for right trigger when using handheld control
+  private static final double sniperModeHandheldLow = 0.15; // used for left trigger when using handheld control
   private static final boolean sniperModeLocked = false; // when set, sniper mode uses value above, when unset, value
-                                                         // comes from throttle control on joystick
+  // comes from throttle control on joystick
   private static final int currentLimit = 50;
   private static final boolean enableCurrentLimit = false;
   @SuppressWarnings("unused")
@@ -392,9 +394,19 @@ public class DriveTrain extends Subsystem {
   public void drive(double left, double right, boolean alwaysHighMaxVel) {
     if (Robot.oi.getDriveEnabled() && currentControlMode == DriveControlMode.STANDARD_DRIVE) {
       if (Robot.oi.getSniperMode()) {
-        if (sniperModeLocked) {
-          left *= sniperMode;
-          right *= sniperMode;
+        if (sniperModeLocked || Robot.oiType == OIType.HANDHELD) {
+          if (Robot.oiType == OIType.CONSOLE) {
+            left *= sniperModeConsole;
+            right *= sniperModeConsole;
+          } else {
+            if (Robot.oi.getSniperHigh()) {
+              left *= sniperModeHandheldHigh;
+              right *= sniperModeHandheldHigh;
+            } else {
+              left *= sniperModeHandheldLow;
+              right *= sniperModeHandheldLow;
+            }
+          }
         } else {
           left *= Robot.oi.getSniperLevel();
           right *= Robot.oi.getSniperLevel();
@@ -727,7 +739,7 @@ public class DriveTrain extends Subsystem {
       rightTalonMaster.configAllowableClosedloopError(1, 0, configTimeout); // motion profiling does not use this
       leftTalonMaster.configAllowableClosedloopError(1, 0, configTimeout);
       currentControlMode = DriveControlMode.STANDARD_DRIVE; // this needs to be changed before calling
-                                                            // useClosed/OpenLoop so that they work
+      // useClosed/OpenLoop so that they work
       rightTalonMaster.selectProfileSlot(0, 0);
       leftTalonMaster.selectProfileSlot(0, 0);
       rightTalonMaster.configNominalOutputForward(nominalOutputVoltage / 12, configTimeout);
