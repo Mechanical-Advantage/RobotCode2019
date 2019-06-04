@@ -23,6 +23,11 @@ public class Elevator extends Subsystem {
   private static final boolean elevatorMasterReversed = true;
   private static final boolean elevatorSlaveReversed = true;
   private static final NeutralMode neutralMode = NeutralMode.Coast;
+  private static final double schoolZoneSpeedLimit = 0.1;
+  private static final double schoolZoneLowerStart = 0;
+  private static final double schoolZoneUpperStart = 0;
+  private static final double peakOutput = 0.5;
+  public static final double startingPosition = 0;
 
   private static final boolean enableCurrentLimit = false;
   private static final int continuousCurrentLimit = 0;
@@ -44,7 +49,9 @@ public class Elevator extends Subsystem {
   private TalonSRX elevatorMaster;
   private TalonSRX elevatorSlave;
 
+  private double tagetPosition;
   private SchoolZone schoolZone;
+  private SchoolZone currentSchoolZone;
 
   private boolean elevatorEnabled;
   private boolean elevatorLimitsEnabled = true;
@@ -54,12 +61,17 @@ public class Elevator extends Subsystem {
 
   public Elevator() {
     if (available()) {
+      schoolZone = new SchoolZone(schoolZoneSpeedLimit, peakOutput, schoolZoneLowerStart, schoolZoneUpperStart,
+          elevatorMaster);
+
       elevatorMaster = new TalonSRX(RobotMap.elevatorMaster);
       elevatorSlave = new TalonSRX(RobotMap.elevatorSlave);
 
       elevatorMaster.configFactoryDefault();
       elevatorMaster.setInverted(elevatorMasterReversed);
       elevatorMaster.setNeutralMode(neutralMode);
+
+      schoolZone.setControllerLimits(); // This sets the peak output of the controllers
 
       elevatorMaster.configContinuousCurrentLimit(continuousCurrentLimit);
       elevatorMaster.configPeakCurrentLimit(peakCurrentLimit);
