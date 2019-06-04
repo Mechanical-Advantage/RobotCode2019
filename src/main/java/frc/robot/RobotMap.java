@@ -75,6 +75,9 @@ public class RobotMap {
   public static int level2RearPCM;
   public static int level2RearSolenoid1;
   public static int level2RearSolenoid2;
+  public static int RebotPCM;
+  public static int CargoRaiseSolenoid;
+  public static int CargoLowerSolenoid;
 
   public RobotMap() {
     switch (robot) {
@@ -91,6 +94,9 @@ public class RobotMap {
       robotLength = 31.5;
       robotWidth = 29.25;
       intakeMotor = 11; // TBD: set to correct value
+      CargoRaiseSolenoid = 0;
+      CargoLowerSolenoid = 1;
+      RebotPCM = 0;
       break;
     case ORIGINAL_ROBOT_2018:
       rightMaster = 2;

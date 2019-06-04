@@ -7,6 +7,7 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
@@ -28,6 +29,9 @@ public class Intake extends Subsystem {
   private static final int intakePeakCurrentLimit = 0;
   private static final int intakePeakCurrentLimitDuration = 0; // ms
 
+  private DoubleSolenoid CargoSolenoid;
+  private DoubleSolenoid hatchControlSolenoid;
+  private DoubleSolenoid hatchReleaseSolenoid;
   private TalonSRX intake;
 
   private boolean available() {
@@ -36,6 +40,8 @@ public class Intake extends Subsystem {
 
   public Intake() {
     if (available()) {
+      CargoSolenoid = new DoubleSolenoid(RobotMap.RebotPCM, RobotMap.CargoRaiseSolenoid, RobotMap.CargoLowerSolenoid);
+
       intake = new TalonSRX(RobotMap.intakeMotor);
 
       intake.configFactoryDefault();
@@ -59,6 +65,32 @@ public class Intake extends Subsystem {
     if (available()) {
       intake.set(ControlMode.PercentOutput, power);
     }
+  }
+
+  public void raise() {
+    if (available()) {
+
+    }
+  }
+
+  public void lower() {
+
+  }
+
+  public void close() {
+
+  }
+
+  public void open() {
+
+  }
+
+  public void extend() {
+
+  }
+
+  public void retract() {
+
   }
 
   public void stop() {
