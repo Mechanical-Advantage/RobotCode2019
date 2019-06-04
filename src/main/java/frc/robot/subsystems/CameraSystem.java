@@ -2,7 +2,7 @@ package frc.robot.subsystems;
 
 import frc.robot.RobotMap;
 import frc.robot.RobotMap.RobotType;
-
+import edu.wpi.cscore.MjpegServer;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.command.Subsystem;
@@ -20,6 +20,8 @@ public class CameraSystem extends Subsystem {
   private int frontCameraID;
   private int secondCameraID;
 
+  private static final int compressionQuality = 50; // Valid range 0-100, higher value for higher quality and higher
+  // bandwith.
   // Put methods for controlling this subsystem
   // here. Call these from Commands.
 
@@ -30,9 +32,10 @@ public class CameraSystem extends Subsystem {
 
   public CameraSystem() {
     switch (RobotMap.robot) {
-    case ROBOT_2017:
-      frontCameraID = 2;
-      secondCameraID = 0;
+    case EVERYBOT_2019:
+    case ROBOT_REBOT:
+      frontCameraID = 0;
+      secondCameraID = 2;
       break;
     case ORIGINAL_ROBOT_2018:
       frontCameraID = 0;
@@ -41,7 +44,6 @@ public class CameraSystem extends Subsystem {
     case ROBOT_2019:
     case ROBOT_2019_2:
       break;
-    case EVERYBOT_2019:
     default:
       break;
     }
@@ -56,7 +58,9 @@ public class CameraSystem extends Subsystem {
   // effect
   private UsbCamera setupServer(int id) {
     serverCreated = true;
-    return CameraServer.getInstance().startAutomaticCapture("Video Feed", id);
+    UsbCamera camera = CameraServer.getInstance().startAutomaticCapture("Video Feed", id);
+    ((MjpegServer) CameraServer.getInstance().getServer()).setCompression(compressionQuality);
+    return camera;
   }
 
   public void useFrontCamera() {
@@ -75,7 +79,7 @@ public class CameraSystem extends Subsystem {
   }
 
   public void useSecondCamera() {
-    if (RobotMap.robot == RobotType.ROBOT_2017 || RobotMap.robot == RobotType.ORIGINAL_ROBOT_2018) {
+    if (RobotMap.robot == RobotType.ROBOT_REBOT || RobotMap.robot == RobotType.ORIGINAL_ROBOT_2018) {
       if (!secondCameraAdded) {
         if (!serverCreated) {
           secondCamera = setupServer(secondCameraID);

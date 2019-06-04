@@ -10,6 +10,7 @@ package frc.robot;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.Math;
 import java.util.StringJoiner;
 
 import com.kauailabs.navx.frc.AHRS;
@@ -17,13 +18,22 @@ import com.kauailabs.navx.frc.AHRS;
 import org.zeromq.ZMQ;
 
 import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.BuiltInAccelerometer;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
+import edu.wpi.first.wpilibj.interfaces.Accelerometer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.commands.DriveWithJoystick.JoystickMode;
+import frc.robot.OI.OIRumbleType;
+import frc.robot.OI.OIType;
+import static frc.robot.OI.fullAcceleration;
+import static frc.robot.OI.lowRumbleFactor;
+import static frc.robot.OI.minAcceleration;
+import frc.robot.RobotMap.RobotType;
 import frc.robot.commands.ArmLightTuning;
 import frc.robot.commands.ArmTuning;
 import frc.robot.commands.DriveDistanceOnHeading;
@@ -42,6 +52,7 @@ import frc.robot.subsystems.Level2Climber;
 import frc.robot.subsystems.SimpleScorer;
 import frc.robot.subsystems.VisionData;
 import frc.robot.subsystems.Vacuum;
+import frc.robot.subsystems.Climber;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -64,8 +75,12 @@ public class Robot extends TimedRobot {
   public static final SimpleScorer simpleScorer = new SimpleScorer();
   public static final VisionData visionData = new VisionData();
   public static final Level2Climber level2Climber = new Level2Climber();
+  public static final Climber climber = new Climber();
+  // public static final Elevator elevator = new Elevator();
+  // public static final Intake reBotIntake = new Intake();
 
   public static OI oi;
+  public static OIType oiType;
   public static final AHRS ahrs = new AHRS(SPI.Port.kMXP);
 
   public static final CameraSystem cameraSubsystem = new CameraSystem();
@@ -76,18 +91,34 @@ public class Robot extends TimedRobot {
   public static SendableChooser<JoystickMode> joystickModeChooser;
   private static final Command vacPickupCommand = new VacPickup();
 
+  public Accelerometer accel = new BuiltInAccelerometer(Accelerometer.Range.k4G);
+  public static GamePiece gamePiece = GamePiece.HATCH;
+
   /**
    * This function is run when the robot is first started up and should be used
    * for any initialization code.
    */
   @Override
   public void robotInit() {
-    oi = new OI();
+    switch (RobotMap.robot) {
+    case ROBOT_REBOT:
+      oi = new OIHandheld();
+      oiType = OIType.HANDHELD;
+      SmartDashboard.putBoolean("Drive Enabled", oi.getDriveEnabled());
+      SmartDashboard.putBoolean("Open Loop Drive", Robot.oi.getOpenLoop());
+      break;
+    default:
+      oi = new OIConsole();
+      oiType = OIType.CONSOLE;
+      break;
+    }
     joystickModeChooser = new SendableChooser<JoystickMode>();
     // chooser.setDefaultOption("Default Auto", new ExampleCommand());
     // chooser.addOption("My Auto", new MyAutoCommand());
-    joystickModeChooser.addOption("Tank", JoystickMode.Tank);
-    joystickModeChooser.setDefaultOption("Split Arcade", JoystickMode.SplitArcade);
+    joystickModeChooser.setDefaultOption("Tank", JoystickMode.Tank);
+    joystickModeChooser.addOption("Trigger", JoystickMode.Trigger);
+    joystickModeChooser.addOption("Split Arcade", JoystickMode.SplitArcade);
+    joystickModeChooser.addOption("Split Arcade (right drive)", JoystickMode.SplitArcadeRightDrive);
 
     autoChooser.addOption("None", null);
     autoChooser.addOption("Hold Panel", AutoMode.VAC_PICKUP);
@@ -106,6 +137,11 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putData("Auto mode", autoChooser);
     SmartDashboard.putData("Control Mode", joystickModeChooser);
+    SmartDashboard.putBoolean("Game Piece", gamePiece == GamePiece.HATCH);
+
+    if (RobotMap.robot == RobotType.ROBOT_REBOT) {
+      SmartDashboard.putBoolean("Suction Good", false);
+    }
 
     // if the current waypoint version is old, re-generate profiles
     BufferedReader waypointVersionReader;
@@ -122,7 +158,30 @@ public class Robot extends TimedRobot {
       generateCommand.setRunWhenDisabled(true);
       generateCommand.start();
     }
-    Compressor c = new Compressor();
+    if (RobotMap.robot == RobotType.EVERYBOT_2019 || RobotMap.robot == RobotType.ROBOT_REBOT) {
+      cameraSubsystem.useFrontCamera();
+    }
+    // Compressor c = new Compressor();
+  }
+
+  // Update rumble based on acceleration
+  private void updateControllerRumble() {
+    if (oiType == OIType.HANDHELD) {
+      double totalAcceleration = Math.sqrt(accel.getX() * accel.getX() + accel.getY() * accel.getY()); // Calculates
+                                                                                                       // total
+                                                                                                       // acceleration
+                                                                                                       // using
+                                                                                                       // pythagorean
+                                                                                                       // theorem
+      if (totalAcceleration > minAcceleration) {
+        totalAcceleration /= fullAcceleration;
+        oi.setRumble(OIRumbleType.DRIVER_RIGHT, totalAcceleration);
+        oi.setRumble(OIRumbleType.DRIVER_LEFT, totalAcceleration * lowRumbleFactor);
+      } else {
+        oi.setRumble(OIRumbleType.DRIVER_RIGHT, 0);
+        oi.setRumble(OIRumbleType.DRIVER_LEFT, 0);
+      }
+    }
   }
 
   /**
@@ -145,6 +204,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void disabledInit() {
+    oi.resetRumble();
   }
 
   @Override
@@ -202,6 +262,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousPeriodic() {
     Scheduler.getInstance().run();
+    updateControllerRumble();
   }
 
   @Override
@@ -220,9 +281,11 @@ public class Robot extends TimedRobot {
   /**
    * This function is called periodically during operator control.
    */
+
   @Override
   public void teleopPeriodic() {
     Scheduler.getInstance().run();
+    updateControllerRumble();
   }
 
   /**
@@ -234,6 +297,10 @@ public class Robot extends TimedRobot {
 
   private enum AutoMode {
     TUNING, VAC_PICKUP;
+  }
+
+  public enum GamePiece {
+    HATCH, CARGO;
   }
 
   // Utility functions

@@ -7,28 +7,44 @@
 
 package frc.robot.commands;
 
+import frc.robot.Robot;
+import frc.robot.subsystems.Vacuum.VacuumLevel;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Robot;
-import frc.robot.RobotMap;
 
-public class ManualArmLightControl extends Command {
-  public ManualArmLightControl() {
-    super();
-    requires(Robot.armLight);
+public class ReBotEnableVacuum extends Command {
+
+  private static final double suctionGoodThreshold = 0.55; // For SmartDashboard indicator
+
+  private boolean indicatorOnLast;
+
+  public ReBotEnableVacuum() {
+    // Use requires() here to declare subsystem dependencies
+    // eg. requires(chassis);
+
+    requires(Robot.vacuum);
   }
 
   // Called just before this Command runs the first time
   @Override
   protected void initialize() {
+    Robot.vacuum.setVacuumMotor(VacuumLevel.HIGH);
   }
 
   // Called repeatedly when this Command is scheduled to run
   @Override
   protected void execute() {
-    Robot.armLight.driveElbow(Robot.oi.getLeftOperatorStickY());
-    if (RobotMap.tuningMode) {
-      SmartDashboard.putNumber("Arm Light Current", Robot.armLight.getElbowCurrent());
+    double pressureSensorVoltage = Robot.vacuum.getPressureSensorVoltage();
+    if (pressureSensorVoltage > suctionGoodThreshold) {
+      if (!indicatorOnLast) {
+        SmartDashboard.putBoolean("Suction Good", true);
+        indicatorOnLast = true;
+      }
+    } else {
+      if (indicatorOnLast) {
+        SmartDashboard.putBoolean("Suction Good", false);
+        indicatorOnLast = false;
+      }
     }
   }
 
@@ -41,7 +57,8 @@ public class ManualArmLightControl extends Command {
   // Called once after isFinished returns true
   @Override
   protected void end() {
-    Robot.armLight.disableElbow();
+    SmartDashboard.putBoolean("Suction Good", false);
+    indicatorOnLast = false;
   }
 
   // Called when another command which requires one or more of the same

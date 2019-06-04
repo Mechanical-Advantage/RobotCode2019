@@ -7,29 +7,49 @@
 
 package frc.robot.commands;
 
-import edu.wpi.first.wpilibj.command.Command;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
-import frc.robot.RobotMap;
+import edu.wpi.first.wpilibj.command.Command;
 
-public class ManualArmLightControl extends Command {
-  public ManualArmLightControl() {
-    super();
-    requires(Robot.armLight);
+public class ReBotRunCargoIntake extends Command {
+
+  private final Double intakeSpeed = 0.5;
+  private final Double ejectSpeed = -0.5;
+
+  private Double speed;
+
+  public ReBotRunCargoIntake(IntakeAction action) {
+    // Use requires() here to declare subsystem dependencies
+    // eg. requires(chassis);
+
+    // requires(Robot.reBotIntake);
+    switch (action) {
+    case INTAKE:
+      speed = intakeSpeed;
+      Robot.gamePiece = Robot.GamePiece.CARGO;
+      break;
+    case EJECT:
+      speed = ejectSpeed;
+      break;
+    }
+  }
+
+  public ReBotRunCargoIntake(Double speed) {
+    // requires(Robot.reBotIntake);
+    this.speed = speed;
+    if ((speed > 1 && intakeSpeed > 1) || (speed < 1 && intakeSpeed < 1)) {
+      Robot.gamePiece = Robot.GamePiece.CARGO;
+    }
   }
 
   // Called just before this Command runs the first time
   @Override
   protected void initialize() {
+    // Robot.reBotIntake.run(speed);
   }
 
   // Called repeatedly when this Command is scheduled to run
   @Override
   protected void execute() {
-    Robot.armLight.driveElbow(Robot.oi.getLeftOperatorStickY());
-    if (RobotMap.tuningMode) {
-      SmartDashboard.putNumber("Arm Light Current", Robot.armLight.getElbowCurrent());
-    }
   }
 
   // Make this return true when this Command no longer needs to run execute()
@@ -41,13 +61,16 @@ public class ManualArmLightControl extends Command {
   // Called once after isFinished returns true
   @Override
   protected void end() {
-    Robot.armLight.disableElbow();
   }
 
   // Called when another command which requires one or more of the same
   // subsystems is scheduled to run
   @Override
   protected void interrupted() {
-    end();
+    // Robot.reBotIntake.stop;
+  }
+
+  public enum IntakeAction {
+    INTAKE, EJECT
   }
 }

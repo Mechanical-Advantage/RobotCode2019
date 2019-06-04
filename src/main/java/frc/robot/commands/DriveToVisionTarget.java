@@ -98,7 +98,7 @@ public class DriveToVisionTarget extends Command {
     requires(Robot.visionData);
 
     switch (RobotMap.robot) {
-    case ROBOT_2017:
+    case ROBOT_REBOT:
       kPDistance = 0.04; // 0.0032 slow but good
       kIDistance = 0.000000;
       kDDistance = 0;

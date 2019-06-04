@@ -139,7 +139,7 @@ public class DriveDistanceOnHeading extends Command {
     targetAngle = (targetAngle < -180) ? -180 : targetAngle;
     useStartingYaw = false;
     switch (RobotMap.robot) {
-    case ROBOT_2017:
+    case ROBOT_REBOT:
       kPDistance = 0.032;
       kIDistance = 0.000000;
       kDDistance = 0;
