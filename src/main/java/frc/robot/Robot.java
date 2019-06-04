@@ -160,7 +160,7 @@ public class Robot extends TimedRobot {
     if (RobotMap.robot == RobotType.EVERYBOT_2019 || RobotMap.robot == RobotType.ROBOT_REBOT) {
       cameraSubsystem.useFrontCamera();
     }
-    Compressor c = new Compressor();
+    // Compressor c = new Compressor();
   }
 
   // Update rumble based on acceleration
