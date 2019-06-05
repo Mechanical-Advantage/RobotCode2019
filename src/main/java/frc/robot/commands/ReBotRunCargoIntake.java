@@ -14,30 +14,32 @@ import frc.robot.subsystems.Intake.GamePiece;;
 public class ReBotRunCargoIntake extends Command {
 
   private final Double intakeSpeed = (double) -1;
-  private final Double ejectSpeed = (double) 1;
+  private final Double loweredEjectSpeed = (double) 1;
+  private final Double raisedEjectSpeed = (double) 0.7;
 
   private Double speed;
+  private IntakeAction action;
+  private Boolean preferSpeed;
 
   public ReBotRunCargoIntake(IntakeAction action) {
     // Use requires() here to declare subsystem dependencies
     // eg. requires(chassis);
 
     requires(Robot.intake);
-    switch (action) {
-    case INTAKE:
-      speed = intakeSpeed;
+    this.action = action;
+    this.preferSpeed = false;
+    if (action == IntakeAction.INTAKE) {
       Robot.intake.setGamepiece(GamePiece.CARGO);
-      break;
-    case EJECT:
-      speed = ejectSpeed;
-      break;
     }
   }
 
   public ReBotRunCargoIntake(Double speed) {
     requires(Robot.intake);
     this.speed = speed;
-    if ((speed > 1 && intakeSpeed > 1) || (speed < 1 && intakeSpeed < 1)) {
+    this.preferSpeed = true;
+
+    // Set gamepiece to cargo if in same direction as eject speed
+    if ((speed > 1 && loweredEjectSpeed > 1) || (speed < 1 && loweredEjectSpeed < 1)) {
       Robot.intake.setGamepiece(GamePiece.CARGO);
     }
   }
@@ -45,7 +47,16 @@ public class ReBotRunCargoIntake extends Command {
   // Called just before this Command runs the first time
   @Override
   protected void initialize() {
-    Robot.intake.run(speed);
+    if (preferSpeed) {
+      Robot.intake.run(speed);
+    } else if (action == IntakeAction.INTAKE) {
+      Robot.intake.run(intakeSpeed);
+    } else if (Robot.intake.isRaised()) {
+      Robot.intake.run(raisedEjectSpeed);
+    } else {
+      Robot.intake.run(loweredEjectSpeed);
+    }
+
   }
 
   // Called repeatedly when this Command is scheduled to run

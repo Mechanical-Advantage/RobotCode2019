@@ -8,6 +8,8 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
@@ -46,11 +48,9 @@ public class Intake extends Subsystem {
       // cargoSolenoid = new DoubleSolenoid(RobotMap.RebotPCM,
       // RobotMap.CargoRaiseSolenoid, RobotMap.CargoLowerSolenoid);
       // hatchControlSolenoid = new DoubleSolenoid(RobotMap.RebotPCM,
-      // RobotMap.HatchOpenSolenoid,
-      // RobotMap.HatchCloseSolenoid);
+      // RobotMap.HatchOpenSolenoid, RobotMap.HatchCloseSolenoid);
       // hatchReleaseSolenoid = new DoubleSolenoid(RobotMap.RebotPCM,
-      // RobotMap.HatchDeliverSolenoid,
-      // RobotMap.HatchWithdrawSolenoid);
+      // RobotMap.HatchDeliverSolenoid, RobotMap.HatchWithdrawSolenoid);
       intake = new TalonSRX(RobotMap.intakeMotor);
       intake.configFactoryDefault();
       intake.setInverted(intakeReversed);
@@ -84,6 +84,14 @@ public class Intake extends Subsystem {
   public void lower() {
     if (available()) {
       cargoSolenoid.set(DoubleSolenoid.Value.kForward);
+    }
+  }
+
+  public boolean isRaised() {
+    if (available()) {
+      return cargoSolenoid.get() == Value.kReverse;
+    } else {
+      return false;
     }
   }
 
