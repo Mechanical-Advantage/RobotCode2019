@@ -67,19 +67,25 @@ public class RobotMap {
   public static int simpleScoringSolenoid1;
   public static int simpleScoringSolenoid2;
   public static int simpleScoringPCM;
-  public static int simpleScoringIntake;
-  public static int armLightIntake;
+  public static int simpleScoringIntakeMotor;
+  public static int intakeMotor;
   public static int level2FrontPCM;
   public static int level2FrontSolenoid1;
   public static int level2FrontSolenoid2;
   public static int level2RearPCM;
   public static int level2RearSolenoid1;
   public static int level2RearSolenoid2;
+  public static int RebotPCM;
+  public static int CargoRaiseSolenoid;
+  public static int CargoLowerSolenoid;
+  public static int HatchOpenSolenoid;
+  public static int HatchCloseSolenoid;
+  public static int HatchDeliverSolenoid;
+  public static int HatchWithdrawSolenoid;
   public static int climberMaster;
   public static int climberSlave;
   public static int elevatorMaster;
   public static int elevatorSlave;
-  public static int intake;
 
   public RobotMap() {
     switch (robot) {
@@ -95,11 +101,18 @@ public class RobotMap {
       maxAcceleration = 300;
       robotLength = 31.5;
       robotWidth = 29.25;
+      intakeMotor = 11; // TBD: set to correct value
+      CargoRaiseSolenoid = 0;
+      CargoLowerSolenoid = 1;
+      HatchCloseSolenoid = 2;
+      HatchOpenSolenoid = 3;
+      HatchDeliverSolenoid = 4;
+      HatchWithdrawSolenoid = 5;
+      RebotPCM = 0;
       climberMaster = 5;
       climberSlave = 10;
       elevatorMaster = 4;
       elevatorSlave = 11;
-      intake = 6;
       break;
     case ORIGINAL_ROBOT_2018:
       rightMaster = 2;
@@ -161,8 +174,8 @@ public class RobotMap {
       simpleScoringPCM = 0;
       simpleScoringSolenoid1 = 7;
       simpleScoringSolenoid2 = 5;
-      simpleScoringIntake = 10;
-      armLightIntake = 11;
+      simpleScoringIntakeMotor = 10;
+      intakeMotor = 11;
       level2FrontPCM = 1;
       level2FrontSolenoid1 = 5;
       level2FrontSolenoid2 = 7;

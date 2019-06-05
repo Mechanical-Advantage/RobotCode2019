@@ -36,18 +36,18 @@ public class SimpleScorer extends Subsystem {
 
   public SimpleScorer() {
     if (available()) {
-      extendSolenoid = new DoubleSolenoid(RobotMap.simpleScoringPCM, 
-        RobotMap.simpleScoringSolenoid1, RobotMap.simpleScoringSolenoid2);
-        intake = new TalonSRX(RobotMap.simpleScoringIntake);
+      extendSolenoid = new DoubleSolenoid(RobotMap.simpleScoringPCM, RobotMap.simpleScoringSolenoid1,
+          RobotMap.simpleScoringSolenoid2);
+      intake = new TalonSRX(RobotMap.simpleScoringIntakeMotor);
 
-        intake.configFactoryDefault();
-        intake.setInverted(intakeReversed);
-        intake.setNeutralMode(intakeNeutralMode);
-  
-        intake.configContinuousCurrentLimit(intakeContinousCurrentLimit);
-        intake.configPeakCurrentLimit(intakePeakCurrentLimit);
-        intake.configPeakCurrentDuration(intakePeakCurrentLimitDuration);
-        intake.enableCurrentLimit(intakeEnableCurrentLimit);  
+      intake.configFactoryDefault();
+      intake.setInverted(intakeReversed);
+      intake.setNeutralMode(intakeNeutralMode);
+
+      intake.configContinuousCurrentLimit(intakeContinousCurrentLimit);
+      intake.configPeakCurrentLimit(intakePeakCurrentLimit);
+      intake.configPeakCurrentDuration(intakePeakCurrentLimitDuration);
+      intake.enableCurrentLimit(intakeEnableCurrentLimit);
     }
   }
 
