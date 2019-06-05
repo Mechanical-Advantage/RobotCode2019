@@ -28,20 +28,12 @@ public class ReBotRunCargoIntake extends Command {
     requires(Robot.intake);
     this.action = action;
     this.preferSpeed = false;
-    if (action == IntakeAction.INTAKE) {
-      Robot.intake.setGamepiece(GamePiece.CARGO);
-    }
   }
 
   public ReBotRunCargoIntake(Double speed) {
     requires(Robot.intake);
     this.speed = speed;
     this.preferSpeed = true;
-
-    // Set gamepiece to cargo if in same direction as eject speed
-    if ((speed > 1 && loweredEjectSpeed > 1) || (speed < 1 && loweredEjectSpeed < 1)) {
-      Robot.intake.setGamepiece(GamePiece.CARGO);
-    }
   }
 
   // Called just before this Command runs the first time
@@ -49,10 +41,18 @@ public class ReBotRunCargoIntake extends Command {
   protected void initialize() {
     if (preferSpeed) {
       Robot.intake.run(speed);
+      // Set gamepiece to cargo if in same direction as eject speed
+      if ((speed > 1 && loweredEjectSpeed > 1) || (speed < 1 && loweredEjectSpeed < 1)) {
+        Robot.intake.setGamepiece(GamePiece.CARGO);
+      }
+
     } else if (action == IntakeAction.INTAKE) {
       Robot.intake.run(intakeSpeed);
+      Robot.intake.setGamepiece(GamePiece.CARGO);
+
     } else if (Robot.intake.isRaised()) {
       Robot.intake.run(raisedEjectSpeed);
+
     } else {
       Robot.intake.run(loweredEjectSpeed);
     }
