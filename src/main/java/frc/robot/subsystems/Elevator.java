@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.command.Subsystem;
 import frc.robot.RobotMap;
 import frc.robot.RobotMap.RobotType;
 import frc.robot.util.SchoolZone;
+import frc.robot.commands.ReBotRunElevatorWithJoystick;
 
 /**
  * This is the elvator subsystem for ROBOT_REBOT
@@ -107,5 +108,6 @@ public class Elevator extends Subsystem {
   public void initDefaultCommand() {
     // Set the default command for a subsystem here.
     // setDefaultCommand(new MySpecialCommand());
+    setDefaultCommand(new ReBotRunElevatorWithJoystick());
   }
 }
