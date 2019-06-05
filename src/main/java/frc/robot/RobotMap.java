@@ -101,7 +101,7 @@ public class RobotMap {
       maxAcceleration = 300;
       robotLength = 31.5;
       robotWidth = 29.25;
-      intakeMotor = 11; // TBD: set to correct value
+      intakeMotor = 6;
       CargoRaiseSolenoid = 0;
       CargoLowerSolenoid = 1;
       HatchCloseSolenoid = 2;

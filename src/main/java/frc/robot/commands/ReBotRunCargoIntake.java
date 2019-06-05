@@ -13,8 +13,8 @@ import frc.robot.subsystems.Intake;
 
 public class ReBotRunCargoIntake extends Command {
 
-  private final Double intakeSpeed = 0.1;
-  private final Double ejectSpeed = -0.1;
+  private final Double intakeSpeed = (double) -1;
+  private final Double ejectSpeed = (double) 1;
 
   private Double speed;
 

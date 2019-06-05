@@ -22,8 +22,8 @@ import frc.robot.commands.ReBotRunElevatorWithJoystick;
  */
 public class Elevator extends Subsystem {
   private static final boolean elevatorMasterReversed = true;
-  private static final boolean elevatorSlaveReversed = true;
-  private static final NeutralMode neutralMode = NeutralMode.Coast;
+  private static final boolean elevatorSlaveReversed = false;
+  private static final NeutralMode neutralMode = NeutralMode.Brake;
   private static final double schoolZoneSpeedLimit = 0.1;
   private static final double schoolZoneLowerStart = 0;
   private static final double schoolZoneUpperStart = 0;
