@@ -9,6 +9,7 @@ package frc.robot.commands;
 
 import frc.robot.Robot;
 import edu.wpi.first.wpilibj.command.InstantCommand;
+import frc.robot.subsystems.Intake;
 
 /**
  * Raises or lowers the intake
@@ -22,7 +23,7 @@ public class ReBotSetIntakeRaised extends InstantCommand {
     // Use requires() here to declare subsystem dependencies
     // eg. requires(chassis);
 
-    // requires(Robot.reBotIntake);
+    requires(Robot.intake);
     this.raised = raised;
   }
 
@@ -30,9 +31,9 @@ public class ReBotSetIntakeRaised extends InstantCommand {
   @Override
   protected void initialize() {
     if (raised) {
-      // Robot.reBotIntake.raise();
+      Robot.intake.raise();
     } else {
-      // Robot.reBotIntake.lower();
+      Robot.intake.lower();
     }
   }
 

@@ -9,6 +9,7 @@ package frc.robot.commands;
 
 import frc.robot.Robot;
 import edu.wpi.first.wpilibj.command.InstantCommand;
+import frc.robot.subsystems.Intake;
 
 /**
  * Opens the hatch intake
@@ -19,13 +20,13 @@ public class ReBotOpenHatchIntake extends InstantCommand {
     // Use requires() here to declare subsystem dependencies
     // eg. requires(chassis);
 
-    // requires(Robot.reBotIntake);
+    requires(Robot.intake);
   }
 
   // Called once when the command executes
   @Override
   protected void initialize() {
-    // Robot.reBotIntake.open();
+    Robot.intake.open();
   }
 
 }

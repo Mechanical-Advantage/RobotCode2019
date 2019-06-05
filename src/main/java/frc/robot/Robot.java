@@ -78,7 +78,6 @@ public class Robot extends TimedRobot {
   public static final Level2Climber level2Climber = new Level2Climber();
   public static final Climber climber = new Climber();
   public static final Elevator elevator = new Elevator();
-  // public static final Intake reBotIntake = new Intake();
 
   public static OI oi;
   public static OIType oiType;

@@ -9,9 +9,10 @@ package frc.robot.commands;
 
 import frc.robot.Robot;
 import edu.wpi.first.wpilibj.command.TimedCommand;
+import frc.robot.subsystems.Intake;
 
 /**
- * Extends the hatch ejector pistons briefly
+ * Extends the hatch ejector pistons for a given time
  */
 public class ReBotExtendEjectorPistons extends TimedCommand {
   public ReBotExtendEjectorPistons(double timeout) {
@@ -19,13 +20,13 @@ public class ReBotExtendEjectorPistons extends TimedCommand {
     // Use requires() here to declare subsystem dependencies
     // eg. requires(chassis);
 
-    // requires(Robot.reBotIntake);
+    requires(Robot.intake);
   }
 
   // Called just before this Command runs the first time
   @Override
   protected void initialize() {
-    // Robot.reBotIntake.extend();
+    Robot.intake.extend();
   }
 
   // Called repeatedly when this Command is scheduled to run
@@ -36,13 +37,13 @@ public class ReBotExtendEjectorPistons extends TimedCommand {
   // Called once after timeout
   @Override
   protected void end() {
-    // Robot.reBotIntake.retract();
+    Robot.intake.retract();
   }
 
   // Called when another command which requires one or more of the same
   // subsystems is scheduled to run
   @Override
   protected void interrupted() {
-    // Robot.reBotIntake.retract();
+    end();
   }
 }

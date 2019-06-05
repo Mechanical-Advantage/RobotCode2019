@@ -35,7 +35,7 @@ public class Intake extends Subsystem {
   private TalonSRX intake;
 
   private boolean available() {
-    return RobotMap.robot == RobotType.ROBOT_2017;
+    return RobotMap.robot == RobotType.ROBOT_REBOT;
   }
 
   public Intake() {

@@ -9,11 +9,12 @@ package frc.robot.commands;
 
 import frc.robot.Robot;
 import edu.wpi.first.wpilibj.command.Command;
+import frc.robot.subsystems.Intake;
 
 public class ReBotRunCargoIntake extends Command {
 
-  private final Double intakeSpeed = 0.5;
-  private final Double ejectSpeed = -0.5;
+  private final Double intakeSpeed = 0.1;
+  private final Double ejectSpeed = -0.1;
 
   private Double speed;
 
@@ -21,7 +22,7 @@ public class ReBotRunCargoIntake extends Command {
     // Use requires() here to declare subsystem dependencies
     // eg. requires(chassis);
 
-    // requires(Robot.reBotIntake);
+    requires(Robot.intake);
     switch (action) {
     case INTAKE:
       speed = intakeSpeed;
@@ -34,7 +35,7 @@ public class ReBotRunCargoIntake extends Command {
   }
 
   public ReBotRunCargoIntake(Double speed) {
-    // requires(Robot.reBotIntake);
+    requires(Robot.intake);
     this.speed = speed;
     if ((speed > 1 && intakeSpeed > 1) || (speed < 1 && intakeSpeed < 1)) {
       Robot.gamePiece = Robot.GamePiece.CARGO;
@@ -44,7 +45,7 @@ public class ReBotRunCargoIntake extends Command {
   // Called just before this Command runs the first time
   @Override
   protected void initialize() {
-    // Robot.reBotIntake.run(speed);
+    Robot.intake.run(speed);
   }
 
   // Called repeatedly when this Command is scheduled to run
@@ -67,7 +68,7 @@ public class ReBotRunCargoIntake extends Command {
   // subsystems is scheduled to run
   @Override
   protected void interrupted() {
-    // Robot.reBotIntake.stop;
+    Robot.intake.stop();
   }
 
   public enum IntakeAction {

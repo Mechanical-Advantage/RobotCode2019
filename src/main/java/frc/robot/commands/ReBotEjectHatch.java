@@ -14,8 +14,8 @@ import frc.robot.commands.ReBotOpenHatchIntake;
 
 public class ReBotEjectHatch extends CommandGroup {
 
-  private final Double ejectorDelay = 0.5; // Time to wait after openning intake before ejecting hatch
-  private final Double ejectorDuration = (double) 1; // Time to leave ejector pistons extended
+  private final Double ejectorDelay = (double) 2; // Time to wait after openning intake before ejecting hatch
+  private final Double ejectorDuration = (double) 3; // Time to leave ejector pistons extended
 
   /**
    * Ejects hatch (opens hatch intake and extends ejector pistons after delay)
