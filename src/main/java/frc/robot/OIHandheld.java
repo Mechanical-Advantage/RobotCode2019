@@ -51,8 +51,8 @@ public class OIHandheld implements OI {
     private JoystickButton setHatch = new JoystickButton(operatorController, 7); // back button
     private JoystickButton setCargo = new JoystickButton(operatorController, 8); // start button
 
-    private Trigger enableVacuum = new TriggerPressedTrigger(operatorController, Hand.kRight);
-    private Trigger disableVacuum = new TriggerPressedTrigger(operatorController, Hand.kLeft);
+    private Trigger enableVacuum = new TriggerPressedTrigger(operatorController, Hand.kRight, 0.6);
+    private Trigger disableVacuum = new TriggerPressedTrigger(operatorController, Hand.kLeft, 0.6);
 
     public OIHandheld() {
         resetRumble();
