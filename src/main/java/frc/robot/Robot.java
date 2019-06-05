@@ -100,17 +100,14 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    switch (RobotMap.robot) {
-    case ROBOT_REBOT:
+    if (RobotMap.robot == RobotType.ROBOT_REBOT || RobotMap.robot == RobotType.EVERYBOT_2019) {
       oi = new OIHandheld();
       oiType = OIType.HANDHELD;
       SmartDashboard.putBoolean("Drive Enabled", oi.getDriveEnabled());
       SmartDashboard.putBoolean("Open Loop Drive", Robot.oi.getOpenLoop());
-      break;
-    default:
+    } else {
       oi = new OIConsole();
       oiType = OIType.CONSOLE;
-      break;
     }
     joystickModeChooser = new SendableChooser<JoystickMode>();
     // chooser.setDefaultOption("Default Auto", new ExampleCommand());
