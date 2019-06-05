@@ -30,7 +30,7 @@ public class ReBotRunElevatorWithJoystick extends Command {
   @Override
   protected void execute() {
     double joystickAxis = Robot.oi.getLeftOperatorStickY();
-    joystickAxis = Math.abs(joystickAxis) > deadband ? joystickAxis : 0;
+    joystickAxis = Math.abs(joystickAxis) > deadband ? joystickAxis * Math.abs(joystickAxis) : 0;
     Robot.elevator.run(joystickAxis);
   }
 

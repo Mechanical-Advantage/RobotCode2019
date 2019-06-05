@@ -30,7 +30,7 @@ public class ReBotRunClimberWithJoystick extends Command {
   @Override
   protected void execute() {
     double joystickAxis = Robot.oi.getRightOperatorStickY();
-    joystickAxis = Math.abs(joystickAxis) > deadband ? joystickAxis : 0;
+    joystickAxis = Math.abs(joystickAxis) > deadband ? joystickAxis * Math.abs(joystickAxis) : 0;
     Robot.climber.run(joystickAxis);
   }
 
