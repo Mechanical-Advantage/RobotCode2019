@@ -9,7 +9,7 @@ package frc.robot.commands;
 
 import frc.robot.Robot;
 import edu.wpi.first.wpilibj.command.InstantCommand;
-import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Intake.GamePiece;
 
 /**
  * Closes the hatch intake
@@ -27,7 +27,7 @@ public class ReBotCloseHatchIntake extends InstantCommand {
   @Override
   protected void initialize() {
     Robot.intake.close();
-    Robot.gamePiece = Robot.GamePiece.HATCH;
+    Robot.intake.setGamepiece(GamePiece.HATCH);
   }
 
 }

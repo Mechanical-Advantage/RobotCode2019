@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.buttons.POVButton;
 import edu.wpi.first.wpilibj.buttons.Trigger;
-import frc.robot.Robot.GamePiece;
+import frc.robot.subsystems.Intake.GamePiece;
 import frc.robot.commands.ReverseJoysticks;
 import frc.robot.commands.ToggleDriveEnabled;
 import frc.robot.commands.ToggleOpenLoop;

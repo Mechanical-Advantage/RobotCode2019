@@ -9,6 +9,7 @@ package frc.robot.commands;
 
 import frc.robot.Robot;
 import edu.wpi.first.wpilibj.command.InstantCommand;
+import frc.robot.subsystems.Intake.GamePiece;
 
 /**
  * Sets the gamepiece value in Robot, which determines the height of elevator
@@ -16,9 +17,9 @@ import edu.wpi.first.wpilibj.command.InstantCommand;
  */
 public class ReBotSetGamepiece extends InstantCommand {
 
-  private Robot.GamePiece gamePiece;
+  private GamePiece gamePiece;
 
-  public ReBotSetGamepiece(Robot.GamePiece gamePiece) {
+  public ReBotSetGamepiece(GamePiece gamePiece) {
     super("ReBotSetGamepiece");
     // Use requires() here to declare subsystem dependencies
     // eg. requires(chassis);
@@ -28,7 +29,7 @@ public class ReBotSetGamepiece extends InstantCommand {
   // Called once when the command executes
   @Override
   protected void initialize() {
-    Robot.gamePiece = gamePiece;
+    Robot.intake.setGamepiece(gamePiece);
   }
 
 }

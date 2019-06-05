@@ -13,6 +13,7 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
 import edu.wpi.first.wpilibj.command.Subsystem;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.RobotMap;
 import frc.robot.RobotMap.RobotType;
 
@@ -33,6 +34,8 @@ public class Intake extends Subsystem {
   private DoubleSolenoid hatchControlSolenoid;
   private DoubleSolenoid hatchReleaseSolenoid;
   private TalonSRX intake;
+
+  private GamePiece gamePiece = GamePiece.HATCH;
 
   private boolean available() {
     return RobotMap.robot == RobotType.ROBOT_REBOT;
@@ -112,5 +115,18 @@ public class Intake extends Subsystem {
     if (available()) {
       intake.neutralOutput();
     }
+  }
+
+  public enum GamePiece {
+    HATCH, CARGO;
+  }
+
+  public GamePiece getGamepiece() {
+    return gamePiece;
+  }
+
+  public void setGamepiece(GamePiece piece) {
+    gamePiece = piece;
+    SmartDashboard.putBoolean("Game Piece", gamePiece == GamePiece.HATCH);
   }
 }

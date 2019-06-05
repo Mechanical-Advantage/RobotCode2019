@@ -9,6 +9,7 @@ package frc.robot.commands;
 
 import frc.robot.Robot;
 import edu.wpi.first.wpilibj.command.Command;
+import frc.robot.subsystems.Intake.GamePiece;
 
 public class ReBotMoveToSetpoint extends Command {
 
@@ -33,21 +34,21 @@ public class ReBotMoveToSetpoint extends Command {
       position = ElevatorPosition.FLOOR;
       break;
     case SHIP:
-      if (Robot.gamePiece == Robot.GamePiece.CARGO) {
+      if (Robot.intake.getGamepiece() == GamePiece.CARGO) {
         position = ElevatorPosition.CARGO_L1_SHIP;
       } else {
         position = ElevatorPosition.HATCHES_L1;
       }
       break;
     case ROCKET_L1:
-      if (Robot.gamePiece == Robot.GamePiece.CARGO) {
+      if (Robot.intake.getGamepiece() == GamePiece.CARGO) {
         position = ElevatorPosition.CARGO_L1_ROCKET;
       } else {
         position = ElevatorPosition.HATCHES_L1;
       }
       break;
     case ROCKET_L2:
-      if (Robot.gamePiece == Robot.GamePiece.CARGO) {
+      if (Robot.intake.getGamepiece() == GamePiece.CARGO) {
         position = ElevatorPosition.CARGO_L2;
       } else {
         position = ElevatorPosition.HATCHES_L2;

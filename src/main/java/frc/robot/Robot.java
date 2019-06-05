@@ -45,6 +45,7 @@ import frc.robot.commands.VelocityPIDTuner;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.ArmLight;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Intake.GamePiece;
 import frc.robot.subsystems.BeaverTail;
 import frc.robot.subsystems.CameraSystem;
 import frc.robot.subsystems.DriveTrain;
@@ -92,7 +93,6 @@ public class Robot extends TimedRobot {
   private static final Command vacPickupCommand = new VacPickup();
 
   public Accelerometer accel = new BuiltInAccelerometer(Accelerometer.Range.k4G);
-  public static GamePiece gamePiece = GamePiece.HATCH;
 
   /**
    * This function is run when the robot is first started up and should be used
@@ -137,7 +137,7 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putData("Auto mode", autoChooser);
     SmartDashboard.putData("Control Mode", joystickModeChooser);
-    SmartDashboard.putBoolean("Game Piece", gamePiece == GamePiece.HATCH);
+    SmartDashboard.putBoolean("Game Piece", intake.getGamepiece() == GamePiece.HATCH);
 
     if (RobotMap.robot == RobotType.ROBOT_REBOT) {
       SmartDashboard.putBoolean("Suction Good", false);
@@ -297,10 +297,6 @@ public class Robot extends TimedRobot {
 
   private enum AutoMode {
     TUNING, VAC_PICKUP;
-  }
-
-  public enum GamePiece {
-    HATCH, CARGO;
   }
 
   // Utility functions

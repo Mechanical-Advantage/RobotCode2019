@@ -9,7 +9,7 @@ package frc.robot.commands;
 
 import frc.robot.Robot;
 import edu.wpi.first.wpilibj.command.Command;
-import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Intake.GamePiece;;
 
 public class ReBotRunCargoIntake extends Command {
 
@@ -26,7 +26,7 @@ public class ReBotRunCargoIntake extends Command {
     switch (action) {
     case INTAKE:
       speed = intakeSpeed;
-      Robot.gamePiece = Robot.GamePiece.CARGO;
+      Robot.intake.setGamepiece(GamePiece.CARGO);
       break;
     case EJECT:
       speed = ejectSpeed;
@@ -38,7 +38,7 @@ public class ReBotRunCargoIntake extends Command {
     requires(Robot.intake);
     this.speed = speed;
     if ((speed > 1 && intakeSpeed > 1) || (speed < 1 && intakeSpeed < 1)) {
-      Robot.gamePiece = Robot.GamePiece.CARGO;
+      Robot.intake.setGamepiece(GamePiece.CARGO);
     }
   }
 
