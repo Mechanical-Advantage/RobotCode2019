@@ -41,7 +41,7 @@ public class RobotMap {
   public static double robotWidth;
   public static double robotLength;
   public static final boolean tuningMode = false;
-  public static final RobotType robot = RobotType.EVERYBOT_2019;
+  public static final RobotType robot = RobotType.ROBOT_REBOT;
   public static int minVelocityLow; // lower values will be treated as this value, RPM
   public static int maxVelocityLow; // maximum velocity when sticks are fully forward (value of 1), RPM
   public static int maxVelocityHigh;
@@ -75,25 +75,31 @@ public class RobotMap {
   public static int level2RearPCM;
   public static int level2RearSolenoid1;
   public static int level2RearSolenoid2;
+  public static int climberMaster;
+  public static int climberSlave;
   public static int elevatorMaster;
   public static int elevatorSlave;
+  public static int intake;
 
   public RobotMap() {
     switch (robot) {
     case ROBOT_REBOT:
-      rightMaster = 14;
-      rightSlave = 13;
-      rightSlave2 = 12;
-      leftMaster = 15;
-      leftSlave = 0;
-      leftSlave2 = 1;
+      rightMaster = 1;
+      rightSlave = 2;
+      rightSlave2 = 3;
+      leftMaster = 12;
+      leftSlave = 13;
+      leftSlave2 = 14;
       maxVelocityLow = 3284; // 525 RPM
       minVelocityLow = 135; // 20 RPM
       maxAcceleration = 300;
       robotLength = 31.5;
       robotWidth = 29.25;
-      elevatorMaster = 2; // temporary; change later
-      elevatorSlave = 3; // temporary; change later
+      climberMaster = 5;
+      climberSlave = 10;
+      elevatorMaster = 4;
+      elevatorSlave = 11;
+      intake = 6;
       break;
     case ORIGINAL_ROBOT_2018:
       rightMaster = 2;
@@ -115,9 +121,9 @@ public class RobotMap {
       break;
     case EVERYBOT_2019:
       rightMaster = 0;
-      leftMaster = 3;
+      leftMaster = 15;
       rightSlave = 1;
-      leftSlave = 2;
+      leftSlave = 14;
       maxVelocityLow = 950; // 950 native units per 100ms
       minVelocityLow = 40; // 40 native units per 100ms
       maxAcceleration = 300;
@@ -163,6 +169,8 @@ public class RobotMap {
       level2RearPCM = 1;
       level2RearSolenoid1 = 4;
       level2RearSolenoid2 = 6;
+      climberMaster = 15;
+      climberSlave = 14;
       break;
     default:
       break;

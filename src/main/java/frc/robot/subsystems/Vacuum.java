@@ -45,6 +45,10 @@ public class Vacuum extends Subsystem {
       for (int i = 0; i <= 1; i++) {
         relayChannel[i] = new RelayChannel(i);
       }
+    }
+
+    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2
+        || RobotMap.robot == RobotType.ROBOT_REBOT) {
       pressureSensor = new AnalogInput(RobotMap.vacuumPressureSensor);
       pressureSensor.setAverageBits(4);
 
@@ -65,7 +69,8 @@ public class Vacuum extends Subsystem {
   }
 
   public void setVacuumMotor(VacuumLevel state) {
-    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2
+        || RobotMap.robot == RobotType.ROBOT_REBOT) {
       switch (state) {
       case OFF:
         vacuumMotor.set(ControlMode.PercentOutput, 0);
@@ -98,7 +103,8 @@ public class Vacuum extends Subsystem {
   }
 
   public double getPressureSensorVoltage() {
-    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2) {
+    if (RobotMap.robot == RobotType.ROBOT_2019 || RobotMap.robot == RobotType.ROBOT_2019_2
+        || RobotMap.robot == RobotType.ROBOT_REBOT) {
       return pressureSensor.getAverageVoltage();
     }
     return 0;
