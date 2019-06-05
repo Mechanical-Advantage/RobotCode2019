@@ -45,12 +45,14 @@ public class Intake extends Subsystem {
 
   public Intake() {
     if (available()) {
-      // cargoSolenoid = new DoubleSolenoid(RobotMap.RebotPCM,
-      // RobotMap.CargoRaiseSolenoid, RobotMap.CargoLowerSolenoid);
-      // hatchControlSolenoid = new DoubleSolenoid(RobotMap.RebotPCM,
-      // RobotMap.HatchOpenSolenoid, RobotMap.HatchCloseSolenoid);
-      // hatchReleaseSolenoid = new DoubleSolenoid(RobotMap.RebotPCM,
-      // RobotMap.HatchDeliverSolenoid, RobotMap.HatchWithdrawSolenoid);
+      // cargoSolenoid = new DoubleSolenoid(RobotMap.rebotPCM,
+      // RobotMap.cargoRaiseSolenoid, RobotMap.cargoLowerSolenoid);
+      // hatchControlSolenoid = new DoubleSolenoid(RobotMap.rebotPCM,
+      // RobotMap.hatchOpenSolenoid,
+      // RobotMap.hatchCloseSolenoid);
+      // hatchReleaseSolenoid = new DoubleSolenoid(RobotMap.rebotPCM,
+      // RobotMap.hatchDeliverSolenoid,
+      // RobotMap.hatchWithdrawSolenoid);
       intake = new TalonSRX(RobotMap.intakeMotor);
       intake.configFactoryDefault();
       intake.setInverted(intakeReversed);
