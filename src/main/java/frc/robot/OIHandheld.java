@@ -18,7 +18,6 @@ import frc.robot.commands.ReBotRunCargoIntake.IntakeAction;
 import frc.robot.commands.ReBotSetIntakeRaised;
 import frc.robot.commands.ReBotMoveToSetpoint;
 import frc.robot.commands.ReBotMoveToSetpoint.OIElevatorPosition;
-import frc.robot.commands.ReBotSetGamepiece;
 import frc.robot.commands.ReBotEnableVacuum;
 import frc.robot.commands.ReBotDisableVacuum;
 import frc.robot.triggers.TriggerPressedTrigger;

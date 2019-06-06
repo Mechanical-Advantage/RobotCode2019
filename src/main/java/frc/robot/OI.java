@@ -1,5 +1,8 @@
 package frc.robot;
 
+import edu.wpi.first.wpilibj.command.InstantCommand;
+import frc.robot.subsystems.Intake.GamePiece;
+
 // Acts as an interface to multiple OI configurations
 public interface OI {
     public double minAcceleration = 0.2; // Minimum total horizontal acceleration before rumbling controller
@@ -120,5 +123,24 @@ public interface OI {
 
     static enum OIType {
         CONSOLE, HANDHELD
+    }
+
+    public static class ReBotSetGamepiece extends InstantCommand {
+
+        private GamePiece gamePiece;
+
+        public ReBotSetGamepiece(GamePiece gamePiece) {
+            super();
+            // Use requires() here to declare subsystem dependencies
+            // eg. requires(chassis);
+            this.gamePiece = gamePiece;
+        }
+
+        // Called once when the command executes
+        @Override
+        protected void initialize() {
+            Robot.intake.setGamepiece(gamePiece);
+        }
+
     }
 }
