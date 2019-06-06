@@ -24,7 +24,6 @@ public class ReBotRunCargoIntake extends Command {
   public ReBotRunCargoIntake(IntakeAction action) {
     // Use requires() here to declare subsystem dependencies
     // eg. requires(chassis);
-
     requires(Robot.intake);
     this.action = action;
     this.preferSpeed = false;
@@ -48,18 +47,14 @@ public class ReBotRunCargoIntake extends Command {
       } else {
         this.action = IntakeAction.EJECT;
       }
-
     } else if (action == IntakeAction.INTAKE) {
       Robot.intake.run(intakeSpeed);
       Robot.intake.setGamepiece(GamePiece.CARGO);
-
     } else if (Robot.intake.isRaised()) {
       Robot.intake.run(raisedEjectSpeed);
-
     } else {
       Robot.intake.run(loweredEjectSpeed);
     }
-
   }
 
   // Called repeatedly when this Command is scheduled to run

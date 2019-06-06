@@ -18,7 +18,6 @@ public class ReBotOpenHatchIntake extends InstantCommand {
     super("ReBotOpenHatchIntake");
     // Use requires() here to declare subsystem dependencies
     // eg. requires(chassis);
-
     requires(Robot.intake);
   }
 
@@ -27,5 +26,4 @@ public class ReBotOpenHatchIntake extends InstantCommand {
   protected void initialize() {
     Robot.intake.open();
   }
-
 }

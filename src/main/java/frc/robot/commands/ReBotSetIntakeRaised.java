@@ -35,5 +35,4 @@ public class ReBotSetIntakeRaised extends InstantCommand {
       Robot.intake.lower();
     }
   }
-
 }
