@@ -44,6 +44,9 @@ public class ReBotRunCargoIntake extends Command {
       // Set gamepiece to cargo if in same direction as eject speed
       if ((speed > 1 && loweredEjectSpeed > 1) || (speed < 1 && loweredEjectSpeed < 1)) {
         Robot.intake.setGamepiece(GamePiece.CARGO);
+        this.action = IntakeAction.INTAKE;
+      } else {
+        this.action = IntakeAction.EJECT;
       }
 
     } else if (action == IntakeAction.INTAKE) {
@@ -79,7 +82,11 @@ public class ReBotRunCargoIntake extends Command {
   // subsystems is scheduled to run
   @Override
   protected void interrupted() {
-    Robot.intake.stop();
+    if (Robot.intake.autoHold & this.action == IntakeAction.INTAKE) {
+      Robot.intake.hold();
+    } else {
+      Robot.intake.stop();
+    }
   }
 
   public enum IntakeAction {

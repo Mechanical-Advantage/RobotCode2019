@@ -26,6 +26,8 @@ public class Intake extends Subsystem {
 
   private static final boolean intakeReversed = true;
   private static final NeutralMode intakeNeutralMode = NeutralMode.Brake;
+  public final boolean autoHold = true;
+  private static final Double holdSpeed = -0.1;
 
   private static final boolean intakeEnableCurrentLimit = true;
   private static final int intakeContinousCurrentLimit = 30; // A
@@ -45,14 +47,11 @@ public class Intake extends Subsystem {
 
   public Intake() {
     if (available()) {
-      // cargoSolenoid = new DoubleSolenoid(RobotMap.rebotPCM,
-      // RobotMap.cargoRaiseSolenoid, RobotMap.cargoLowerSolenoid);
-      // hatchControlSolenoid = new DoubleSolenoid(RobotMap.rebotPCM,
-      // RobotMap.hatchOpenSolenoid,
-      // RobotMap.hatchCloseSolenoid);
-      // hatchReleaseSolenoid = new DoubleSolenoid(RobotMap.rebotPCM,
-      // RobotMap.hatchDeliverSolenoid,
-      // RobotMap.hatchWithdrawSolenoid);
+      cargoSolenoid = new DoubleSolenoid(RobotMap.rebotPCM, RobotMap.cargoRaiseSolenoid, RobotMap.cargoLowerSolenoid);
+      hatchControlSolenoid = new DoubleSolenoid(RobotMap.rebotPCM, RobotMap.hatchOpenSolenoid,
+          RobotMap.hatchCloseSolenoid);
+      hatchReleaseSolenoid = new DoubleSolenoid(RobotMap.rebotPCM, RobotMap.hatchDeliverSolenoid,
+          RobotMap.hatchWithdrawSolenoid);
       intake = new TalonSRX(RobotMap.intakeMotor);
       intake.configFactoryDefault();
       intake.setInverted(intakeReversed);
@@ -124,6 +123,12 @@ public class Intake extends Subsystem {
   public void stop() {
     if (available()) {
       intake.neutralOutput();
+    }
+  }
+
+  public void hold() {
+    if (available()) {
+      intake.set(ControlMode.PercentOutput, holdSpeed);
     }
   }
 

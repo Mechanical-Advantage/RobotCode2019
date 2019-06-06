@@ -12,6 +12,7 @@ import frc.robot.commands.ToggleDriveEnabled;
 import frc.robot.commands.ToggleOpenLoop;
 import frc.robot.commands.ReBotEjectHatch;
 import frc.robot.commands.ReBotCloseHatchIntake;
+import frc.robot.commands.ReBotOpenHatchIntake;
 import frc.robot.commands.ReBotRunCargoIntake;
 import frc.robot.commands.ReBotRunCargoIntake.IntakeAction;
 import frc.robot.commands.ReBotSetIntakeRaised;
@@ -61,7 +62,7 @@ public class OIHandheld implements OI {
         toggleDriveEnabled.whenPressed(new ToggleDriveEnabled());
         toggleOpenLoop.whenPressed(new ToggleOpenLoop());
 
-        hatchExtend.whenPressed(new ReBotEjectHatch());
+        hatchExtend.whenPressed(new ReBotOpenHatchIntake());
         hatchRetract.whenPressed(new ReBotCloseHatchIntake());
         cargoIntake.whileHeld(new ReBotRunCargoIntake(IntakeAction.INTAKE));
         cargoEject.whileHeld(new ReBotRunCargoIntake(IntakeAction.EJECT));
