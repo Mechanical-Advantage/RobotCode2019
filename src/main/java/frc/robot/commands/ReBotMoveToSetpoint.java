@@ -10,10 +10,9 @@ package frc.robot.commands;
 import frc.robot.Robot;
 import edu.wpi.first.wpilibj.command.Command;
 import frc.robot.subsystems.Intake.GamePiece;
+import frc.robot.subsystems.Elevator;
 
 public class ReBotMoveToSetpoint extends Command {
-
-  private static final double allowableError = 2;
 
   private Double target;
   private OIElevatorPosition OIPosition;
@@ -69,7 +68,7 @@ public class ReBotMoveToSetpoint extends Command {
   @Override
   protected boolean isFinished() {
     return false;
-    // return abs(Robot.elevator.position - target) < allowableError;
+    // return abs(Robot.elevator.position - target) < Elevator.allowableError;
   }
 
   // Called once after isFinished returns true

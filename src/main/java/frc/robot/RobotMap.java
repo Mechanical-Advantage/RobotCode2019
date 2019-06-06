@@ -86,6 +86,8 @@ public class RobotMap {
   public static int climberSlave;
   public static int elevatorMaster;
   public static int elevatorSlave;
+  public static int elevatorLowLimitSwitch;
+  public static int elevatorHighLimitSwitch;
 
   public RobotMap() {
     switch (robot) {
