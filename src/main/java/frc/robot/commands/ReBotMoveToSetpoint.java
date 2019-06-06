@@ -15,15 +15,16 @@ import frc.robot.subsystems.Elevator;
 public class ReBotMoveToSetpoint extends Command {
 
   private final boolean openLoop = true;
-  private final Double velocity = 0.3; // when using open loop drive
+  private final double velocity = 0.3; // when using open loop drive
 
-  private Double target;
+  private double target;
   private OIElevatorPosition OIPosition;
   private ElevatorPosition position;
 
   public ReBotMoveToSetpoint(OIElevatorPosition position) {
     // Use requires() here to declare subsystem dependencies
     // eg. requires(chassis);
+    super();
     requires(Robot.elevator);
     this.OIPosition = position;
   }
@@ -58,8 +59,11 @@ public class ReBotMoveToSetpoint extends Command {
       break;
     }
 
-    target = getSetpointValue(position);
-    if (!openLoop) {
+    target = position.getSetpointValue();
+    if (openLoop) {
+      Robot.elevator
+          .run((Robot.elevator.getElevatorPosition() - target) > 0 ? Math.abs(velocity) : Math.abs(velocity) * -1);
+    } else {
       Robot.elevator.moveToPosition(target);
     }
   }
@@ -67,10 +71,6 @@ public class ReBotMoveToSetpoint extends Command {
   // Called repeatedly when this Command is scheduled to run
   @Override
   protected void execute() {
-    if (openLoop) {
-      Robot.elevator
-          .run((Robot.elevator.getElevatorPosition() - target) > 0 ? Math.abs(velocity) : Math.abs(velocity) * -1);
-    }
   }
 
   // Make this return true when this Command no longer needs to run execute()
@@ -84,8 +84,6 @@ public class ReBotMoveToSetpoint extends Command {
   protected void end() {
     if (openLoop) {
       Robot.elevator.stop();
-    } else {
-      Robot.elevator.holdTarget();
     }
   }
 
@@ -93,30 +91,34 @@ public class ReBotMoveToSetpoint extends Command {
   // subsystems is scheduled to run
   @Override
   protected void interrupted() {
-    end();
-  }
-
-  private double getSetpointValue(ElevatorPosition position) {
-    switch (position) {
-    case FLOOR:
-      return 0;
-    case HATCHES_L1:
-      return 0;
-    case HATCHES_L2:
-      return 0;
-    case CARGO_L1_SHIP:
-      return 0;
-    case CARGO_L1_ROCKET:
-      return 0;
-    case CARGO_L2:
-      return 0;
-    default:
-      return 0;
+    if (openLoop) {
+      Robot.elevator.stop();
+    } else {
+      Robot.elevator.moveToPosition(Robot.elevator.getElevatorPosition());
     }
   }
 
   private enum ElevatorPosition {
     FLOOR, HATCHES_L1, HATCHES_L2, CARGO_L1_SHIP, CARGO_L1_ROCKET, CARGO_L2;
+
+    private double getSetpointValue() {
+      switch (this) {
+      case FLOOR:
+        return 0;
+      case HATCHES_L1:
+        return 0;
+      case HATCHES_L2:
+        return 0;
+      case CARGO_L1_SHIP:
+        return 0;
+      case CARGO_L1_ROCKET:
+        return 0;
+      case CARGO_L2:
+        return 0;
+      default:
+        return 0;
+      }
+    }
   }
 
   public enum OIElevatorPosition {

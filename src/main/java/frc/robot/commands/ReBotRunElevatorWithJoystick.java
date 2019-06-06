@@ -14,7 +14,10 @@ public class ReBotRunElevatorWithJoystick extends Command {
 
   private final double deadband = 0.05;
   private final double maxVelocity = 2; // inches/second
-  private final boolean openLoop = true;
+  private final boolean openLoopDrive = true; // if true use percent output, if false move setpoint. if move to setpoint
+                                              // in open loop, joystick driving in closed loop will not work after
+                                              // moving
+  private final boolean openLoopHold = true; // if true use neutral mode, if false use position closed loop
 
   public ReBotRunElevatorWithJoystick() {
     // Use requires() here to declare subsystem dependencies
@@ -33,12 +36,26 @@ public class ReBotRunElevatorWithJoystick extends Command {
   protected void execute() {
     double joystickAxis = Robot.oi.getLeftOperatorStickY();
     joystickAxis = Math.abs(joystickAxis) > deadband ? joystickAxis * Math.abs(joystickAxis) : 0;
-    if (openLoop) {
-      Robot.elevator.run(joystickAxis);
+    if (joystickAxis == 0) {
+      if (openLoopHold) {
+        Robot.elevator.stop();
+      } else {
+        Robot.elevator.moveToPosition(Robot.elevator.getElevatorPosition());
+      }
     } else {
-      Robot.elevator.adjustTarget(maxVelocity / 50 * joystickAxis);
+      if (openLoopDrive) {
+        Robot.elevator.run(joystickAxis);
+      } else {
+        Robot.elevator.moveToPosition(Robot.elevator.getTargetPosition() + (maxVelocity / 50 * joystickAxis)); // convert
+                                                                                                               // max
+                                                                                                               // velocity
+                                                                                                               // to
+                                                                                                               // inches
+                                                                                                               // per
+                                                                                                               // controller
+        // cycle
+      }
     }
-
   }
 
   // Make this return true when this Command no longer needs to run execute()

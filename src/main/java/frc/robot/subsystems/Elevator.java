@@ -7,13 +7,13 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix.ParamEnum;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.RobotMap;
@@ -26,8 +26,8 @@ import frc.robot.commands.ReBotRunElevatorWithJoystick;
  * This is the elvator subsystem for ROBOT_REBOT
  */
 public class Elevator extends Subsystem {
-  private static final int elevatorMasterTicksPerRotation = 4096;
-  private static final double elevatorMasterDistancePerRotation = 2.5; // inches
+  private static final int ticksPerRotation = 4096;
+  private static final double distancePerRotation = 2.5; // inches
   private static final boolean elevatorMasterReversed = true;
   private static final boolean elevatorSlaveReversed = false;
   private static final NeutralMode neutralMode = NeutralMode.Brake;
@@ -41,7 +41,12 @@ public class Elevator extends Subsystem {
   private static final double schoolZoneUpperStart = upperLimit - 4;
   private static final double peakOutput = 1.0;
   public static final int startingPosition = 0;
-  public static final double allowableError = 2;
+  public static final double allowableError = 2; // in inches
+  private static final boolean enableUpperSoftLimit = true;
+  private static final boolean enableLowerSoftLimit = false;
+  private static final boolean schoolZonesEnabled = true;
+  private static final int configTimeout = 0;
+  private static final FeedbackDevice encoderType = FeedbackDevice.CTRE_MagEncoder_Relative;
 
   private static final boolean enableCurrentLimit = false;
   private static final int continuousCurrentLimit = 0;
@@ -56,12 +61,9 @@ public class Elevator extends Subsystem {
   private TalonSRX elevatorSlave;
   private SchoolZone schoolZone;
 
-  private boolean schoolZonesEnabled = true;
-  private double targetPosition;
+  private double targetPosition; // in inches
   private boolean openLoop;
 
-  private static final FeedbackDevice encoderType = FeedbackDevice.CTRE_MagEncoder_Relative;
-  private static final int configTimeout = 0;
   // Put methods for controlling this subsystem
   // here. Call these from Commands.
 
@@ -86,28 +88,28 @@ public class Elevator extends Subsystem {
       elevatorMaster.configPeakCurrentDuration(peakCurrentLimitDuration);
       elevatorMaster.enableCurrentLimit(enableCurrentLimit);
 
-      // elevatorMaster.configForwardSoftLimitThreshold((int) upperLimit,
-      // configTimeout);
-      // elevatorMaster.configReverseSoftLimitThreshold((int) lowerLimit,
-      // configTimeout);
-      // elevatorMaster.configForwardSoftLimitEnable(true, configTimeout);
-      // elevatorMaster.configReverseSoftLimitEnable(true, configTimeout);
+      elevatorMaster.configForwardSoftLimitThreshold(convertDistanceToTicks(upperLimit), configTimeout);
+      elevatorMaster.configReverseSoftLimitThreshold(convertDistanceToTicks(lowerLimit), configTimeout);
+      elevatorMaster.configForwardSoftLimitEnable(enableUpperSoftLimit, configTimeout);
+      elevatorMaster.configReverseSoftLimitEnable(enableLowerSoftLimit, configTimeout);
+      elevatorMaster.configSetParameter(ParamEnum.eClearPositionOnLimitR, 1, 0, 0);
 
-      elevatorMaster.configAllowableClosedloopError(0,
-          (int) (allowableError / elevatorMasterDistancePerRotation * elevatorMasterTicksPerRotation), configTimeout);
-      elevatorMaster.configMotionCruiseVelocity(
-          (int) (motMagCruiseVelocity / elevatorMasterDistancePerRotation * elevatorMasterTicksPerRotation),
-          configTimeout);
-      elevatorMaster.configMotionAcceleration(
-          (int) (motMagAccel / elevatorMasterDistancePerRotation * elevatorMasterTicksPerRotation), configTimeout);
+      elevatorMaster.configAllowableClosedloopError(0, convertDistanceToTicks(allowableError), configTimeout);
+      elevatorMaster.configMotionCruiseVelocity(convertDistanceToTicks(motMagCruiseVelocity), configTimeout);
+      elevatorMaster.configMotionAcceleration(convertDistanceToTicks(motMagAccel), configTimeout);
       elevatorMaster.selectProfileSlot(0, 0);
       elevatorMaster.configSelectedFeedbackSensor(encoderType, 0, configTimeout);
       elevatorMaster.setSelectedSensorPosition(startingPosition);
-      targetPosition = elevatorMaster.getSelectedSensorPosition();
+      targetPosition = convertTicksToDistance(elevatorMaster.getSelectedSensorPosition());
 
       elevatorSlave.configFactoryDefault();
       elevatorSlave.setInverted(elevatorSlaveReversed);
       elevatorSlave.setNeutralMode(neutralMode);
+
+      elevatorSlave.configContinuousCurrentLimit(continuousCurrentLimit);
+      elevatorSlave.configPeakCurrentLimit(peakCurrentLimit);
+      elevatorSlave.configPeakCurrentDuration(peakCurrentLimitDuration);
+      elevatorSlave.enableCurrentLimit(enableCurrentLimit);
 
       elevatorSlave.follow(elevatorMaster);
 
@@ -127,27 +129,28 @@ public class Elevator extends Subsystem {
   public double getElevatorPosition() {
     if (available()) {
       double position = elevatorMaster.getSelectedSensorPosition();
-      position = position / elevatorMasterTicksPerRotation * elevatorMasterDistancePerRotation;
-      return position;
+      return convertTicksToDistance(position);
+    } else {
+      return 0;
+    }
+  }
+
+  public double getTargetPosition() {
+    if (available()) {
+      return targetPosition;
     } else {
       return 0;
     }
   }
 
   public void periodic() {
-    if (schoolZonesEnabled) {
-      schoolZone.applyPosition(getElevatorPosition());
+    if (available()) {
+      if (schoolZonesEnabled) {
+        schoolZone.applyPosition(getElevatorPosition());
+      }
+      initPID();
+      SmartDashboard.putNumber("Elevator Position", getElevatorPosition());
     }
-    if (elevatorMaster.getSensorCollection().isRevLimitSwitchClosed()) {
-      elevatorMaster.setSelectedSensorPosition(
-          (int) (lowerLimit / elevatorMasterDistancePerRotation * elevatorMasterTicksPerRotation));
-    }
-    if (elevatorMaster.getSensorCollection().isFwdLimitSwitchClosed()) {
-      elevatorMaster.setSelectedSensorPosition(
-          (int) (upperLimit / elevatorMasterDistancePerRotation * elevatorMasterTicksPerRotation));
-    }
-    initPID();
-    SmartDashboard.putNumber("Elevator Position", getElevatorPosition());
   }
 
   public void run(double power) {
@@ -169,28 +172,18 @@ public class Elevator extends Subsystem {
       openLoop = false;
       position = position < lowerLimit ? lowerLimit : position;
       position = position > upperLimit ? upperLimit : position;
-      this.targetPosition = position / elevatorMasterDistancePerRotation * elevatorMasterTicksPerRotation;
-      elevatorMaster.set(useMotionMagic ? ControlMode.MotionMagic : ControlMode.Position, targetPosition,
-          DemandType.Neutral, 0);
+      this.targetPosition = position;
+      elevatorMaster.set(useMotionMagic ? ControlMode.MotionMagic : ControlMode.Position,
+          convertDistanceToTicks(targetPosition), DemandType.Neutral, 0);
     }
   }
 
-  public void adjustTarget(double change) {
-    if (available()) {
-      openLoop = false;
-      double newTarget = (targetPosition / elevatorMasterTicksPerRotation * elevatorMasterDistancePerRotation) + change;
-      newTarget = newTarget < lowerLimit ? lowerLimit : newTarget;
-      newTarget = newTarget > upperLimit ? upperLimit : newTarget;
-      this.targetPosition = newTarget / elevatorMasterDistancePerRotation * elevatorMasterTicksPerRotation;
-      elevatorMaster.set(ControlMode.Position, targetPosition, DemandType.Neutral, 0);
-    }
+  public int convertDistanceToTicks(double distance) {
+    return (int) (distance / distancePerRotation * ticksPerRotation);
   }
 
-  public void holdTarget() {
-    if (available()) {
-      openLoop = false;
-      elevatorMaster.set(ControlMode.Position, targetPosition, DemandType.Neutral, 0);
-    }
+  public double convertTicksToDistance(double ticks) {
+    return ticks / ticksPerRotation * distancePerRotation;
   }
 
   @Override
