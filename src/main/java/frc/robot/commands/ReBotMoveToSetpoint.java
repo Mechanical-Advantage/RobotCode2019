@@ -14,6 +14,9 @@ import frc.robot.subsystems.Elevator;
 
 public class ReBotMoveToSetpoint extends Command {
 
+  private final boolean openLoop = true;
+  private final Double velocity = 0.3; // when using open loop drive
+
   private Double target;
   private OIElevatorPosition OIPosition;
   private ElevatorPosition position;
@@ -21,7 +24,7 @@ public class ReBotMoveToSetpoint extends Command {
   public ReBotMoveToSetpoint(OIElevatorPosition position) {
     // Use requires() here to declare subsystem dependencies
     // eg. requires(chassis);
-    // requires(Robot.elevator);
+    requires(Robot.elevator);
     this.OIPosition = position;
   }
 
@@ -56,30 +59,41 @@ public class ReBotMoveToSetpoint extends Command {
     }
 
     target = getSetpointValue(position);
-    // Robot.elevator.moveToPosition(target);
+    if (!openLoop) {
+      Robot.elevator.moveToPosition(target);
+    }
   }
 
   // Called repeatedly when this Command is scheduled to run
   @Override
   protected void execute() {
+    if (openLoop) {
+      Robot.elevator
+          .run((Robot.elevator.getElevatorPosition() - target) > 0 ? Math.abs(velocity) : Math.abs(velocity) * -1);
+    }
   }
 
   // Make this return true when this Command no longer needs to run execute()
   @Override
   protected boolean isFinished() {
-    return false;
-    // return abs(Robot.elevator.position - target) < Elevator.allowableError;
+    return Math.abs(Robot.elevator.getElevatorPosition() - target) < Elevator.allowableError;
   }
 
   // Called once after isFinished returns true
   @Override
   protected void end() {
+    if (openLoop) {
+      Robot.elevator.stop();
+    } else {
+      Robot.elevator.holdTarget();
+    }
   }
 
   // Called when another command which requires one or more of the same
   // subsystems is scheduled to run
   @Override
   protected void interrupted() {
+    end();
   }
 
   private double getSetpointValue(ElevatorPosition position) {

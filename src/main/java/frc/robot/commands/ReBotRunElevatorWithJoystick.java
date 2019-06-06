@@ -13,6 +13,8 @@ import edu.wpi.first.wpilibj.command.Command;
 public class ReBotRunElevatorWithJoystick extends Command {
 
   private final double deadband = 0.05;
+  private final double maxVelocity = 2; // inches/second
+  private final boolean openLoop = true;
 
   public ReBotRunElevatorWithJoystick() {
     // Use requires() here to declare subsystem dependencies
@@ -31,7 +33,12 @@ public class ReBotRunElevatorWithJoystick extends Command {
   protected void execute() {
     double joystickAxis = Robot.oi.getLeftOperatorStickY();
     joystickAxis = Math.abs(joystickAxis) > deadband ? joystickAxis * Math.abs(joystickAxis) : 0;
-    Robot.elevator.run(joystickAxis);
+    if (openLoop) {
+      Robot.elevator.run(joystickAxis);
+    } else {
+      Robot.elevator.adjustTarget(maxVelocity / 50 * joystickAxis);
+    }
+
   }
 
   // Make this return true when this Command no longer needs to run execute()
