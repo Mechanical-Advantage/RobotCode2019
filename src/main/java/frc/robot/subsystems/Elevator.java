@@ -8,6 +8,7 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
@@ -21,24 +22,23 @@ import frc.robot.commands.ReBotRunElevatorWithJoystick;
  * This is the elvator subsystem for ROBOT_REBOT
  */
 public class Elevator extends Subsystem {
+  private static final int elevatorMasterTicksPerRotation = 4096;
+  private static final double elevatorMasterDistancePerRotation = 2.5; // inches
   private static final boolean elevatorMasterReversed = true;
   private static final boolean elevatorSlaveReversed = false;
   private static final NeutralMode neutralMode = NeutralMode.Brake;
-  private static final double schoolZoneSpeedLimit = 0.1;
-  private static final double schoolZoneLowerStart = 0;
-  private static final double schoolZoneUpperStart = 0;
-  private static final double peakOutput = 0.5;
+  private static final double elevatorUpperLimit = 40; // TBD
+  private static final double elevatorLowerLimit = 0;
+  private static final double schoolZoneSpeedLimit = 0.2;
+  private static final double schoolZoneLowerStart = 4;
+  private static final double schoolZoneUpperStart = elevatorUpperLimit - 4;
+  private static final double peakOutput = 1.0;
   public static final double startingPosition = 0;
 
   private static final boolean enableCurrentLimit = false;
   private static final int continuousCurrentLimit = 0;
   private static final int peakCurrentLimit = 0;
   private static final int peakCurrentLimitDuration = 0; // ms
-
-  private static final double elevatorUpperLimit = 0;
-  private static final double elevatorLowerLimit = 0;
-  private static final double schoolZoneUpperLimit = 0;
-  private static final double schoolZoneLowerLimit = 0;
 
   // private static final TunableNumber kPElevator = new
   // TunableNumber("Elevator/p");
@@ -57,6 +57,9 @@ public class Elevator extends Subsystem {
   private boolean elevatorEnabled;
   private boolean elevatorLimitsEnabled = true;
   private boolean elevatorOpenLoop = true;
+
+  private static final FeedbackDevice encoderType = FeedbackDevice.CTRE_MagEncoder_Relative;
+  private static final int configTimeout = 0;
   // Put methods for controlling this subsystem
   // here. Call these from Commands.
 
@@ -72,7 +75,7 @@ public class Elevator extends Subsystem {
       elevatorMaster.setInverted(elevatorMasterReversed);
       elevatorMaster.setNeutralMode(neutralMode);
 
-      // schoolZone.setControllerLimits(); // This sets the peak output of the
+      schoolZone.setControllerLimits(); // This sets the peak output of the
       // controllers
 
       elevatorMaster.configContinuousCurrentLimit(continuousCurrentLimit);
@@ -85,6 +88,8 @@ public class Elevator extends Subsystem {
       elevatorSlave.setNeutralMode(neutralMode);
 
       elevatorSlave.follow(elevatorMaster);
+
+      elevatorMaster.configSelectedFeedbackSensor(encoderType, 0, configTimeout);
     }
   }
 
@@ -98,10 +103,24 @@ public class Elevator extends Subsystem {
     }
   }
 
+  public double getElevatorPosition() {
+    if (available()) {
+      double position = elevatorMaster.getSelectedSensorPosition();
+      position = position / elevatorMasterTicksPerRotation * elevatorMasterDistancePerRotation;
+      return position;
+    } else {
+      return 0;
+    }
+  }
+
   public void stop() {
     if (available()) {
       elevatorMaster.neutralOutput();
     }
+  }
+
+  public void periodic() {
+
   }
 
   @Override
