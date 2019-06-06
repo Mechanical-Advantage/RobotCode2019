@@ -9,7 +9,6 @@ package frc.robot.commands;
 
 import frc.robot.Robot;
 import edu.wpi.first.wpilibj.command.InstantCommand;
-import frc.robot.subsystems.Intake;
 
 /**
  * Opens the hatch intake

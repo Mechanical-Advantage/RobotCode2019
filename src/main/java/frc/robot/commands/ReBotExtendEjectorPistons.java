@@ -9,7 +9,6 @@ package frc.robot.commands;
 
 import frc.robot.Robot;
 import edu.wpi.first.wpilibj.command.TimedCommand;
-import frc.robot.subsystems.Intake;
 
 /**
  * Extends the hatch ejector pistons for a given time
