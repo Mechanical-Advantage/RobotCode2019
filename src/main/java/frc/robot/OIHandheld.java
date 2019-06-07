@@ -24,8 +24,8 @@ import frc.robot.triggers.TriggerPressedTrigger;
 
 public class OIHandheld extends OI {
     private boolean joysticksReversed = false;
-    private boolean driveEnabled = false;
-    private boolean openLoop = true;
+    private boolean driveEnabled = true;
+    private boolean openLoop = false;
 
     // map driver controller to ID 0 and operator controller to ID 1 in driver
     // station
@@ -197,6 +197,6 @@ public class OIHandheld extends OI {
     }
 
     public double getDeadband() {
-        return 0.07;
+        return 0.09;
     }
 }
