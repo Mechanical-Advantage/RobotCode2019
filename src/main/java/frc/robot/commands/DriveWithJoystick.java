@@ -11,6 +11,7 @@ public class DriveWithJoystick extends Command {
 
   private static final boolean alwaysUseHighMaxVel = true; // Whether to always use the max velocity of high gear or
                                                            // of current gear
+  private static final double rightStickScale = 0.5; // Factor of right stick when added
 
   public DriveWithJoystick() {
     // Use requires() here to declare subsystem dependencies
@@ -34,6 +35,7 @@ public class DriveWithJoystick extends Command {
   protected void execute() {
     double joystickLeft = 0, joystickRight = 0;
     double baseDrive;
+    double totalTurn;
     switch (Robot.joystickModeChooser.getSelected()) {
     case Tank:
       joystickRight = processJoystickAxis(Robot.oi.getRightAxis());
@@ -55,15 +57,14 @@ public class DriveWithJoystick extends Command {
       break;
     case Trigger:
       baseDrive = (Robot.oi.getLeftTrigger() - Robot.oi.getRightTrigger()) * -1;
-      joystickRight = baseDrive + processJoystickAxis(Robot.oi.getLeftHorizDriveAxis());
+      totalTurn = Robot.oi.getLeftHorizDriveAxis() + (Robot.oi.getRightHorizDriveAxis() * rightStickScale);
+      joystickRight = baseDrive + processJoystickAxis(totalTurn);
       joystickRight = joystickRight > 1 ? 1 : joystickRight;
-      joystickLeft = baseDrive - processJoystickAxis(Robot.oi.getLeftHorizDriveAxis());
+      joystickLeft = baseDrive - processJoystickAxis(totalTurn);
       joystickLeft = joystickLeft > 1 ? 1 : joystickLeft;
       break;
     }
     Robot.driveSubsystem.drive(joystickLeft, joystickRight, alwaysUseHighMaxVel);
-    // System.out.println("Left: " + Robot.oi.getLeftAxis() + " Right: " +
-    // Robot.oi.getRightAxis());
   }
 
   // Make this return true when this Command no longer needs to run execute()
