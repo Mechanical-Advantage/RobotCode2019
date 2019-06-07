@@ -4,128 +4,131 @@ import edu.wpi.first.wpilibj.command.InstantCommand;
 import frc.robot.subsystems.Intake.GamePiece;
 
 // Acts as an interface to multiple OI configurations
-public interface OI {
-    public double minAcceleration = 0.2; // Minimum total horizontal acceleration before rumbling controller
-    public double fullAcceleration = 0.8; // Total horizontal acceleration (g) for full high frequency rumble
-    public double lowRumbleFactor = 0.15; // Multiplied by high frequency rumble power to calculate low frequency rumble
-                                          // power
+public abstract class OI {
+    public static final double minAcceleration = 0.2; // Minimum total horizontal acceleration before rumbling
+                                                      // controller
+    public static final double fullAcceleration = 0.8; // Total horizontal acceleration (g) for full high frequency
+                                                       // rumble
+    public static final double lowRumbleFactor = 0.15; // Multiplied by high frequency rumble power to calculate low
+                                                       // frequency rumble
+    // power
 
-    default double getLeftAxis() {
+    public double getLeftAxis() {
         return 0;
     }
 
-    default double getRightAxis() {
+    public double getRightAxis() {
         return 0;
     }
 
-    default double getSingleDriveAxisLeft() {
+    public double getSingleDriveAxisLeft() {
         return 0;
     }
 
-    default double getSingleDriveAxisRight() {
+    public double getSingleDriveAxisRight() {
         return 0;
     }
 
-    default double getLeftHorizDriveAxis() {
+    public double getLeftHorizDriveAxis() {
         return 0;
     }
 
-    default double getRightHorizDriveAxis() {
+    public double getRightHorizDriveAxis() {
         return 0;
     }
 
-    default boolean getOpenLoop() {
+    public boolean getOpenLoop() {
         return false;
     }
 
-    default void toggleOpenLoop() {
+    public void toggleOpenLoop() {
     };
 
-    default boolean getDriveEnabled() {
+    public boolean getDriveEnabled() {
         return false;
     }
 
-    default void toggleDriveEnabled() {
+    public void toggleDriveEnabled() {
     };
 
-    default boolean getSniperMode() {
+    public boolean getSniperMode() {
         return false;
     }
 
-    default double getSniperLevel() {
+    public double getSniperLevel() {
         return 0;
     }
 
-    default boolean getSniperHigh() {
+    public boolean getSniperHigh() {
         return false;
     }
 
-    default boolean getSniperLow() {
+    public boolean getSniperLow() {
         return false;
     }
 
-    default void reverseJoysticks(boolean reverse) {
+    public void reverseJoysticks(boolean reverse) {
     }
 
-    default boolean isShiftingEnabled() {
+    public boolean isShiftingEnabled() {
         return false;
     }
 
-    default boolean isArmEnabled() {
+    public boolean isArmEnabled() {
         return false;
     }
 
-    default boolean isTailLocked() {
+    public boolean isTailLocked() {
         return false;
     }
 
-    default double getSliderLevel() {
+    public double getSliderLevel() {
         return 0;
     }
 
-    default double getLeftTrigger() {
+    public double getLeftTrigger() {
         return 0;
     }
 
-    default double getRightTrigger() {
+    public double getRightTrigger() {
         return 0;
     }
 
-    default void setRumble(OIRumbleType type, double value) {
+    public void setRumble(OIRumbleType type, double value) {
     }
 
-    default void resetRumble() {
+    public void resetRumble() {
     }
 
-    default double getLeftOperatorStickY() {
+    public double getLeftOperatorStickY() {
         return 0;
     }
 
-    default double getRightOperatorStickY() {
+    public double getRightOperatorStickY() {
         return 0;
     }
 
-    default double getDeadband() {
+    public double getDeadband() {
         return 0;
     }
 
-    default void updateLED(OILED led, boolean state) {
+    public void updateLED(OILED led, boolean state) {
     }
 
-    static enum OILED {
+    public static enum OILED {
         MISC_1, MISC_2, MISC_3, INTAKE_RETRACT, INTAKE_ON_OFF, VAC_PICKUP, VAC_TAIL, TOGGLE_LOW, TOGGLE_HIGH,
         JOYSTICK_YELLOW, ARM_ALT, ARM_FLOOR, ARM_CARGO_SHIP, ARM_ROCKET_LOW, ARM_ROCKET_MID, ARM_ROCKET_HIGH, ARM_HOME
     }
 
-    static enum OIRumbleType {
+    public static enum OIRumbleType {
         DRIVER_LEFT, DRIVER_RIGHT, OPERATOR_LEFT, OPERATOR_RIGHT
     }
 
-    static enum OIType {
+    public static enum OIType {
         CONSOLE, HANDHELD
     }
 
-    public static class ReBotSetGamepiece extends InstantCommand {
+    protected static class ReBotSetGamepiece extends InstantCommand {
 
         private GamePiece gamePiece;
 

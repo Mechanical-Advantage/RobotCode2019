@@ -22,7 +22,7 @@ import frc.robot.commands.ReBotEnableVacuum;
 import frc.robot.commands.ReBotDisableVacuum;
 import frc.robot.triggers.TriggerPressedTrigger;
 
-public class OIHandheld implements OI {
+public class OIHandheld extends OI {
     private boolean joysticksReversed = false;
     private boolean driveEnabled = false;
     private boolean openLoop = true;
