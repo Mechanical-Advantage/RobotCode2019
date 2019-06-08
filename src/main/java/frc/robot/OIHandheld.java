@@ -25,7 +25,7 @@ import frc.robot.triggers.TriggerPressedTrigger;
 public class OIHandheld extends OI {
     private boolean joysticksReversed = false;
     private boolean driveEnabled = true;
-    private boolean openLoop = false;
+    private boolean openLoop = true;
 
     // map driver controller to ID 0 and operator controller to ID 1 in driver
     // station
