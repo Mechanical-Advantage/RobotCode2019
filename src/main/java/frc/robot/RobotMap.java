@@ -59,6 +59,7 @@ public class RobotMap {
   public static int armShoulder2Retract;
   public static int armShoulder2PCM;
   public static int vacuumMotor;
+  public static boolean vacuumMotorTalon;
   public static int vacuumPressureSensor;
   public static int greenLEDRing; // Currently requires an entire relay channel
   public static int tailReleaseSolenoid1;
@@ -113,6 +114,8 @@ public class RobotMap {
       climberSlave = 10;
       elevatorMaster = 4;
       elevatorSlave = 11;
+      vacuumMotor = 7;
+      vacuumMotorTalon = true;
       break;
     case ORIGINAL_ROBOT_2018:
       rightMaster = 2;
@@ -157,6 +160,7 @@ public class RobotMap {
       armTelescope = 5;
       armWrist = 11;
       vacuumMotor = 4;
+      vacuumMotorTalon = false;
       vacuumPressureSensor = 1;
       armShoulder1Extend = 0; // Left, disabled, using disconnected channels, was PCM 1 extend 4 retract 6
       armShoulder1Retract = 1;
