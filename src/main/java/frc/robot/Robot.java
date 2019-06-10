@@ -82,6 +82,7 @@ public class Robot extends TimedRobot {
 
   public static OI oi;
   public static OIType oiType;
+  public static boolean lastDemoControls = false;
   public static final AHRS ahrs = new AHRS(SPI.Port.kMXP);
 
   public static final CameraSystem cameraSubsystem = new CameraSystem();
@@ -101,10 +102,12 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     if (RobotMap.robot == RobotType.ROBOT_REBOT || RobotMap.robot == RobotType.EVERYBOT_2019) {
-      oi = new OIHandheld();
-      oiType = OIType.HANDHELD;
       SmartDashboard.putBoolean("Drive Enabled", oi.getDriveEnabled());
       SmartDashboard.putBoolean("Open Loop Drive", Robot.oi.getOpenLoop());
+      SmartDashboard.putBoolean("Demo Controls", false);
+
+      oi = new OIHandheld();
+      oiType = OIType.HANDHELD;
     } else {
       oi = new OIConsole();
       oiType = OIType.CONSOLE;
@@ -192,6 +195,14 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+    if (SmartDashboard.getBoolean("Demo Controls", false) != lastDemoControls) {
+      if (lastDemoControls) {
+        oi = new OIHandheld();
+      } else {
+        oi = new OIDemo();
+      }
+      lastDemoControls = !lastDemoControls;
+    }
   }
 
   /**
