@@ -106,7 +106,7 @@ public class Robot extends TimedRobot {
       SmartDashboard.putBoolean("Open Loop Drive", Robot.oi.getOpenLoop());
       SmartDashboard.putBoolean("Demo Controls", false);
 
-      oi = new OIHandheld();
+      oi = new OIHandheld(false);
       oiType = OIType.HANDHELD;
     } else {
       oi = new OIConsole();
@@ -197,9 +197,9 @@ public class Robot extends TimedRobot {
   public void robotPeriodic() {
     if (SmartDashboard.getBoolean("Demo Controls", false) != lastDemoControls) {
       if (lastDemoControls) {
-        oi = new OIHandheld();
+        oi = new OIHandheld(false);
       } else {
-        oi = new OIDemo();
+        oi = new OIHandheld(true);
       }
       lastDemoControls = !lastDemoControls;
     }
