@@ -137,6 +137,7 @@ public abstract class OI {
             // Use requires() here to declare subsystem dependencies
             // eg. requires(chassis);
             this.gamePiece = gamePiece;
+            this.setRunWhenDisabled(true);
         }
 
         // Called once when the command executes
