@@ -23,7 +23,7 @@ import frc.robot.commands.ReBotRunClimberWithJoystick;
  */
 public class Climber extends Subsystem {
 
-  private static final boolean masterReversed = true;
+  private static final boolean masterReversed = false;
   private static final boolean slaveReversed = true;
   private static final NeutralMode neutralMode = NeutralMode.Coast;
 

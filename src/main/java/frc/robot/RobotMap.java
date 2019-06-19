@@ -59,6 +59,7 @@ public class RobotMap {
   public static int armShoulder2Retract;
   public static int armShoulder2PCM;
   public static int vacuumMotor;
+  public static boolean vacuumMotorTalon;
   public static int vacuumPressureSensor;
   public static int greenLEDRing; // Currently requires an entire relay channel
   public static int tailReleaseSolenoid1;
@@ -75,13 +76,13 @@ public class RobotMap {
   public static int level2RearPCM;
   public static int level2RearSolenoid1;
   public static int level2RearSolenoid2;
-  public static int RebotPCM;
-  public static int CargoRaiseSolenoid;
-  public static int CargoLowerSolenoid;
-  public static int HatchOpenSolenoid;
-  public static int HatchCloseSolenoid;
-  public static int HatchDeliverSolenoid;
-  public static int HatchWithdrawSolenoid;
+  public static int rebotPCM;
+  public static int cargoRaiseSolenoid;
+  public static int cargoLowerSolenoid;
+  public static int hatchOpenSolenoid;
+  public static int hatchCloseSolenoid;
+  public static int hatchDeliverSolenoid;
+  public static int hatchWithdrawSolenoid;
   public static int climberMaster;
   public static int climberSlave;
   public static int elevatorMaster;
@@ -102,17 +103,19 @@ public class RobotMap {
       robotLength = 31.5;
       robotWidth = 29.25;
       intakeMotor = 6;
-      CargoRaiseSolenoid = 0;
-      CargoLowerSolenoid = 1;
-      HatchCloseSolenoid = 2;
-      HatchOpenSolenoid = 3;
-      HatchDeliverSolenoid = 4;
-      HatchWithdrawSolenoid = 5;
-      RebotPCM = 0;
+      cargoRaiseSolenoid = 7;
+      cargoLowerSolenoid = 6;
+      hatchCloseSolenoid = 4;
+      hatchOpenSolenoid = 5;
+      hatchDeliverSolenoid = 0;
+      hatchWithdrawSolenoid = 1;
+      rebotPCM = 0;
       climberMaster = 5;
       climberSlave = 10;
       elevatorMaster = 4;
       elevatorSlave = 11;
+      vacuumMotor = 7;
+      vacuumMotorTalon = true;
       break;
     case ORIGINAL_ROBOT_2018:
       rightMaster = 2;
@@ -157,6 +160,7 @@ public class RobotMap {
       armTelescope = 5;
       armWrist = 11;
       vacuumMotor = 4;
+      vacuumMotorTalon = false;
       vacuumPressureSensor = 1;
       armShoulder1Extend = 0; // Left, disabled, using disconnected channels, was PCM 1 extend 4 retract 6
       armShoulder1Retract = 1;

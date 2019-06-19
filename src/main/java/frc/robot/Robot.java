@@ -100,24 +100,21 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    switch (RobotMap.robot) {
-    case ROBOT_REBOT:
+    if (RobotMap.robot == RobotType.ROBOT_REBOT || RobotMap.robot == RobotType.EVERYBOT_2019) {
       oi = new OIHandheld();
       oiType = OIType.HANDHELD;
       SmartDashboard.putBoolean("Drive Enabled", oi.getDriveEnabled());
       SmartDashboard.putBoolean("Open Loop Drive", Robot.oi.getOpenLoop());
-      break;
-    default:
+    } else {
       oi = new OIConsole();
       oiType = OIType.CONSOLE;
-      break;
     }
     joystickModeChooser = new SendableChooser<JoystickMode>();
     // chooser.setDefaultOption("Default Auto", new ExampleCommand());
     // chooser.addOption("My Auto", new MyAutoCommand());
-    joystickModeChooser.setDefaultOption("Tank", JoystickMode.Tank);
+    joystickModeChooser.addOption("Tank", JoystickMode.Tank);
     joystickModeChooser.addOption("Trigger", JoystickMode.Trigger);
-    joystickModeChooser.addOption("Split Arcade", JoystickMode.SplitArcade);
+    joystickModeChooser.setDefaultOption("Split Arcade", JoystickMode.SplitArcade);
     joystickModeChooser.addOption("Split Arcade (right drive)", JoystickMode.SplitArcadeRightDrive);
 
     autoChooser.addOption("None", null);
@@ -161,7 +158,7 @@ public class Robot extends TimedRobot {
     if (RobotMap.robot == RobotType.EVERYBOT_2019 || RobotMap.robot == RobotType.ROBOT_REBOT) {
       cameraSubsystem.useFrontCamera();
     }
-    // Compressor c = new Compressor();
+    Compressor c = new Compressor();
   }
 
   // Update rumble based on acceleration

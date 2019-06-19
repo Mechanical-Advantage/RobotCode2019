@@ -12,19 +12,19 @@ import frc.robot.commands.ToggleDriveEnabled;
 import frc.robot.commands.ToggleOpenLoop;
 import frc.robot.commands.ReBotEjectHatch;
 import frc.robot.commands.ReBotCloseHatchIntake;
+import frc.robot.commands.ReBotOpenHatchIntake;
 import frc.robot.commands.ReBotRunCargoIntake;
 import frc.robot.commands.ReBotRunCargoIntake.IntakeAction;
 import frc.robot.commands.ReBotSetIntakeRaised;
 import frc.robot.commands.ReBotMoveToSetpoint;
 import frc.robot.commands.ReBotMoveToSetpoint.OIElevatorPosition;
-import frc.robot.commands.ReBotSetGamepiece;
 import frc.robot.commands.ReBotEnableVacuum;
 import frc.robot.commands.ReBotDisableVacuum;
 import frc.robot.triggers.TriggerPressedTrigger;
 
-public class OIHandheld implements OI {
+public class OIHandheld extends OI {
     private boolean joysticksReversed = false;
-    private boolean driveEnabled = false;
+    private boolean driveEnabled = true;
     private boolean openLoop = true;
 
     // map driver controller to ID 0 and operator controller to ID 1 in driver
@@ -51,8 +51,8 @@ public class OIHandheld implements OI {
     private JoystickButton setHatch = new JoystickButton(operatorController, 7); // back button
     private JoystickButton setCargo = new JoystickButton(operatorController, 8); // start button
 
-    private Trigger enableVacuum = new TriggerPressedTrigger(operatorController, Hand.kRight);
-    private Trigger disableVacuum = new TriggerPressedTrigger(operatorController, Hand.kLeft);
+    private Trigger enableVacuum = new TriggerPressedTrigger(operatorController, Hand.kRight, 0.6);
+    private Trigger disableVacuum = new TriggerPressedTrigger(operatorController, Hand.kLeft, 0.6);
 
     public OIHandheld() {
         resetRumble();
@@ -61,7 +61,7 @@ public class OIHandheld implements OI {
         toggleDriveEnabled.whenPressed(new ToggleDriveEnabled());
         toggleOpenLoop.whenPressed(new ToggleOpenLoop());
 
-        hatchExtend.whenPressed(new ReBotEjectHatch());
+        hatchExtend.whenPressed(new ReBotOpenHatchIntake());
         hatchRetract.whenPressed(new ReBotCloseHatchIntake());
         cargoIntake.whileHeld(new ReBotRunCargoIntake(IntakeAction.INTAKE));
         cargoEject.whileHeld(new ReBotRunCargoIntake(IntakeAction.EJECT));
@@ -197,6 +197,6 @@ public class OIHandheld implements OI {
     }
 
     public double getDeadband() {
-        return 0.07;
+        return 0.09;
     }
 }

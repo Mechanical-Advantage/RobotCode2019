@@ -18,14 +18,16 @@ public class TriggerPressedTrigger extends Trigger {
 
   private XboxController controller;
   private Hand hand;
+  private Double cutoff;
 
-  public TriggerPressedTrigger(XboxController controller, Hand hand) {
+  public TriggerPressedTrigger(XboxController controller, Hand hand, Double cutoff) {
     this.controller = controller;
     this.hand = hand;
+    this.cutoff = cutoff;
   }
 
   @Override
   public boolean get() {
-    return controller.getTriggerAxis(hand) == 1;
+    return controller.getTriggerAxis(hand) > cutoff;
   }
 }

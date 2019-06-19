@@ -9,7 +9,6 @@ package frc.robot.commands;
 
 import frc.robot.Robot;
 import edu.wpi.first.wpilibj.command.InstantCommand;
-import frc.robot.subsystems.Intake;
 
 /**
  * Raises or lowers the intake
@@ -36,5 +35,4 @@ public class ReBotSetIntakeRaised extends InstantCommand {
       Robot.intake.lower();
     }
   }
-
 }
