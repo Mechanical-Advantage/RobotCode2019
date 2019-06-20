@@ -27,25 +27,26 @@ import frc.robot.commands.ReBotRunElevatorWithJoystick;
  */
 public class Elevator extends Subsystem {
   private static final int ticksPerRotation = 4096;
-  private static final double distancePerRotation = 2.5; // inches
+  private static final double distancePerRotation = 2.5319829424; // inches
   private static final boolean elevatorMasterReversed = true;
   private static final boolean elevatorSlaveReversed = false;
   private static final NeutralMode neutralMode = NeutralMode.Brake;
-  private static final boolean useMotionMagic = true;
+  private static final boolean useMotionMagic = false;
   private static final double motMagAccel = 1;
   private static final double motMagCruiseVelocity = 30;
-  private static final double upperLimit = 40; // TBD
+  private static final double upperLimit = 33.25; // TBD
   private static final double lowerLimit = 0;
-  private static final double schoolZoneSpeedLimit = 0.2;
-  private static final double schoolZoneLowerStart = 4;
-  private static final double schoolZoneUpperStart = upperLimit - 4;
+  private static final double schoolZoneSpeedLimit = 0.1;
+  private static final double schoolZoneLowerStart = 8; // in inches
+  private static final double schoolZoneUpperStart = upperLimit - 8; // in inches
   private static final double peakOutput = 1.0;
-  public static final int startingPosition = 0;
-  public static final double allowableError = 2; // in inches
+  public static final int startingPosition = 0; // in inches
+  public static final double allowableError = 1; // in inches
   private static final boolean enableUpperSoftLimit = true;
   private static final boolean enableLowerSoftLimit = false;
   private static final boolean schoolZonesEnabled = true;
   private static final int configTimeout = 0;
+  private static final boolean reverseSensor = true;
   private static final FeedbackDevice encoderType = FeedbackDevice.CTRE_MagEncoder_Relative;
 
   private static final boolean enableCurrentLimit = false;
@@ -53,9 +54,9 @@ public class Elevator extends Subsystem {
   private static final int peakCurrentLimit = 0;
   private static final int peakCurrentLimitDuration = 0; // ms
 
-  private static final TunableNumber kPElevator = new TunableNumber("Elevator/p");
-  private static final TunableNumber kIElevator = new TunableNumber("Elevator/i");
-  private static final TunableNumber kDElevator = new TunableNumber("Elevator/d");
+  private static final TunableNumber kP = new TunableNumber("Elevator/p");
+  private static final TunableNumber kI = new TunableNumber("Elevator/i");
+  private static final TunableNumber kD = new TunableNumber("Elevator/d");
 
   private TalonSRX elevatorMaster;
   private TalonSRX elevatorSlave;
@@ -69,11 +70,15 @@ public class Elevator extends Subsystem {
 
   public Elevator() {
     if (available()) {
-      schoolZone = new SchoolZone(schoolZoneSpeedLimit, peakOutput, schoolZoneLowerStart, schoolZoneUpperStart,
-          elevatorMaster);
+      kP.setDefault(0);
+      kI.setDefault(0);
+      kD.setDefault(0);
 
       elevatorMaster = new TalonSRX(RobotMap.elevatorMaster);
       elevatorSlave = new TalonSRX(RobotMap.elevatorSlave);
+
+      schoolZone = new SchoolZone(schoolZoneSpeedLimit, peakOutput, schoolZoneLowerStart, schoolZoneUpperStart,
+          elevatorMaster);
 
       elevatorMaster.configFactoryDefault();
       elevatorMaster.setInverted(elevatorMasterReversed);
@@ -99,7 +104,8 @@ public class Elevator extends Subsystem {
       elevatorMaster.configMotionAcceleration(convertDistanceToTicks(motMagAccel), configTimeout);
       elevatorMaster.selectProfileSlot(0, 0);
       elevatorMaster.configSelectedFeedbackSensor(encoderType, 0, configTimeout);
-      elevatorMaster.setSelectedSensorPosition(startingPosition);
+      elevatorMaster.setSelectedSensorPosition(convertDistanceToTicks(startingPosition));
+      elevatorMaster.setSensorPhase(reverseSensor);
       targetPosition = convertTicksToDistance(elevatorMaster.getSelectedSensorPosition());
 
       elevatorSlave.configFactoryDefault();
@@ -121,9 +127,9 @@ public class Elevator extends Subsystem {
   }
 
   private void initPID() {
-    elevatorMaster.config_kP(0, kPElevator.get(), configTimeout);
-    elevatorMaster.config_kI(0, kIElevator.get(), configTimeout);
-    elevatorMaster.config_kD(0, kDElevator.get(), configTimeout);
+    elevatorMaster.config_kP(0, kP.get(), configTimeout);
+    elevatorMaster.config_kI(0, kI.get(), configTimeout);
+    elevatorMaster.config_kD(0, kD.get(), configTimeout);
   }
 
   public double getElevatorPosition() {
@@ -148,8 +154,10 @@ public class Elevator extends Subsystem {
       if (schoolZonesEnabled) {
         schoolZone.applyPosition(getElevatorPosition());
       }
-      initPID();
-      SmartDashboard.putNumber("Elevator Position", getElevatorPosition());
+      if (RobotMap.tuningMode) {
+        initPID();
+        SmartDashboard.putNumber("Elevator Position", getElevatorPosition());
+      }
     }
   }
 

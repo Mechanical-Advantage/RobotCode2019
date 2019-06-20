@@ -112,8 +112,8 @@ public class RobotMap {
       rebotPCM = 0;
       climberMaster = 5;
       climberSlave = 10;
-      elevatorMaster = 4;
-      elevatorSlave = 11;
+      elevatorMaster = 11;
+      elevatorSlave = 4;
       vacuumMotor = 7;
       vacuumMotorTalon = true;
       break;
