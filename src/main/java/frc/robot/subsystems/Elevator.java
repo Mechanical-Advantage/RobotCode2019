@@ -31,7 +31,7 @@ public class Elevator extends Subsystem {
   private static final boolean elevatorMasterReversed = true;
   private static final boolean elevatorSlaveReversed = false;
   private static final NeutralMode neutralMode = NeutralMode.Brake;
-  private static final boolean useMotionMagic = false;
+  private static final boolean useMotionMagic = true;
   private static final double motMagAccel = 1;
   private static final double motMagCruiseVelocity = 30;
   private static final double upperLimit = 33.25;
@@ -152,7 +152,12 @@ public class Elevator extends Subsystem {
   public void periodic() {
     if (available()) {
       if (schoolZonesEnabled) {
-        schoolZone.applyPosition(getElevatorPosition());
+        if (openLoop) {
+          schoolZone.applyPosition(getElevatorPosition());
+        } else {
+          schoolZone.enableFullOutput();
+        }
+
       }
       if (RobotMap.tuningMode) {
         initPID();

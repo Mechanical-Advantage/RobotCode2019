@@ -121,6 +121,43 @@ public class SchoolZone {
   }
 
   /**
+   * Sets the peak output of the controllers to the normal output.
+   * 
+   * @return Which speed limits need to be or were changed
+   */
+  public RequiredSpeedLimitChanges enableFullOutput() {
+    return enableFullOutput(true, true);
+  }
+
+  /**
+   * Sets the peak output of the controllers to the normal output.
+   * 
+   * @param applyForwardLimit Whether to apply the forward limit to controllers
+   * @param applyReverseLimit Whether to apply the reverse limit to controllers
+   * @return Which speed limits need to be or were changed
+   */
+  public RequiredSpeedLimitChanges enableFullOutput(boolean applyForwardLimit, boolean applyReverseLimit) {
+    RequiredSpeedLimitChanges neededChanges;
+    if (previouslyLimitedForward && previouslyLimitedReverse) {
+      previouslyLimitedForward = false;
+      previouslyLimitedReverse = false;
+      neededChanges = RequiredSpeedLimitChanges.BOTH;
+    } else if (previouslyLimitedForward) {
+      previouslyLimitedForward = false;
+      neededChanges = RequiredSpeedLimitChanges.FORWARD;
+    } else if (previouslyLimitedReverse) {
+      previouslyLimitedReverse = false;
+      neededChanges = RequiredSpeedLimitChanges.REVERSE;
+    } else {
+      neededChanges = RequiredSpeedLimitChanges.NONE;
+    }
+    if (motorControllers.length > 0) {
+      applyToControllers(neededChanges, applyForwardLimit, applyReverseLimit);
+    }
+    return neededChanges;
+  }
+
+  /**
    * Get the speed limit that should be in effect based on the last applied
    * position. Will be normal output (or 100%) if not in school zone.
    */

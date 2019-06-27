@@ -17,13 +17,16 @@ public class ReBotRunElevatorWithJoystick extends Command {
   private final boolean openLoopDrive = true; // if true use percent output, if false move setpoint. if move to setpoint
                                               // in open loop, joystick driving in closed loop will not work after
                                               // moving
-  private final boolean openLoopHold = true; // if true use neutral mode, if false use position closed loop
+  private final boolean openLoopHold = false; // if true use neutral mode, if false use position closed loop
+
+  private static boolean movingLast;
 
   public ReBotRunElevatorWithJoystick() {
     // Use requires() here to declare subsystem dependencies
     // eg. requires(chassis);
     super("ReBotRunElevatorWithJoystick");
     requires(Robot.elevator);
+    movingLast = false;
   }
 
   // Called just before this Command runs the first time
@@ -37,12 +40,16 @@ public class ReBotRunElevatorWithJoystick extends Command {
     double joystickAxis = Robot.oi.getLeftOperatorStickY();
     joystickAxis = Math.abs(joystickAxis) > deadband ? joystickAxis * Math.abs(joystickAxis) * -1 : 0;
     if (joystickAxis == 0) {
-      if (openLoopHold) {
-        Robot.elevator.stop();
-      } else {
-        Robot.elevator.moveToPosition(Robot.elevator.getElevatorPosition());
+      if (movingLast) {
+        movingLast = false;
+        if (openLoopHold) {
+          Robot.elevator.stop();
+        } else {
+          Robot.elevator.moveToPosition(Robot.elevator.getElevatorPosition());
+        }
       }
     } else {
+      movingLast = true;
       if (openLoopDrive) {
         Robot.elevator.run(joystickAxis);
       } else {

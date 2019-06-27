@@ -14,7 +14,7 @@ import frc.robot.subsystems.Elevator;
 
 public class ReBotMoveToSetpoint extends Command {
 
-  private final boolean openLoop = true;
+  private final boolean openLoop = false;
   private final double velocity = 0.3; // when using open loop drive
 
   private double target;
@@ -106,15 +106,15 @@ public class ReBotMoveToSetpoint extends Command {
       case FLOOR:
         return 0;
       case HATCHES_L1:
-        return 0;
+        return 10;
       case HATCHES_L2:
-        return 0;
+        return 33.25;
       case CARGO_L1_SHIP:
-        return 0;
+        return 20;
       case CARGO_L1_ROCKET:
         return 0;
       case CARGO_L2:
-        return 0;
+        return 33.25;
       default:
         return 0;
       }
