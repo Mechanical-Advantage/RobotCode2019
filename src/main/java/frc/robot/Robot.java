@@ -145,6 +145,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void disabledInit() {
+    cameraSubsystem.useFrontCamera();
   }
 
   @Override
