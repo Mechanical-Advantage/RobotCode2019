@@ -14,7 +14,7 @@ import frc.robot.subsystems.Elevator;
 
 public class ReBotMoveToSetpoint extends Command {
 
-  private final boolean openLoop = false;
+  private final boolean openLoop = true;
   private final double velocity = 0.3; // when using open loop drive
 
   private double target;
@@ -62,7 +62,7 @@ public class ReBotMoveToSetpoint extends Command {
     target = position.getSetpointValue();
     if (openLoop) {
       Robot.elevator
-          .run((Robot.elevator.getElevatorPosition() - target) > 0 ? Math.abs(velocity) : Math.abs(velocity) * -1);
+          .run((Robot.elevator.getElevatorPosition() - target) > 0 ? Math.abs(velocity) * -1 : Math.abs(velocity));
     } else {
       Robot.elevator.moveToPosition(target);
     }

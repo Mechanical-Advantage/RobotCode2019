@@ -36,7 +36,7 @@ public class Elevator extends Subsystem {
   private static final double motMagCruiseVelocity = 30;
   private static final double upperLimit = 33.25;
   private static final double lowerLimit = 0;
-  private static final double schoolZoneSpeedLimit = 0.1;
+  private static final double schoolZoneSpeedLimit = 0.2;
   private static final double schoolZoneLowerStart = 8; // in inches
   private static final double schoolZoneUpperStart = upperLimit - 8; // in inches
   private static final double peakOutput = 1.0;

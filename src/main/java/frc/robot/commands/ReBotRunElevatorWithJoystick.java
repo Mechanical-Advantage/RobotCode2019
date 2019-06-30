@@ -17,7 +17,7 @@ public class ReBotRunElevatorWithJoystick extends Command {
   private final boolean openLoopDrive = true; // if true use percent output, if false move setpoint. if move to setpoint
                                               // in open loop, joystick driving in closed loop will not work after
                                               // moving
-  private final boolean openLoopHold = false; // if true use neutral mode, if false use position closed loop
+  private final boolean openLoopHold = true; // if true use neutral mode, if false use position closed loop
 
   private static boolean movingLast;
 
