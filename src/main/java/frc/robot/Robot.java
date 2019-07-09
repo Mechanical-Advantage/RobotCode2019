@@ -21,7 +21,6 @@ import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.BuiltInAccelerometer;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.interfaces.Accelerometer;
@@ -33,8 +32,6 @@ import frc.robot.OI.OIType;
 import static frc.robot.OI.fullAcceleration;
 import static frc.robot.OI.lowRumbleFactor;
 import static frc.robot.OI.minAcceleration;
-import static frc.robot.OI.OIType.HANDHELD;
-
 import frc.robot.RobotMap.RobotType;
 import frc.robot.commands.ArmLightTuning;
 import frc.robot.commands.ArmTuning;
@@ -104,7 +101,7 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     if (RobotMap.robot == RobotType.ROBOT_REBOT || RobotMap.robot == RobotType.EVERYBOT_2019) {
-      oi = new OIHandheld(false);
+      oi = new OIHandheld();
       oiType = OIType.HANDHELD;
 
       SmartDashboard.putBoolean("Drive Enabled", oi.getDriveEnabled());
@@ -198,10 +195,6 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-    if (SmartDashboard.getBoolean("Demo Controls", false) != lastDemoControls && oiType == HANDHELD) {
-      oi = new OIHandheld(!lastDemoControls);
-      lastDemoControls = !lastDemoControls;
-    }
   }
 
   /**
