@@ -33,6 +33,8 @@ import frc.robot.OI.OIType;
 import static frc.robot.OI.fullAcceleration;
 import static frc.robot.OI.lowRumbleFactor;
 import static frc.robot.OI.minAcceleration;
+import static frc.robot.OI.OIType.HANDHELD;
+
 import frc.robot.RobotMap.RobotType;
 import frc.robot.commands.ArmLightTuning;
 import frc.robot.commands.ArmTuning;
@@ -102,16 +104,17 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     if (RobotMap.robot == RobotType.ROBOT_REBOT || RobotMap.robot == RobotType.EVERYBOT_2019) {
-      SmartDashboard.putBoolean("Drive Enabled", oi.getDriveEnabled());
-      SmartDashboard.putBoolean("Open Loop Drive", Robot.oi.getOpenLoop());
-      SmartDashboard.putBoolean("Demo Controls", false);
-
       oi = new OIHandheld(false);
       oiType = OIType.HANDHELD;
+
+      SmartDashboard.putBoolean("Drive Enabled", oi.getDriveEnabled());
+      SmartDashboard.putBoolean("Open Loop Drive", oi.getOpenLoop());
+      SmartDashboard.putBoolean("Demo Controls", false);
     } else {
       oi = new OIConsole();
       oiType = OIType.CONSOLE;
     }
+
     joystickModeChooser = new SendableChooser<JoystickMode>();
     // chooser.setDefaultOption("Default Auto", new ExampleCommand());
     // chooser.addOption("My Auto", new MyAutoCommand());
@@ -195,12 +198,8 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-    if (SmartDashboard.getBoolean("Demo Controls", false) != lastDemoControls) {
-      if (lastDemoControls) {
-        oi = new OIHandheld(false);
-      } else {
-        oi = new OIHandheld(true);
-      }
+    if (SmartDashboard.getBoolean("Demo Controls", false) != lastDemoControls && oiType == HANDHELD) {
+      oi = new OIHandheld(!lastDemoControls);
       lastDemoControls = !lastDemoControls;
     }
   }
