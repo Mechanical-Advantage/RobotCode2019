@@ -21,7 +21,6 @@ import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.BuiltInAccelerometer;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.interfaces.Accelerometer;
@@ -82,6 +81,7 @@ public class Robot extends TimedRobot {
 
   public static OI oi;
   public static OIType oiType;
+  public static boolean lastDemoControls = false;
   public static final AHRS ahrs = new AHRS(SPI.Port.kMXP);
 
   public static final CameraSystem cameraSubsystem = new CameraSystem();
@@ -103,12 +103,15 @@ public class Robot extends TimedRobot {
     if (RobotMap.robot == RobotType.ROBOT_REBOT || RobotMap.robot == RobotType.EVERYBOT_2019) {
       oi = new OIHandheld();
       oiType = OIType.HANDHELD;
+
       SmartDashboard.putBoolean("Drive Enabled", oi.getDriveEnabled());
-      SmartDashboard.putBoolean("Open Loop Drive", Robot.oi.getOpenLoop());
+      SmartDashboard.putBoolean("Open Loop Drive", oi.getOpenLoop());
+      SmartDashboard.putBoolean("Demo Controls", false);
     } else {
       oi = new OIConsole();
       oiType = OIType.CONSOLE;
     }
+
     joystickModeChooser = new SendableChooser<JoystickMode>();
     // chooser.setDefaultOption("Default Auto", new ExampleCommand());
     // chooser.addOption("My Auto", new MyAutoCommand());
