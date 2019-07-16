@@ -27,8 +27,8 @@ public class OIHandheld extends OI {
     private boolean joysticksReversed = false;
     private boolean driveEnabled = true;
     private boolean openLoop = true;
-    private double demoDriveSpeedScaler = 0.3; // Multiplied by drive speed (demo mode only)
-    private double demoElevatorSpeedScaler = 0.3; // Multiplied by elevator speed (demo mode only)
+    private double demoDriveSpeedScaler = 0.6; // Multiplied by drive speed (demo mode only)
+    private double demoElevatorSpeedScaler = 0.7; // Multiplied by elevator speed (demo mode only)
 
     // map driver controller to ID 0 and operator controller to ID 1 in driver
     // station
@@ -226,7 +226,7 @@ public class OIHandheld extends OI {
 
     public double getLeftOperatorStickY() {
         if (getDemoMode()) {
-            return (driverController.getTriggerAxis(Hand.kRight) - driverController.getTriggerAxis(Hand.kLeft))
+            return (driverController.getTriggerAxis(Hand.kLeft) - driverController.getTriggerAxis(Hand.kRight))
                     * demoElevatorSpeedScaler;
         } else {
             return operatorController.getY(Hand.kLeft);

@@ -30,15 +30,19 @@ public class DemoSwitchingTrigger extends Trigger {
   @Override
   public boolean get() {
     Trigger activeTrigger;
-    if (Robot.oi.getDemoMode()) {
-      activeTrigger = demoTrigger;
-    } else {
-      activeTrigger = standardTrigger;
-    }
-    if (activeTrigger == null) {
+    if (Robot.oi == null) {
       return false;
     } else {
-      return activeTrigger.get();
+      if (Robot.oi.getDemoMode()) {
+        activeTrigger = demoTrigger;
+      } else {
+        activeTrigger = standardTrigger;
+      }
+      if (activeTrigger == null) {
+        return false;
+      } else {
+        return activeTrigger.get();
+      }
     }
   }
 }
