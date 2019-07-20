@@ -16,6 +16,7 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
 import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Robot;
 import frc.robot.RobotMap;
 import frc.robot.RobotMap.RobotType;
 
@@ -34,12 +35,18 @@ public class Intake extends Subsystem {
   private static final int intakePeakCurrentLimit = 40; // A
   private static final int intakePeakCurrentLimitDuration = 1000; // ms
 
+  private static final boolean demoIntakeEnableCurrentLimit = true;
+  private static final int demoIntakeContinousCurrentLimit = 2; // A
+  private static final int demoIntakePeakCurrentLimit = 15; // A
+  private static final int demoIntakePeakCurrentLimitDuration = 100; // ms
+
   private DoubleSolenoid cargoSolenoid;
   private DoubleSolenoid hatchControlSolenoid;
   private DoubleSolenoid hatchReleaseSolenoid;
   private TalonSRX intake;
 
   private GamePiece gamePiece = GamePiece.HATCH;
+  private boolean lastDemoMode = false;
 
   private boolean available() {
     return RobotMap.robot == RobotType.ROBOT_REBOT;
@@ -56,11 +63,7 @@ public class Intake extends Subsystem {
       intake.configFactoryDefault();
       intake.setInverted(intakeReversed);
       intake.setNeutralMode(intakeNeutralMode);
-
-      intake.configContinuousCurrentLimit(intakeContinousCurrentLimit);
-      intake.configPeakCurrentLimit(intakePeakCurrentLimit);
-      intake.configPeakCurrentDuration(intakePeakCurrentLimitDuration);
-      intake.enableCurrentLimit(intakeEnableCurrentLimit);
+      configCurrentLimits(false);
     }
   }
 
@@ -68,6 +71,29 @@ public class Intake extends Subsystem {
   public void initDefaultCommand() {
     // Set the default command for a subsystem here.
     // setDefaultCommand(new MySpecialCommand());
+  }
+
+  @Override
+  public void periodic() {
+    boolean demoMode = Robot.oi.getDemoMode();
+    if (lastDemoMode != demoMode) {
+      lastDemoMode = demoMode;
+      configCurrentLimits(lastDemoMode);
+    }
+  }
+
+  public void configCurrentLimits(boolean demoLimits) {
+    if (demoLimits) {
+      intake.configContinuousCurrentLimit(demoIntakeContinousCurrentLimit);
+      intake.configPeakCurrentLimit(demoIntakePeakCurrentLimit);
+      intake.configPeakCurrentDuration(demoIntakePeakCurrentLimitDuration);
+      intake.enableCurrentLimit(demoIntakeEnableCurrentLimit);
+    } else {
+      intake.configContinuousCurrentLimit(intakeContinousCurrentLimit);
+      intake.configPeakCurrentLimit(intakePeakCurrentLimit);
+      intake.configPeakCurrentDuration(intakePeakCurrentLimitDuration);
+      intake.enableCurrentLimit(intakeEnableCurrentLimit);
+    }
   }
 
   public void run(double power) {
