@@ -29,6 +29,7 @@ public class Intake extends Subsystem {
   private static final NeutralMode intakeNeutralMode = NeutralMode.Brake;
   public final boolean autoHold = true;
   private static final Double holdSpeed = -0.1;
+  private static final boolean forceDemoLimiting = false;
 
   private static final boolean intakeEnableCurrentLimit = true;
   private static final int intakeContinousCurrentLimit = 30; // A
@@ -75,7 +76,12 @@ public class Intake extends Subsystem {
 
   @Override
   public void periodic() {
-    boolean demoMode = Robot.oi.getDemoMode();
+    boolean demoMode;
+    if (forceDemoLimiting) {
+      demoMode = true;
+    } else {
+      demoMode = Robot.oi.getDemoMode();
+    }
     if (lastDemoMode != demoMode) {
       lastDemoMode = demoMode;
       configCurrentLimits(lastDemoMode);
