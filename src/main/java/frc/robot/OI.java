@@ -112,6 +112,10 @@ public abstract class OI {
         return 0;
     }
 
+    public boolean getDemoMode() {
+        return false;
+    }
+
     public void updateLED(OILED led, boolean state) {
     }
 

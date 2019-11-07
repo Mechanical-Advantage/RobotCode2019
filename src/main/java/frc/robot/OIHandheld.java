@@ -6,11 +6,11 @@ import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.buttons.POVButton;
 import edu.wpi.first.wpilibj.buttons.Trigger;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.subsystems.Intake.GamePiece;
 import frc.robot.commands.ReverseJoysticks;
 import frc.robot.commands.ToggleDriveEnabled;
 import frc.robot.commands.ToggleOpenLoop;
-import frc.robot.commands.ReBotEjectHatch;
 import frc.robot.commands.ReBotCloseHatchIntake;
 import frc.robot.commands.ReBotOpenHatchIntake;
 import frc.robot.commands.ReBotRunCargoIntake;
@@ -21,11 +21,14 @@ import frc.robot.commands.ReBotMoveToSetpoint.OIElevatorPosition;
 import frc.robot.commands.ReBotEnableVacuum;
 import frc.robot.commands.ReBotDisableVacuum;
 import frc.robot.triggers.TriggerPressedTrigger;
+import frc.robot.triggers.DemoSwitchingTrigger;
 
 public class OIHandheld extends OI {
     private boolean joysticksReversed = false;
     private boolean driveEnabled = true;
-    private boolean openLoop = false;
+    private boolean openLoop = true;
+    private double demoDriveSpeedScaler = 0.6; // Multiplied by drive speed (demo mode only)
+    private double demoElevatorSpeedScaler = 0.7; // Multiplied by elevator speed (demo mode only)
 
     // map driver controller to ID 0 and operator controller to ID 1 in driver
     // station
@@ -37,22 +40,31 @@ public class OIHandheld extends OI {
     private JoystickButton toggleDriveEnabled = new JoystickButton(driverController, 7); // back button
     private JoystickButton toggleOpenLoop = new JoystickButton(driverController, 8); // start button
 
-    private JoystickButton hatchRetract = new JoystickButton(operatorController, 1); // A button
-    private JoystickButton hatchExtend = new JoystickButton(operatorController, 3); // X button
-    private JoystickButton cargoIntake = new JoystickButton(operatorController, 2); // B button
-    private JoystickButton cargoEject = new JoystickButton(operatorController, 4); // Y button
-    private JoystickButton raiseIntake = new JoystickButton(operatorController, 6); // right bumper
-    private JoystickButton lowerIntake = new JoystickButton(operatorController, 5); // left bumper
+    private Trigger hatchRetract = new DemoSwitchingTrigger(new JoystickButton(operatorController, 1),
+            new JoystickButton(driverController, 1)); // A button
+    private Trigger hatchExtend = new DemoSwitchingTrigger(new JoystickButton(operatorController, 3),
+            new JoystickButton(driverController, 3)); // X button
+    private Trigger cargoIntake = new DemoSwitchingTrigger(new JoystickButton(operatorController, 2),
+            new JoystickButton(driverController, 2)); // B button
+    private Trigger cargoEject = new DemoSwitchingTrigger(new JoystickButton(operatorController, 4),
+            new JoystickButton(driverController, 4)); // Y button
+    private Trigger raiseIntake = new DemoSwitchingTrigger(new JoystickButton(operatorController, 6),
+            new JoystickButton(driverController, 6)); // right bumper
+    private Trigger lowerIntake = new DemoSwitchingTrigger(new JoystickButton(operatorController, 5),
+            new JoystickButton(driverController, 5)); // left bumper
 
-    private POVButton floorSetpoint = new POVButton(operatorController, 0);
-    private POVButton shipSetpoint = new POVButton(operatorController, 90);
-    private POVButton rocketL1Setpoint = new POVButton(operatorController, 180);
-    private POVButton rocketL2Setpoint = new POVButton(operatorController, 270);
-    private JoystickButton setHatch = new JoystickButton(operatorController, 7); // back button
-    private JoystickButton setCargo = new JoystickButton(operatorController, 8); // start button
+    private Trigger floorSetpoint = new DemoSwitchingTrigger(new POVButton(operatorController, 0), null);
+    private Trigger shipSetpoint = new DemoSwitchingTrigger(new POVButton(operatorController, 90), null);
+    private Trigger rocketL1Setpoint = new DemoSwitchingTrigger(new POVButton(operatorController, 180), null);
+    private Trigger rocketL2Setpoint = new DemoSwitchingTrigger(new POVButton(operatorController, 270), null);
+    private Trigger setHatch = new DemoSwitchingTrigger(new JoystickButton(operatorController, 7), null); // back button
+    private Trigger setCargo = new DemoSwitchingTrigger(new JoystickButton(operatorController, 8), null); // start
+                                                                                                          // button
 
-    private Trigger enableVacuum = new TriggerPressedTrigger(operatorController, Hand.kRight, 0.6);
-    private Trigger disableVacuum = new TriggerPressedTrigger(operatorController, Hand.kLeft, 0.6);
+    private Trigger enableVacuum = new DemoSwitchingTrigger(
+            new TriggerPressedTrigger(operatorController, Hand.kRight, 0.6), null);
+    private Trigger disableVacuum = new DemoSwitchingTrigger(
+            new TriggerPressedTrigger(operatorController, Hand.kLeft, 0.6), null);
 
     public OIHandheld() {
         resetRumble();
@@ -61,19 +73,19 @@ public class OIHandheld extends OI {
         toggleDriveEnabled.whenPressed(new ToggleDriveEnabled());
         toggleOpenLoop.whenPressed(new ToggleOpenLoop());
 
-        hatchExtend.whenPressed(new ReBotOpenHatchIntake());
-        hatchRetract.whenPressed(new ReBotCloseHatchIntake());
-        cargoIntake.whileHeld(new ReBotRunCargoIntake(IntakeAction.INTAKE));
-        cargoEject.whileHeld(new ReBotRunCargoIntake(IntakeAction.EJECT));
-        raiseIntake.whenPressed(new ReBotSetIntakeRaised(true));
-        lowerIntake.whenPressed(new ReBotSetIntakeRaised(false));
+        hatchExtend.whenActive(new ReBotOpenHatchIntake());
+        hatchRetract.whenActive(new ReBotCloseHatchIntake());
+        cargoIntake.whileActive(new ReBotRunCargoIntake(IntakeAction.INTAKE));
+        cargoEject.whileActive(new ReBotRunCargoIntake(IntakeAction.EJECT));
+        raiseIntake.whenActive(new ReBotSetIntakeRaised(true));
+        lowerIntake.whenActive(new ReBotSetIntakeRaised(false));
 
-        floorSetpoint.whenPressed(new ReBotMoveToSetpoint(OIElevatorPosition.FLOOR));
-        shipSetpoint.whenPressed(new ReBotMoveToSetpoint(OIElevatorPosition.SHIP));
-        rocketL1Setpoint.whenPressed(new ReBotMoveToSetpoint(OIElevatorPosition.ROCKET_L1));
-        rocketL2Setpoint.whenPressed(new ReBotMoveToSetpoint(OIElevatorPosition.ROCKET_L2));
-        setHatch.whenPressed(new ReBotSetGamepiece(GamePiece.HATCH));
-        setCargo.whenPressed(new ReBotSetGamepiece(GamePiece.CARGO));
+        floorSetpoint.whenActive(new ReBotMoveToSetpoint(OIElevatorPosition.FLOOR));
+        shipSetpoint.whenActive(new ReBotMoveToSetpoint(OIElevatorPosition.SHIP));
+        rocketL1Setpoint.whenActive(new ReBotMoveToSetpoint(OIElevatorPosition.ROCKET_L1));
+        rocketL2Setpoint.whenActive(new ReBotMoveToSetpoint(OIElevatorPosition.ROCKET_L2));
+        setHatch.whenActive(new ReBotSetGamepiece(GamePiece.HATCH));
+        setCargo.whenActive(new ReBotSetGamepiece(GamePiece.CARGO));
 
         enableVacuum.whenActive(new ReBotEnableVacuum());
         disableVacuum.whenActive(new ReBotDisableVacuum());
@@ -81,57 +93,65 @@ public class OIHandheld extends OI {
 
     public double getLeftAxis() {
         if (joysticksReversed) {
-            return driverController.getY(Hand.kRight) * -1;
+            return driverController.getY(Hand.kRight) * -1 * getDriveSpeedScaler();
         } else {
-            return driverController.getY(Hand.kLeft);
+            return driverController.getY(Hand.kLeft) * getDriveSpeedScaler();
         }
     }
 
     public double getRightAxis() {
         if (joysticksReversed) {
-            return driverController.getY(Hand.kLeft) * -1;
+            return driverController.getY(Hand.kLeft) * -1 * getDriveSpeedScaler();
         } else {
-            return driverController.getY(Hand.kRight);
+            return driverController.getY(Hand.kRight) * getDriveSpeedScaler();
         }
     }
 
     public double getSingleDriveAxisLeft() {
         if (joysticksReversed) {
-            return driverController.getY(Hand.kLeft) * -1;
+            return driverController.getY(Hand.kLeft) * -1 * getDriveSpeedScaler();
         } else {
-            return driverController.getY(Hand.kLeft);
+            return driverController.getY(Hand.kLeft) * getDriveSpeedScaler();
         }
     }
 
     public double getSingleDriveAxisRight() {
         if (joysticksReversed) {
-            return driverController.getY(Hand.kRight) * -1;
+            return driverController.getY(Hand.kRight) * -1 * getDriveSpeedScaler();
         } else {
-            return driverController.getY(Hand.kRight);
+            return driverController.getY(Hand.kRight) * getDriveSpeedScaler();
         }
     }
 
     public double getLeftHorizDriveAxis() {
-        return driverController.getX(Hand.kLeft);
+        return driverController.getX(Hand.kLeft) * getDriveSpeedScaler();
     }
 
     public double getRightHorizDriveAxis() {
-        return driverController.getX(Hand.kRight);
+        return driverController.getX(Hand.kRight) * getDriveSpeedScaler();
     }
 
     public double getLeftTrigger() {
-        if (joysticksReversed) {
-            return driverController.getTriggerAxis(Hand.kRight);
+        if (getDemoMode()) {
+            return 0;
         } else {
-            return driverController.getTriggerAxis(Hand.kLeft);
+            if (joysticksReversed) {
+                return driverController.getTriggerAxis(Hand.kRight);
+            } else {
+                return driverController.getTriggerAxis(Hand.kLeft);
+            }
         }
     }
 
     public double getRightTrigger() {
-        if (joysticksReversed) {
-            return driverController.getTriggerAxis(Hand.kLeft);
+        if (getDemoMode()) {
+            return 0;
         } else {
-            return driverController.getTriggerAxis(Hand.kRight);
+            if (joysticksReversed) {
+                return driverController.getTriggerAxis(Hand.kLeft);
+            } else {
+                return driverController.getTriggerAxis(Hand.kRight);
+            }
         }
     }
 
@@ -143,9 +163,13 @@ public class OIHandheld extends OI {
         case DRIVER_RIGHT:
             driverController.setRumble(RumbleType.kRightRumble, value);
         case OPERATOR_LEFT:
-            operatorController.setRumble(RumbleType.kLeftRumble, value);
+            if (!getDemoMode()) {
+                operatorController.setRumble(RumbleType.kLeftRumble, value);
+            }
         case OPERATOR_RIGHT:
-            operatorController.setRumble(RumbleType.kRightRumble, value);
+            if (!getDemoMode()) {
+                operatorController.setRumble(RumbleType.kRightRumble, value);
+            }
         }
     }
 
@@ -172,16 +196,28 @@ public class OIHandheld extends OI {
     }
 
     public boolean getSniperMode() {
-        return driverController.getAButton() || driverController.getBButton() || driverController.getBumper(Hand.kLeft)
-                || driverController.getBumper(Hand.kRight);
+        if (getDemoMode()) {
+            return false;
+        } else {
+            return driverController.getAButton() || driverController.getBButton()
+                    || driverController.getBumper(Hand.kLeft) || driverController.getBumper(Hand.kRight);
+        }
     }
 
     public boolean getSniperHigh() {
-        return driverController.getBButton() || driverController.getBumper(Hand.kRight);
+        if (getDemoMode()) {
+            return false;
+        } else {
+            return driverController.getBButton() || driverController.getBumper(Hand.kRight);
+        }
     }
 
     public boolean getSniperLow() {
-        return driverController.getAButton() || driverController.getBumper(Hand.kLeft);
+        if (getDemoMode()) {
+            return false;
+        } else {
+            return driverController.getAButton() || driverController.getBumper(Hand.kLeft);
+        }
     }
 
     public void reverseJoysticks(boolean reverse) {
@@ -189,14 +225,31 @@ public class OIHandheld extends OI {
     }
 
     public double getLeftOperatorStickY() {
-        return operatorController.getY(Hand.kLeft);
+        if (getDemoMode()) {
+            return (driverController.getTriggerAxis(Hand.kLeft) - driverController.getTriggerAxis(Hand.kRight))
+                    * demoElevatorSpeedScaler;
+        } else {
+            return operatorController.getY(Hand.kLeft);
+        }
     }
 
     public double getRightOperatorStickY() {
-        return operatorController.getY(Hand.kRight);
+        if (getDemoMode()) {
+            return 0;
+        } else {
+            return operatorController.getY(Hand.kRight);
+        }
     }
 
     public double getDeadband() {
         return 0.09;
+    }
+
+    private double getDriveSpeedScaler() {
+        return getDemoMode() ? demoDriveSpeedScaler : 1;
+    }
+
+    public boolean getDemoMode() {
+        return SmartDashboard.getBoolean("Demo Controls", false);
     }
 }
