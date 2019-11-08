@@ -7,6 +7,13 @@
 
 package frc.robot;
 
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Arrays;
+import java.util.Map;
+
+import edu.wpi.first.wpilibj.DriverStation;
+
 /**
  * The RobotMap is a mapping from the ports sensors and actuators are wired into
  * to a variable name. This provides flexibility changing wiring, makes checking
@@ -41,7 +48,6 @@ public class RobotMap {
   public static double robotWidth;
   public static double robotLength;
   public static final boolean tuningMode = false;
-  public static final RobotType robot = RobotType.ROBOT_2019;
   public static int minVelocityLow; // lower values will be treated as this value, RPM
   public static int maxVelocityLow; // maximum velocity when sticks are fully forward (value of 1), RPM
   public static int maxVelocityHigh;
@@ -76,7 +82,21 @@ public class RobotMap {
   public static int level2RearSolenoid1;
   public static int level2RearSolenoid2;
 
+  private static final String networkInterface = "eth0";
+  private static final RobotType defaultRobot = RobotType.ROBOT_2019;
+  // Java bytes are signed so standard hex notation won't work
+  private static final Map<MACAddress, RobotType> robotMACs = Map.of(
+      new MACAddress(new byte[] { 0, -128, 47, 37, 122, -105 }), RobotType.ROBOT_2019,
+      new MACAddress(new byte[] { 0, -128, 47, 23, -47, 95 }), RobotType.ORIGINAL_ROBOT_2018,
+      new MACAddress(new byte[] { 0, -128, 47, 36, 78, 94 }), RobotType.ROBOT_2017, // ReBot
+      new MACAddress(new byte[] { 0, -128, 47, 35, -30, 92 }), RobotType.EVERYBOT_2019); // NotBot
+  public static RobotType robot;
+
   public RobotMap() {
+    robot = identifyRobot();
+    if (robot == null) {
+      robot = defaultRobot;
+    }
     switch (robot) {
     case ROBOT_2017:
       rightMaster = 14;
@@ -165,7 +185,56 @@ public class RobotMap {
     }
   }
 
+  private RobotType identifyRobot() {
+    try {
+      MACAddress macAddress = new MACAddress(NetworkInterface.getByName(networkInterface).getHardwareAddress());
+      RobotType robot = robotMACs.get(macAddress);
+      if (robot == null) {
+        DriverStation.reportWarning("Unknown MAC: " + Arrays.toString(macAddress.getAddress()), false);
+      } else {
+        System.out.println("Identified MAC address as " + robot);
+      }
+      return robot;
+    } catch (SocketException err) {
+      DriverStation.reportError("Failed to read MAC", false);
+      return null;
+    }
+  }
+
   public enum RobotType {
     ROBOT_2019, ROBOT_2019_2, ORIGINAL_ROBOT_2018, EVERYBOT_2019, ROBOT_2017
+  }
+
+  // This class can be used in maps, unlike a raw byte[]
+  /**
+   * A class that stores a MAC address that can be used in data structures. It
+   * implements equals and hashCode.
+   */
+  private static final class MACAddress {
+    private final byte[] address;
+
+    public MACAddress(byte[] address) {
+      if (address == null) {
+        throw new NullPointerException();
+      }
+      this.address = address;
+    }
+
+    public byte[] getAddress() {
+      return address;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+      if (!(other instanceof MACAddress)) {
+        return false;
+      }
+      return Arrays.equals(address, ((MACAddress) other).address);
+    }
+
+    @Override
+    public int hashCode() {
+      return Arrays.hashCode(address);
+    }
   }
 }
