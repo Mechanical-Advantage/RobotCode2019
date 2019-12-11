@@ -100,7 +100,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    if (RobotMap.robot == RobotType.ROBOT_REBOT || RobotMap.robot == RobotType.EVERYBOT_2019) {
+    if (RobotMap.robot == RobotType.EVERYBOT_2019) {
       oi = new OIHandheld();
       oiType = OIType.HANDHELD;
 
@@ -116,9 +116,11 @@ public class Robot extends TimedRobot {
     // chooser.setDefaultOption("Default Auto", new ExampleCommand());
     // chooser.addOption("My Auto", new MyAutoCommand());
     joystickModeChooser.addOption("Tank", JoystickMode.Tank);
-    joystickModeChooser.addOption("Trigger", JoystickMode.Trigger);
     joystickModeChooser.setDefaultOption("Split Arcade", JoystickMode.SplitArcade);
     joystickModeChooser.addOption("Split Arcade (right drive)", JoystickMode.SplitArcadeRightDrive);
+    if (oiType == OIType.HANDHELD) {
+      joystickModeChooser.addOption("Trigger", JoystickMode.Trigger);
+    }
 
     autoChooser.addOption("None", null);
     autoChooser.addOption("Hold Panel", AutoMode.VAC_PICKUP);

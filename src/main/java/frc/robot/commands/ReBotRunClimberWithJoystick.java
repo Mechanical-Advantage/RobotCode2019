@@ -29,7 +29,7 @@ public class ReBotRunClimberWithJoystick extends Command {
   // Called repeatedly when this Command is scheduled to run
   @Override
   protected void execute() {
-    double joystickAxis = Robot.oi.getRightOperatorStickY();
+    double joystickAxis = Robot.oi.getClimberStick();
     joystickAxis = Math.abs(joystickAxis) > deadband ? joystickAxis * Math.abs(joystickAxis) : 0;
     Robot.climber.run(joystickAxis);
   }

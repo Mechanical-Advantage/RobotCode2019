@@ -56,7 +56,7 @@ public class DriveWithJoystick extends Command {
       joystickLeft = joystickLeft > 1 ? 1 : joystickLeft;
       break;
     case Trigger:
-      baseDrive = (Robot.oi.getLeftTrigger() - Robot.oi.getRightTrigger()) * -1;
+      baseDrive = (Robot.oi.getBackwardsTrigger() - Robot.oi.getForwardsTrigger()) * -1;
       totalTurn = Robot.oi.getLeftHorizDriveAxis() + (Robot.oi.getRightHorizDriveAxis() * rightStickScale);
       joystickRight = baseDrive + processJoystickAxis(totalTurn);
       joystickRight = joystickRight > 1 ? 1 : joystickRight;

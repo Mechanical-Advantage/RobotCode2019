@@ -131,7 +131,7 @@ public class OIHandheld extends OI {
         return driverController.getX(Hand.kRight) * getDriveSpeedScaler();
     }
 
-    public double getLeftTrigger() {
+    public double getBackwardsTrigger() {
         if (getDemoMode()) {
             return 0;
         } else {
@@ -143,7 +143,7 @@ public class OIHandheld extends OI {
         }
     }
 
-    public double getRightTrigger() {
+    public double getForwardsTrigger() {
         if (getDemoMode()) {
             return 0;
         } else {
@@ -224,7 +224,7 @@ public class OIHandheld extends OI {
         joysticksReversed = reverse;
     }
 
-    public double getLeftOperatorStickY() {
+    public double getElevatorStick() {
         if (getDemoMode()) {
             return (driverController.getTriggerAxis(Hand.kLeft) - driverController.getTriggerAxis(Hand.kRight))
                     * demoElevatorSpeedScaler;
@@ -233,7 +233,7 @@ public class OIHandheld extends OI {
         }
     }
 
-    public double getRightOperatorStickY() {
+    public double getClimberStick() {
         if (getDemoMode()) {
             return 0;
         } else {

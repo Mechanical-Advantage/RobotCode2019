@@ -366,11 +366,11 @@ public class OIConsole extends OI {
 		return Robot.map(oiController2.getRawAxis(1), -1, 1, sliderMin, 1);
 	}
 
-	public double getLeftOperatorStickY() {
+	public double getArmLightStick() {
 		return oiController1.getY();
 	}
 
-	public double getRightOperatorStickY() {
+	public double getElevatorStick() {
 		return oiController1.getY();
 	}
 

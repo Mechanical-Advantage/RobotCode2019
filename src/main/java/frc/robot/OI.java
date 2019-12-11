@@ -86,11 +86,11 @@ public abstract class OI {
         return 0;
     }
 
-    public double getLeftTrigger() {
+    public double getBackwardsTrigger() {
         return 0;
     }
 
-    public double getRightTrigger() {
+    public double getForwardsTrigger() {
         return 0;
     }
 
@@ -100,11 +100,15 @@ public abstract class OI {
     public void resetRumble() {
     }
 
-    public double getLeftOperatorStickY() {
+    public double getElevatorStick() {
         return 0;
     }
 
-    public double getRightOperatorStickY() {
+    public double getArmLightStick() {
+        return 0;
+    }
+
+    public double getClimberStick() {
         return 0;
     }
 
