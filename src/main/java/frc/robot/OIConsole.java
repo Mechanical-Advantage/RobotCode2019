@@ -23,6 +23,11 @@ import frc.robot.commands.ExtendSimpleScorer;
 import frc.robot.commands.LockBeaverTail;
 import frc.robot.commands.LowerPTO;
 import frc.robot.commands.ManualArmLightControl;
+import frc.robot.commands.ReBotCloseHatchIntake;
+import frc.robot.commands.ReBotOpenHatchIntake;
+import frc.robot.commands.ReBotRunCargoIntake;
+import frc.robot.commands.ReBotRunCargoIntake.IntakeAction;
+import frc.robot.commands.ReBotSetIntakeRaised;
 import frc.robot.commands.ReleaseTail;
 import frc.robot.commands.RetractSimpleScorer;
 import frc.robot.commands.RunArmLightIntake;
@@ -40,6 +45,8 @@ import frc.robot.commands.ZeroArmInitial;
 import frc.robot.subsystems.DriveTrain.DriveGear;
 import frc.robot.triggers.JoystickNotCenteredTrigger;
 import frc.robot.triggers.MultiButtonTrigger;
+import frc.robot.RobotMap;
+import frc.robot.RobotMap.RobotType;
 
 /**
  * This class is the glue that binds the controls on the physical operator
@@ -184,6 +191,14 @@ public class OIConsole extends OI {
 	private Button intakeCargo = new JoystickButton(oiController2, 3);
 	private Button ejectCargo = new JoystickButton(oiController2, 5);
 
+	// ReBot buttons
+	private Trigger rebotHatchRetract = new JoystickButton(oiController2, 1);
+	private Trigger rebotHatchExtend = new JoystickButton(oiController2, 2);
+	private Trigger rebotCargoIntake = new JoystickButton(oiController1, 10);
+	private Trigger rebotCargoEject = new JoystickButton(oiController1, 9);
+	private Trigger rebotRaiseIntake = new JoystickButton(oiController2, 4);
+	private Trigger rebotLowerIntake = new JoystickButton(oiController2, 3);
+
 	NetworkTable ledTable;
 	NetworkTableEntry ledEntry;
 
@@ -191,97 +206,106 @@ public class OIConsole extends OI {
 		ledTable = NetworkTableInstance.getDefault().getTable("LEDs");
 		ledEntry = ledTable.getEntry("OI LEDs");
 
-		frontCameraButton.whenPressed(new SetCamera(true));
-		rearCameraButton.whenPressed(new SetCamera(false));
-		// joysticksForward.whenPressed(new SetCamera(true));
-		// joysticksBackward.whenPressed(new SetCamera(false));
-		// joysticksForward.whenPressed(new ReverseJoysticks(false));
-		// joysticksBackward.whenPressed(new ReverseJoysticks(true));
-		highGear.whenPressed(new SwitchGear(DriveGear.HIGH));
-		lowGear.whenPressed(new SwitchGear(DriveGear.LOW));
-		toggleGear.whenPressed(new ToggleGear());
-
-		armDisable.whenPressed(new DisableArm());
-		Command armZeroInitialCommand = new ZeroArmInitial();
-		armZeroInitial.whenPressed(armZeroInitialCommand);
-		armZeroInitial.whenReleased(new CancelCommand(armZeroInitialCommand));
-		Command armZeroFinalCommand = new ZeroArmFinal();
-		armZeroFinal.whenPressed(armZeroFinalCommand);
-		armZeroFinal.whenReleased(new CancelCommand(armZeroFinalCommand));
-		armManualTrigger.whenActive(new ManualArmLightControl());
-
-		/*
-		 * Arm Heavy: armFloorPlate.whenActive(new
-		 * SetArmPositions(ArmPosition.FLOOR_PLATE)); armFloorCargo.whenActive(new
-		 * SetArmPositions(ArmPosition.FLOOR_CARGO)); armCargoShipPlate.whenActive(new
-		 * SetArmPositions(ArmPosition.CARGOSHIP_PLATE));
-		 * armCargoShipCargo.whenActive(new
-		 * SetArmPositions(ArmPosition.CARGOSHIP_CARGO));
-		 * armRocketLowPlate.whenActive(new
-		 * SetArmPositions(ArmPosition.ROCKET_LO_PLATE));
-		 * armRocketLowCargo.whenActive(new
-		 * SetArmPositions(ArmPosition.ROCKET_LO_CARGO));
-		 * armRocketMidPlate.whenActive(new
-		 * SetArmPositions(ArmPosition.ROCKET_MID_PLATE));
-		 * armRocketMidCargo.whenActive(new
-		 * SetArmPositions(ArmPosition.ROCKET_MID_CARGO));
-		 * armRocketHighPlate.whenActive(new
-		 * SetArmPositions(ArmPosition.ROCKET_HI_PLATE));
-		 * armRocketHighCargo.whenActive(new
-		 * SetArmPositions(ArmPosition.ROCKET_HI_CARGO)); armHome.whenActive(new
-		 * SetArmPositions(ArmPosition.HOME)); armLoadingBackward.whenActive(new
-		 * SetArmPositions(ArmPosition.LOADING_PICKUP_BACKWARDS));
-		 */
-		// Arm Light:
-		armHome.whenActive(new SetArmLightPosition(ArmLightPosition.HOME));
-		armLoading.whenActive(new SetArmLightPosition(ArmLightPosition.LOADING_CARGO));
-		// armLoadingPlate.whenActive(new
-		// SetArmLightPosition(ArmLightPosition.LOADING_PLATE));
-		armCargoShip.whenActive(new SetArmLightPosition(ArmLightPosition.CARGOSHIP_CARGO));
-		// armCargoShipPlate.whenActive(new
-		// SetArmLightPosition(ArmLightPosition.CARGOSHIP_PLATE));
-		armRocketLow.whenActive(new SetArmLightPosition(ArmLightPosition.ROCKET_LO_CARGO));
-		// armRocketLowPlate.whenActive(new
-		// SetArmLightPosition(ArmLightPosition.ROCKET_LO_PLATE));
-		// armRocketMidCargo.whenActive(new
-		// SetArmLightPosition(ArmLightPosition.ROCKET_MID_CARGO));
-		// armRocketMidPlate.whenActive(new
-		// SetArmLightPosition(ArmLightPosition.ROCKET_MID_PLATE));
-		armCamera.whenActive(new SetArmLightPosition(ArmLightPosition.CAMERA));
-		armFloor.whenActive(new SetArmLightPosition(ArmLightPosition.FLOOR_CARGO));
-		armUp.whenActive(new SetArmLightPosition(ArmLightPosition.UP));
-
-		// Command elbowUpCommand = new MoveElbowLight(elbowMoveAmount);
-		// Command elbowDownCommand = new MoveElbowLight(elbowMoveAmount*-1);
-		// elbowUp.whenPressed(elbowUpCommand);
-		// elbowUp.whenReleased(new CancelCommand(elbowUpCommand));
-		// elbowDown.whenPressed(elbowDownCommand);
-		// elbowDown.whenReleased(new CancelCommand(elbowDownCommand));
-
-		// vacPickup.whenPressed(new VacPickupToggle());
-
-		tailLock.whileHeld(new LockBeaverTail());
-		releaseTail.whenActive(new ReleaseTail());
-		tailVac.toggleWhenPressed(new VacTail());
-		runPTO.toggleWhenPressed(new RunPTO());
-		lowerPTO.whileHeld(new LowerPTO());
-
-		extendSimpleScorer.whenPressed(new ExtendSimpleScorer());
-		retractSimpleScorer.whenPressed(new RetractSimpleScorer());
-
-		intakePanel.whileHeld(new RunSimpleScorerIntake(panelIntakeSpeed));
-		// ejectPanel.whileHeld(new EjectPanel());
-		// ejectPanel.whenReleased(new RetractSimpleScorer());
-		ejectPanel.whileHeld(new RunSimpleScorerIntake(panelEjectSpeed));
-
-		intakeCargo.whileHeld(new RunArmLightIntake(cargoIntakeSpeed));
-		ejectCargo.whileHeld(new EjectCargo());
-
-		level2ClimbFrontToggle.whenPressed(new ToggleLevel2Solenoid(true));
-		level2ClimbRearToggle.whenPressed(new ToggleLevel2Solenoid(false));
-
 		ledEntry.setBooleanArray(new boolean[] { false, false, false, false, false, false, false, false, false, false,
 				false, false, false, false, false, false, false });
+
+		if (RobotMap.robot == RobotType.ROBOT_REBOT) {
+			rebotHatchExtend.whenActive(new ReBotOpenHatchIntake());
+			rebotHatchRetract.whenActive(new ReBotCloseHatchIntake());
+			rebotCargoIntake.whileActive(new ReBotRunCargoIntake(IntakeAction.INTAKE));
+			rebotCargoEject.whileActive(new ReBotRunCargoIntake(IntakeAction.EJECT));
+			rebotRaiseIntake.whenActive(new ReBotSetIntakeRaised(true));
+			rebotLowerIntake.whenActive(new ReBotSetIntakeRaised(false));
+		} else {
+			frontCameraButton.whenPressed(new SetCamera(true));
+			rearCameraButton.whenPressed(new SetCamera(false));
+			// joysticksForward.whenPressed(new SetCamera(true));
+			// joysticksBackward.whenPressed(new SetCamera(false));
+			// joysticksForward.whenPressed(new ReverseJoysticks(false));
+			// joysticksBackward.whenPressed(new ReverseJoysticks(true));
+			highGear.whenPressed(new SwitchGear(DriveGear.HIGH));
+			lowGear.whenPressed(new SwitchGear(DriveGear.LOW));
+			toggleGear.whenPressed(new ToggleGear());
+
+			armDisable.whenPressed(new DisableArm());
+			Command armZeroInitialCommand = new ZeroArmInitial();
+			armZeroInitial.whenPressed(armZeroInitialCommand);
+			armZeroInitial.whenReleased(new CancelCommand(armZeroInitialCommand));
+			Command armZeroFinalCommand = new ZeroArmFinal();
+			armZeroFinal.whenPressed(armZeroFinalCommand);
+			armZeroFinal.whenReleased(new CancelCommand(armZeroFinalCommand));
+			armManualTrigger.whenActive(new ManualArmLightControl());
+
+			/*
+			 * Arm Heavy: armFloorPlate.whenActive(new
+			 * SetArmPositions(ArmPosition.FLOOR_PLATE)); armFloorCargo.whenActive(new
+			 * SetArmPositions(ArmPosition.FLOOR_CARGO)); armCargoShipPlate.whenActive(new
+			 * SetArmPositions(ArmPosition.CARGOSHIP_PLATE));
+			 * armCargoShipCargo.whenActive(new
+			 * SetArmPositions(ArmPosition.CARGOSHIP_CARGO));
+			 * armRocketLowPlate.whenActive(new
+			 * SetArmPositions(ArmPosition.ROCKET_LO_PLATE));
+			 * armRocketLowCargo.whenActive(new
+			 * SetArmPositions(ArmPosition.ROCKET_LO_CARGO));
+			 * armRocketMidPlate.whenActive(new
+			 * SetArmPositions(ArmPosition.ROCKET_MID_PLATE));
+			 * armRocketMidCargo.whenActive(new
+			 * SetArmPositions(ArmPosition.ROCKET_MID_CARGO));
+			 * armRocketHighPlate.whenActive(new
+			 * SetArmPositions(ArmPosition.ROCKET_HI_PLATE));
+			 * armRocketHighCargo.whenActive(new
+			 * SetArmPositions(ArmPosition.ROCKET_HI_CARGO)); armHome.whenActive(new
+			 * SetArmPositions(ArmPosition.HOME)); armLoadingBackward.whenActive(new
+			 * SetArmPositions(ArmPosition.LOADING_PICKUP_BACKWARDS));
+			 */
+			// Arm Light:
+			armHome.whenActive(new SetArmLightPosition(ArmLightPosition.HOME));
+			armLoading.whenActive(new SetArmLightPosition(ArmLightPosition.LOADING_CARGO));
+			// armLoadingPlate.whenActive(new
+			// SetArmLightPosition(ArmLightPosition.LOADING_PLATE));
+			armCargoShip.whenActive(new SetArmLightPosition(ArmLightPosition.CARGOSHIP_CARGO));
+			// armCargoShipPlate.whenActive(new
+			// SetArmLightPosition(ArmLightPosition.CARGOSHIP_PLATE));
+			armRocketLow.whenActive(new SetArmLightPosition(ArmLightPosition.ROCKET_LO_CARGO));
+			// armRocketLowPlate.whenActive(new
+			// SetArmLightPosition(ArmLightPosition.ROCKET_LO_PLATE));
+			// armRocketMidCargo.whenActive(new
+			// SetArmLightPosition(ArmLightPosition.ROCKET_MID_CARGO));
+			// armRocketMidPlate.whenActive(new
+			// SetArmLightPosition(ArmLightPosition.ROCKET_MID_PLATE));
+			armCamera.whenActive(new SetArmLightPosition(ArmLightPosition.CAMERA));
+			armFloor.whenActive(new SetArmLightPosition(ArmLightPosition.FLOOR_CARGO));
+			armUp.whenActive(new SetArmLightPosition(ArmLightPosition.UP));
+
+			// Command elbowUpCommand = new MoveElbowLight(elbowMoveAmount);
+			// Command elbowDownCommand = new MoveElbowLight(elbowMoveAmount*-1);
+			// elbowUp.whenPressed(elbowUpCommand);
+			// elbowUp.whenReleased(new CancelCommand(elbowUpCommand));
+			// elbowDown.whenPressed(elbowDownCommand);
+			// elbowDown.whenReleased(new CancelCommand(elbowDownCommand));
+
+			// vacPickup.whenPressed(new VacPickupToggle());
+
+			tailLock.whileHeld(new LockBeaverTail());
+			releaseTail.whenActive(new ReleaseTail());
+			tailVac.toggleWhenPressed(new VacTail());
+			runPTO.toggleWhenPressed(new RunPTO());
+			lowerPTO.whileHeld(new LowerPTO());
+
+			extendSimpleScorer.whenPressed(new ExtendSimpleScorer());
+			retractSimpleScorer.whenPressed(new RetractSimpleScorer());
+
+			intakePanel.whileHeld(new RunSimpleScorerIntake(panelIntakeSpeed));
+			// ejectPanel.whileHeld(new EjectPanel());
+			// ejectPanel.whenReleased(new RetractSimpleScorer());
+			ejectPanel.whileHeld(new RunSimpleScorerIntake(panelEjectSpeed));
+
+			intakeCargo.whileHeld(new RunArmLightIntake(cargoIntakeSpeed));
+			ejectCargo.whileHeld(new EjectCargo());
+
+			level2ClimbFrontToggle.whenPressed(new ToggleLevel2Solenoid(true));
+			level2ClimbRearToggle.whenPressed(new ToggleLevel2Solenoid(false));
+		}
 	}
 
 	public double getLeftAxis() {
@@ -371,7 +395,7 @@ public class OIConsole extends OI {
 	}
 
 	public double getElevatorStick() {
-		return oiController1.getY();
+		return oiController1.getY() * -1;
 	}
 
 	public double getDeadband() {

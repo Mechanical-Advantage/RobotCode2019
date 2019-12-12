@@ -42,6 +42,7 @@ public class RobotMap {
   public static double robotLength;
   public static final boolean tuningMode = false;
   public static final RobotType robot = RobotType.ROBOT_REBOT;
+  public static final boolean rebotUseConsole = true;
   public static int minVelocityLow; // lower values will be treated as this value, RPM
   public static int maxVelocityLow; // maximum velocity when sticks are fully forward (value of 1), RPM
   public static int maxVelocityHigh;
@@ -103,10 +104,10 @@ public class RobotMap {
       robotLength = 31.5;
       robotWidth = 29.25;
       intakeMotor = 6;
-      cargoRaiseSolenoid = 7;
-      cargoLowerSolenoid = 6;
-      hatchCloseSolenoid = 4;
-      hatchOpenSolenoid = 5;
+      cargoRaiseSolenoid = 6;
+      cargoLowerSolenoid = 7;
+      hatchCloseSolenoid = 5;
+      hatchOpenSolenoid = 4;
       hatchDeliverSolenoid = 0;
       hatchWithdrawSolenoid = 1;
       rebotPCM = 0;

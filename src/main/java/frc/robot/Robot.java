@@ -100,7 +100,8 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    if (RobotMap.robot == RobotType.EVERYBOT_2019) {
+    if (RobotMap.robot == RobotType.EVERYBOT_2019
+        || (RobotMap.robot == RobotType.ROBOT_REBOT && !RobotMap.rebotUseConsole)) {
       oi = new OIHandheld();
       oiType = OIType.HANDHELD;
 

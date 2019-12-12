@@ -40,18 +40,18 @@ public class OIHandheld extends OI {
     private JoystickButton toggleDriveEnabled = new JoystickButton(driverController, 7); // back button
     private JoystickButton toggleOpenLoop = new JoystickButton(driverController, 8); // start button
 
-    private Trigger hatchRetract = new DemoSwitchingTrigger(new JoystickButton(operatorController, 1),
-            new JoystickButton(driverController, 1)); // A button
-    private Trigger hatchExtend = new DemoSwitchingTrigger(new JoystickButton(operatorController, 3),
-            new JoystickButton(driverController, 3)); // X button
+    private Trigger hatchRetract = new DemoSwitchingTrigger(new JoystickButton(operatorController, 3),
+            new JoystickButton(driverController, 3)); // A button
+    private Trigger hatchExtend = new DemoSwitchingTrigger(new JoystickButton(operatorController, 1),
+            new JoystickButton(driverController, 1)); // X button
     private Trigger cargoIntake = new DemoSwitchingTrigger(new JoystickButton(operatorController, 2),
             new JoystickButton(driverController, 2)); // B button
     private Trigger cargoEject = new DemoSwitchingTrigger(new JoystickButton(operatorController, 4),
             new JoystickButton(driverController, 4)); // Y button
-    private Trigger raiseIntake = new DemoSwitchingTrigger(new JoystickButton(operatorController, 6),
-            new JoystickButton(driverController, 6)); // right bumper
-    private Trigger lowerIntake = new DemoSwitchingTrigger(new JoystickButton(operatorController, 5),
-            new JoystickButton(driverController, 5)); // left bumper
+    private Trigger raiseIntake = new DemoSwitchingTrigger(new JoystickButton(operatorController, 5),
+            new JoystickButton(driverController, 5)); // right bumper
+    private Trigger lowerIntake = new DemoSwitchingTrigger(new JoystickButton(operatorController, 6),
+            new JoystickButton(driverController, 6)); // left bumper
 
     private Trigger floorSetpoint = new DemoSwitchingTrigger(new POVButton(operatorController, 0), null);
     private Trigger shipSetpoint = new DemoSwitchingTrigger(new POVButton(operatorController, 90), null);
