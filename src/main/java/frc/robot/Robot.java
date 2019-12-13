@@ -81,7 +81,6 @@ public class Robot extends TimedRobot {
 
   public static OI oi;
   public static OIType oiType;
-  public static boolean lastDemoControls = false;
   public static final AHRS ahrs = new AHRS(SPI.Port.kMXP);
 
   public static final CameraSystem cameraSubsystem = new CameraSystem();
@@ -100,17 +99,21 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    if (RobotMap.robot == RobotType.EVERYBOT_2019
-        || (RobotMap.robot == RobotType.ROBOT_REBOT && !RobotMap.rebotUseConsole)) {
+    SmartDashboard.setPersistent("Use Handheld Controls");
+    if (SmartDashboard.getBoolean("Use Handheld Controls", true)) {
+      System.out.println("Init in HANDHELD");
       oi = new OIHandheld();
       oiType = OIType.HANDHELD;
+      SmartDashboard.putBoolean("Use Handheld Controls", true);
 
       SmartDashboard.putBoolean("Drive Enabled", oi.getDriveEnabled());
       SmartDashboard.putBoolean("Open Loop Drive", oi.getOpenLoop());
       SmartDashboard.putBoolean("Demo Controls", false);
     } else {
+      System.out.println("Init in CONSOLE");
       oi = new OIConsole();
       oiType = OIType.CONSOLE;
+      SmartDashboard.putBoolean("Use Handheld Controls", false);
     }
 
     joystickModeChooser = new SendableChooser<JoystickMode>();
@@ -198,6 +201,12 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+    // Check if restart needed b/c oi type changed
+    if (oiType != null) {
+      if ((oiType == OIType.HANDHELD) != SmartDashboard.getBoolean("Use Handheld Controls", false)) {
+        System.exit(0);
+      }
+    }
   }
 
   /**
