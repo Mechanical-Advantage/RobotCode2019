@@ -83,7 +83,7 @@ public class RobotMap {
   public static int level2RearSolenoid2;
 
   private static final String networkInterface = "eth0";
-  private static final RobotType defaultRobot = RobotType.ROBOT_2019;
+  private static final RobotType defaultRobot = RobotType.EVERYBOT_2019;
   // Java bytes are signed so standard hex notation won't work
   private static final Map<MACAddress, RobotType> robotMACs = Map.of(
       new MACAddress(new byte[] { 0, -128, 47, 37, 122, -105 }), RobotType.ROBOT_2019,
@@ -130,10 +130,10 @@ public class RobotMap {
       robotWidth = 27 + 6;
       break;
     case EVERYBOT_2019:
-      rightMaster = 0;
+      rightMaster = 1;
       leftMaster = 3;
-      rightSlave = 1;
-      leftSlave = 2;
+      rightSlave = 2;
+      leftSlave = 4;
       maxVelocityLow = 950; // 950 native units per 100ms
       minVelocityLow = 40; // 40 native units per 100ms
       maxAcceleration = 300;

@@ -1,6 +1,7 @@
 package frc.robot.commands;
 
 import java.io.File;
+import java.io.IOException;
 
 import frc.robot.Robot;
 import frc.robot.RobotMap;
@@ -211,7 +212,13 @@ public class RunMotionProfileOnRio extends Command {
     if (!trajectoryLoaded) {
       // Load from file
       File file = new File("/home/lvuser/motionprofiles/" + filename + ".traj");
-      initTrajectory(Pathfinder.readFromFile(file));
+      try {
+        initTrajectory(Pathfinder.readFromFile(file));
+      } catch (IOException e) {
+        e.printStackTrace();
+        this.cancel();
+        return;
+      }
     }
     if (RobotMap.tuningMode) {
       initFollowers();

@@ -241,9 +241,7 @@ public class PIDControllerFixed extends SendableBase implements PIDInterface, Se
   /**
    * Free the PID object.
    */
-  @Override
   public void free() {
-    super.free();
     m_controlLoop.cancel();
     m_thisMutex.lock();
     try {

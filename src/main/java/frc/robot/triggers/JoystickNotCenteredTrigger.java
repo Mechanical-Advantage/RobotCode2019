@@ -17,10 +17,10 @@ import edu.wpi.first.wpilibj.buttons.Trigger;
 public class JoystickNotCenteredTrigger extends Trigger {
 
   private Joystick stick;
-  private AxisType axis;
+  private int axis;
   private double deadband;
 
-  public JoystickNotCenteredTrigger(Joystick stick, AxisType axis, double deadband) {
+  public JoystickNotCenteredTrigger(Joystick stick, int axis, double deadband) {
     this.stick = stick;
     this.axis = axis;
     this.deadband = deadband;
@@ -28,6 +28,6 @@ public class JoystickNotCenteredTrigger extends Trigger {
 
   @Override
   public boolean get() {
-    return Math.abs(stick.getAxis(axis)) >= deadband;
+    return Math.abs(stick.getRawAxis(axis)) >= deadband;
   }
 }

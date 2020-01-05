@@ -106,7 +106,7 @@ public class OI {
   private Button armDisable = new JoystickButton(oiController2, 8);
   private Button armZeroInitial = new JoystickButton(oiController2, 7);
   private Button armZeroFinal = new JoystickButton(oiController2, 6);
-  private Trigger armManualTrigger = new JoystickNotCenteredTrigger(oiController1, AxisType.kY, 0.05);
+  private Trigger armManualTrigger = new JoystickNotCenteredTrigger(oiController1, 1, 0.05);
 
   private Button level2ClimbFrontToggle = new JoystickButton(leftController, 3);
   private Button level2ClimbRearToggle = new JoystickButton(leftController, 2);
