@@ -416,6 +416,7 @@ public class DriveTrain extends Subsystem {
       // actualMaxVelocity is used to make open loop scaling accurate
       int actualMaxVelocity;
       if (!dualGear) {
+        
         maxVelocity = RobotMap.maxVelocityLow;
         actualMaxVelocity = RobotMap.maxVelocityLow;
       } else if (currentGear == DriveGear.LOW) {
