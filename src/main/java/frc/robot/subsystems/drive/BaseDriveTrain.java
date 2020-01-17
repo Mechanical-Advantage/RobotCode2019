@@ -1,7 +1,5 @@
 package frc.robot.subsystems.drive;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
-
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -13,7 +11,7 @@ import frc.robot.subsystems.DriveTrain.DriveGear;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 
-public abstract class BaseDriveTrain<currentControlMode> extends Subsystem {
+public abstract class BaseDriveTrain extends Subsystem {
 
   private double kPLow;
   private double kILow;
@@ -25,39 +23,23 @@ public abstract class BaseDriveTrain<currentControlMode> extends Subsystem {
   private double kDHigh;
   private double kFHigh;
   private int kIZoneHigh;
-  private double kPMP; // the MP settings are also used for distance close loop
-  private double kIMP;
-  private double kDMP;
-  private double kFMP;
-  private int kIZoneMP;
-  private int kAllowableErrorDistance; // ticks sent to talon as allowable error for distance close loop
-  private double kPPTO;
-  private double kIPTO;
-  private double kDPTO;
-  private int kIZonePTO;
-  private boolean PTOUseMotMaj;
 
-  private static final boolean dualGear = false;
-  private static final DriveGear currentGear = null;
-  @SuppressWarnings("unused")
-  private static final int requiredTrajPoints = 5; // point to send to talon before starting profile
+  private DriveGear currentGear = null;
 
   private DoubleSolenoid leftGearSolenoid;
   private DoubleSolenoid rightGearSolenoid;
   private int ticksPerRotation; // getEncPosition values in one turn
   private double wheelDiameter; // inches
-  @SuppressWarnings("unused")
   private double wheelBaseWidth; // inches, distance between left and right wheels
   private double nominalOutputVoltage;
   private DriveControlMode currentControlMode = DriveControlMode.STANDARD_DRIVE; // enum defined at end of file
   private boolean sixMotorDrive = false;
+  private boolean dualGear = false;
   private boolean hasPTO = false;
-  private boolean followersAreVictorSPX = true;
   private DoubleSolenoid pto;
-  private Double PTOLeftStartingPosition;
-  private Double PTORightStartingPosition;
   private double PTORightSpeedAdjust; // Multiplier applied to right side setpoint when driving the PTO
   private double PTOLeftSpeedAdjust;
+
   public void initDefaultCommand() {
     // Set the default command for a subsystem here.
     // setDefaultCommand(new MySpecialCommand());
@@ -115,8 +97,8 @@ public abstract class BaseDriveTrain<currentControlMode> extends Subsystem {
    * @param left  Left percent speed
    * @param right Right percent speed
    */
-  public void drive(final double left, final double right) {
-
+  public void drive(double left, double right) {
+    drive(left, right, false);
   }
 
   /**
@@ -127,7 +109,7 @@ public abstract class BaseDriveTrain<currentControlMode> extends Subsystem {
    * @param alwaysHighMaxVel Whether to always use the max velocity of high gear
    *                         or of current gear
    */
-  public void drive(double left, double right, final boolean alwaysHighMaxVel) {
+  public void drive(double left, double right, boolean alwaysHighMaxVel) {
     if (!Robot.oi.getDriveEnabled()) {
       left = 0;
       right = 0;
@@ -175,17 +157,11 @@ public abstract class BaseDriveTrain<currentControlMode> extends Subsystem {
 
   }
 
-  public abstract void resetPosition() {
+  public abstract void resetPosition();
 
-  }
+  public abstract double getRotationsLeft();
 
-  public double getRotationsLeft() {
-
-  }
-
-  public double getRotationsRight() {
-
-  }
+  public abstract double getRotationsRight();
 
   public double getDistanceRight() {
     return wheelDiameter * Math.PI * getRotationsRight();
@@ -269,7 +245,7 @@ public abstract class BaseDriveTrain<currentControlMode> extends Subsystem {
 
   }
 
-  public abstract void changeControlRate(final int ms) {
+  public abstract void changeControlRate(int ms) {
 
   }
 
@@ -277,7 +253,7 @@ public abstract class BaseDriveTrain<currentControlMode> extends Subsystem {
 
   }
 
-  public void switchGear(final DriveGear gear) {
+  public void switchGear(DriveGear gear) {
     if (dualGear && (Robot.oi == null || Robot.oi.isShiftingEnabled())) {
       switch (gear) {
       case HIGH:
@@ -317,7 +293,7 @@ public abstract class BaseDriveTrain<currentControlMode> extends Subsystem {
     pto.set(Value.kForward);
   }
 
-  public void disablePTO(Object DriveControlMode) {
+  public void disablePTO() {
     if (currentControlMode == DriveControlMode.PTO) {
       neutralOutput();
       pto.set(Value.kReverse);
@@ -331,5 +307,13 @@ public abstract class BaseDriveTrain<currentControlMode> extends Subsystem {
     } else if (!Robot.oi.getDriveEnabled()) {
       neutralOutput();
     }
+  }
+
+  private enum DriveControlMode {
+    STANDARD_DRIVE, PTO
+  }
+
+  public enum DriveGear {
+    HIGH, LOW, UNSUPPORTED
   }
 }
