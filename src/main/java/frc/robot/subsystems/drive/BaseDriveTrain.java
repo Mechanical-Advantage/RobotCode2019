@@ -3,47 +3,66 @@ package frc.robot.subsystems.drive;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.OI.OIType;
 import frc.robot.Robot;
 import frc.robot.RobotMap;
 import frc.robot.commands.DriveWithJoystick;
-import frc.robot.subsystems.DriveTrain.DriveGear;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 
 public abstract class BaseDriveTrain extends Subsystem {
 
-  private double kPLow;
-  private double kILow;
-  private double kDLow;
-  private double kFLow;
-  private int kIZoneLow;
-  private double kPHigh;
-  private double kIHigh;
-  private double kDHigh;
-  private double kFHigh;
-  private int kIZoneHigh;
+  protected double kPLow;
+  protected double kILow;
+  protected double kDLow;
+  protected double kFLow;
+  protected int kIZoneLow;
+  protected double kPHigh;
+  protected double kIHigh;
+  protected double kDHigh;
+  protected double kFHigh;
+  protected int kIZoneHigh;
 
-  private DriveGear currentGear = null;
+  protected double wheelDiameter; // inches
+  protected boolean dualGear = false;
+  protected boolean hasPTO = false;
+  protected double PTORightSpeedAdjust; // Multiplier applied to right side setpoint when driving the PTO
+  protected double PTOLeftSpeedAdjust;
 
+  private DoubleSolenoid pto;
   private DoubleSolenoid leftGearSolenoid;
   private DoubleSolenoid rightGearSolenoid;
-  private int ticksPerRotation; // getEncPosition values in one turn
-  private double wheelDiameter; // inches
-  private double wheelBaseWidth; // inches, distance between left and right wheels
-  private double nominalOutputVoltage;
+
   private DriveControlMode currentControlMode = DriveControlMode.STANDARD_DRIVE; // enum defined at end of file
-  private boolean sixMotorDrive = false;
-  private boolean dualGear = false;
-  private boolean hasPTO = false;
-  private DoubleSolenoid pto;
-  private double PTORightSpeedAdjust; // Multiplier applied to right side setpoint when driving the PTO
-  private double PTOLeftSpeedAdjust;
+  private DriveGear currentGear = null;
+
+  public BaseDriveTrain() {
+    if (dualGear) {
+      leftGearSolenoid = new DoubleSolenoid(RobotMap.leftDriveGearPCM, RobotMap.leftDriveGearSolenoid1,
+          RobotMap.leftDriveGearSolenoid2);
+      rightGearSolenoid = new DoubleSolenoid(RobotMap.rightDriveGearPCM, RobotMap.rightDriveGearSolenoid1,
+          RobotMap.rightDriveGearSolenoid2);
+      setPID(1, kPHigh, kIHigh, kDHigh, kFHigh, kIZoneHigh);
+      switchGear(DriveGear.HIGH);
+    }
+    setPID(0, kPLow, kILow, kDLow, kFLow, kIZoneLow);
+    if (hasPTO) {
+      pto = new DoubleSolenoid(RobotMap.ptoSolenoidPCM, RobotMap.ptoSolenoid1, RobotMap.ptoSolenoid2);
+      disablePTO();
+    }
+  }
 
   public void initDefaultCommand() {
     // Set the default command for a subsystem here.
     // setDefaultCommand(new MySpecialCommand());
     setDefaultCommand(new DriveWithJoystick());
+  }
+
+  public double getMaxVelocity() {
+    if (!dualGear || currentGear == DriveGear.LOW) {
+      return RobotMap.maxVelocityLow;
+    } else {
+      return RobotMap.maxVelocityHigh;
+    }
   }
 
   /**
@@ -52,7 +71,7 @@ public abstract class BaseDriveTrain extends Subsystem {
    * @param left  Left inches per second
    * @param right Right inches per second
    */
-  public void driveInchesPerSec(final int left, final int right) {
+  public void driveInchesPerSec(int left, int right) {
     driveInchesPerSec((double) right, (double) left);
   }
 
@@ -62,29 +81,44 @@ public abstract class BaseDriveTrain extends Subsystem {
    * @param left  Left inches per second
    * @param right Right inches per second
    */
-  public void driveInchesPerSec(final double left, final double right) {
-    int maxVelocity;
-    if (!dualGear || currentGear == DriveGear.LOW) {
-      maxVelocity = RobotMap.maxVelocityLow;
-    } else {
-      maxVelocity = RobotMap.maxVelocityHigh;
+  public void driveInchesPerSec(double left, double right) {
+    if (!Robot.oi.getDriveEnabled()) {
+      left = 0;
+      right = 0;
     }
-    drive((left / (wheelDiameter * Math.PI)) * ticksPerRotation / 10 / maxVelocity,
-        (right / (wheelDiameter * Math.PI)) * ticksPerRotation / 10 / maxVelocity);
+    if (Robot.oi.getOpenLoop()) {
+      driveOpenLoopLowLevel(calcActualVelocity(left, false) / getMaxVelocity(),
+          calcActualVelocity(right, false) / getMaxVelocity());
+    } else {
+      driveClosedLoopLowLevel((calcActualVelocity(left, false) / (wheelDiameter * Math.PI)),
+          (calcActualVelocity(right, false) / (wheelDiameter * Math.PI)));
+    }
   }
 
-  private double calcActualVelocity(final double input) {
-    int minVelocity;
+  /**
+   * Increases inputs that are less than minVelocity to minVelocity.
+   * 
+   * @param input        Input value, either inches per second or percentage
+   * @param isPercentage Whether the input is a percentage
+   * @return Calculated velocity
+   */
+  private double calcActualVelocity(double input, boolean isPercentage) {
+    double minVelocity;
     if (!dualGear || currentGear == DriveGear.LOW) {
       minVelocity = RobotMap.minVelocityLow;
     } else {
       minVelocity = RobotMap.minVelocityHigh;
     }
-    if (input >= -0.1 && input <= 0.1) {
+    double minNonZero = 0.1;
+    if (isPercentage) {
+      minVelocity /= getMaxVelocity();
+      minNonZero = 0.01;
+    }
+    if (input > minNonZero * -1 && input < minNonZero) {
       return 0;
-    } else if (input > 0.1 && input < minVelocity) {
+    } else if (input >= minNonZero && input < minVelocity) {
       return minVelocity;
-    } else if (input < -0.1 && input > minVelocity * -1) {
+    } else if (input <= minNonZero * -1 && input > minVelocity * -1) {
       return minVelocity * -1;
     } else {
       return input;
@@ -115,32 +149,26 @@ public abstract class BaseDriveTrain extends Subsystem {
       right = 0;
     }
     if (currentControlMode == DriveControlMode.STANDARD_DRIVE) {
-      int maxVelocity;
-      // actualMaxVelocity is used to make open loop scaling accurate
-      int actualMaxVelocity;
-      if (!dualGear) {
-        maxVelocity = RobotMap.maxVelocityLow;
-        actualMaxVelocity = RobotMap.maxVelocityLow;
-      } else if (currentGear == DriveGear.LOW) {
-        if (!alwaysHighMaxVel) {
-          maxVelocity = RobotMap.maxVelocityLow;
-        } else {
-          maxVelocity = RobotMap.maxVelocityHigh;
-        }
-        actualMaxVelocity = RobotMap.maxVelocityLow;
-      } else {
+      double maxVelocity = getMaxVelocity();
+      if (dualGear && alwaysHighMaxVel && currentGear == DriveGear.LOW) {
         maxVelocity = RobotMap.maxVelocityHigh;
-        actualMaxVelocity = RobotMap.maxVelocityHigh;
+      }
+      left = calcActualVelocity(left, true);
+      right = calcActualVelocity(right, true);
+      // If in closed loop, convert max velocity from inches per second to rotations
+      // per second to match input unit of driveClosedLoopLowLevel
+      if (!Robot.oi.getOpenLoop()) {
+        maxVelocity /= wheelDiameter * Math.PI;
       }
       left *= maxVelocity;
       right *= maxVelocity;
-      left = calcActualVelocity(left);
-      right = calcActualVelocity(right);
 
       if (Robot.oi.getOpenLoop()) {
+        driveOpenLoopLowLevel(left / getMaxVelocity(), right / getMaxVelocity());
+      } else {
+        driveClosedLoopLowLevel(left, right);
       }
     }
-
   }
 
   public void stop() {
@@ -149,13 +177,11 @@ public abstract class BaseDriveTrain extends Subsystem {
 
   protected abstract void neutralOutput();
 
-  protected abstract void openLoop();
+  protected abstract void driveOpenLoopLowLevel(double left, double right);
 
-  protected abstract void closedLoop();
+  protected abstract void driveClosedLoopLowLevel(double left, double right);
 
-  public void enableBrakeMode(final boolean enable) {
-
-  }
+  public abstract void enableBrakeMode(boolean enable);
 
   public abstract void resetPosition();
 
@@ -176,22 +202,16 @@ public abstract class BaseDriveTrain extends Subsystem {
    * 
    * @return current velocity in inches per second
    */
-  public abstract double getVelocityRight() {
-
-  }
+  public abstract double getVelocityRight();
 
   /**
    * Get the current velocity for the left side of the robot
    * 
    * @return current velocity in inches per second
    */
-  public abstract double getVelocityLeft() {
+  public abstract double getVelocityLeft();
 
-  }
-
-  public abstract double getCurrent() {
-
-  }
+  public abstract double getCurrent();
 
   /**
    * Sets the PID parameters for the current control mode, useful for tuning.
@@ -203,9 +223,7 @@ public abstract class BaseDriveTrain extends Subsystem {
    * @param f     F
    * @param iZone Integral zone
    */
-  public abstract void setPID(final double p, final double i, final double d, final double f, final int iZone) {
-
-  }
+  public abstract void setPID(double p, double i, double d, double f, int iZone);
 
   /**
    * Sets the PID parameters for the given slot on the talon, used during setup
@@ -217,41 +235,25 @@ public abstract class BaseDriveTrain extends Subsystem {
    * @param f       F
    * @param iZone   Integral zone
    */
-  private abstract void setPID(final int slotIdx, final double p, final double i, final double d, final double f, final int iZone) {
+  protected abstract void setPID(int slotIdx, double p, double i, double d, double f, int iZone);
 
-  }
+  public abstract double getP();
 
-  public abstract double getP() {
+  public abstract double getI();
 
-  }
+  public abstract double getD();
 
-  public abstract double getI() {
+  public abstract void getF();
 
-  }
+  public abstract void changeStatusRate(int ms);
 
-  public abstract double getD() {
+  public abstract void resetSensorRate();
 
-  }
+  public abstract void changeControlRate(int ms);
 
-  public abstract void getF() {
+  public abstract void resetControlRate();
 
-  }
-
-  public abstract void changeStatusRate(final int ms) {
-
-  }
-
-  public abstract void resetSensorRate() {
-
-  }
-
-  public abstract void changeControlRate(int ms) {
-
-  }
-
-  public abstract void resetControlRate() {
-
-  }
+  protected abstract void setProfileSlot(int slotIdx);
 
   public void switchGear(DriveGear gear) {
     if (dualGear && (Robot.oi == null || Robot.oi.isShiftingEnabled())) {
@@ -259,12 +261,14 @@ public abstract class BaseDriveTrain extends Subsystem {
       case HIGH:
         leftGearSolenoid.set(Value.kForward);
         rightGearSolenoid.set(Value.kForward);
+        setProfileSlot(1);
         currentGear = DriveGear.HIGH;
         SmartDashboard.putBoolean("High Gear", true);
         break;
       case LOW:
         leftGearSolenoid.set(Value.kReverse);
         rightGearSolenoid.set(Value.kReverse);
+        setProfileSlot(0);
         currentGear = DriveGear.LOW;
         SmartDashboard.putBoolean("High Gear", false);
         break;
@@ -288,9 +292,11 @@ public abstract class BaseDriveTrain extends Subsystem {
   }
 
   public void enablePTO() {
-    currentControlMode = DriveControlMode.PTO;
-    neutralOutput();
-    pto.set(Value.kForward);
+    if (hasPTO) {
+      currentControlMode = DriveControlMode.PTO;
+      neutralOutput();
+      pto.set(Value.kForward);
+    }
   }
 
   public void disablePTO() {
@@ -301,9 +307,9 @@ public abstract class BaseDriveTrain extends Subsystem {
     }
   }
 
-  public void runPTO(final double speed) {
+  public void runPTO(double speed) {
     if (Robot.oi.getDriveEnabled() && currentControlMode == DriveControlMode.PTO) {
-      openLoop(speed * PTOLeftSpeedAdjust, speed * PTORightSpeedAdjust);
+      driveOpenLoopLowLevel(speed * PTOLeftSpeedAdjust, speed * PTORightSpeedAdjust);
     } else if (!Robot.oi.getDriveEnabled()) {
       neutralOutput();
     }
