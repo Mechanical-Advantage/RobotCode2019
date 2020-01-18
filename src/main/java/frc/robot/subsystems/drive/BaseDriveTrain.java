@@ -82,16 +82,19 @@ public abstract class BaseDriveTrain extends Subsystem {
    * @param right Right inches per second
    */
   public void driveInchesPerSec(double left, double right) {
-    if (!Robot.oi.getDriveEnabled()) {
-      left = 0;
-      right = 0;
-    }
-    if (Robot.oi.getOpenLoop()) {
-      driveOpenLoopLowLevel(calcActualVelocity(left, false) / getMaxVelocity(),
-          calcActualVelocity(right, false) / getMaxVelocity());
-    } else {
-      driveClosedLoopLowLevel((calcActualVelocity(left, false) / (wheelDiameter * Math.PI)),
-          (calcActualVelocity(right, false) / (wheelDiameter * Math.PI)));
+    if (currentControlMode == DriveControlMode.STANDARD_DRIVE) {
+      if (!Robot.oi.getDriveEnabled()) {
+        left = 0;
+        right = 0;
+      }
+
+      if (Robot.oi.getOpenLoop()) {
+        driveOpenLoopLowLevel(calcActualVelocity(left, false) / getMaxVelocity(),
+            calcActualVelocity(right, false) / getMaxVelocity());
+      } else {
+        driveClosedLoopLowLevel((calcActualVelocity(left, false) / (wheelDiameter * Math.PI)),
+            (calcActualVelocity(right, false) / (wheelDiameter * Math.PI)));
+      }
     }
   }
 
@@ -144,11 +147,12 @@ public abstract class BaseDriveTrain extends Subsystem {
    *                         or of current gear
    */
   public void drive(double left, double right, boolean alwaysHighMaxVel) {
-    if (!Robot.oi.getDriveEnabled()) {
-      left = 0;
-      right = 0;
-    }
     if (currentControlMode == DriveControlMode.STANDARD_DRIVE) {
+      if (!Robot.oi.getDriveEnabled()) {
+        left = 0;
+        right = 0;
+      }
+
       double maxVelocity = getMaxVelocity();
       if (dualGear && alwaysHighMaxVel && currentGear == DriveGear.LOW) {
         maxVelocity = RobotMap.maxVelocityHigh;
